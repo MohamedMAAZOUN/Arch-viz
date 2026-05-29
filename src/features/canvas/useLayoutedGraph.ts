@@ -22,11 +22,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { resolve } from "@/core/doc/resolve";
 import { elkLayoutEngine } from "@/core/layout/ElkLayoutEngine";
+import { NODE_DIMENSIONS } from "@/features/canvas/types";
 
 import type { LayerId, ProjectDocument } from "@/core/schema/schema";
-
-const NODE_WIDTH = 220;
-const NODE_HEIGHT = 96;
 
 export type PositionMap = ReadonlyMap<string, { x: number; y: number }>;
 
@@ -35,7 +33,8 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
 
   // Hash the topology so we re-run ELK only when the graph shape actually
   // changes (elements added/removed, connections added/removed, parent
-  // relationships moved). Position overrides do NOT contribute.
+  // relationships moved, aggregation config changed). Position overrides
+  // and property edits do NOT contribute to the key.
   const topologyKey = useMemo(() => computeTopologyKey(doc, layer), [doc, layer]);
   const lastTopologyKey = useRef<string | null>(null);
 
@@ -57,11 +56,10 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
 
     const maximal = resolve(doc, layer, latestMvp.id);
 
-    const layoutNodes = maximal.elements.map((el) => ({
-      id: el.id,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-    }));
+    const layoutNodes = maximal.elements.map((el) => {
+      const dim = el.type === "group" ? NODE_DIMENSIONS.group : NODE_DIMENSIONS.default;
+      return { id: el.id, width: dim.width, height: dim.height };
+    });
 
     const layoutEdges = maximal.connections.map((c) => ({
       id: c.id,
@@ -78,6 +76,7 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
         setAutoPositions(result.positions);
       })
       .catch((err: unknown) => {
+        if (cancelled) return;
         console.error("Layout failed:", err);
       });
 
@@ -105,10 +104,21 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
 /**
  * Builds a stable string that changes ONLY when the topology relevant to
  * auto-layout changes. Used as the cache key for ELK invocations.
+ *
+ * Includes aggregateAt for group elements because changing aggregation
+ * changes which elements are visible (children get hidden/shown), which
+ * IS a topology change requiring a re-layout.
  */
 function computeTopologyKey(doc: ProjectDocument | null, layer: LayerId): string {
   if (doc === null) return "empty";
-  const elementSig = doc.elements.map((e) => `${e.id}:${e.parent ?? ""}:${e.minLayer}`).join("|");
-  const connSig = doc.connections.map((c) => `${c.id}:${c.from}>${c.to}:${c.minLayer}`).join("|");
+  const elementSig = doc.elements
+    .map((e) => {
+      const aggrPart = e.type === "group" ? `:${e.aggregateAt.join(",")}` : "";
+      return `${e.id}:${e.parent ?? ""}:${e.minLayer}${aggrPart}`;
+    })
+    .join("|");
+  const connSig = doc.connections
+    .map((c) => `${c.id}:${c.from}>${c.to}:${c.minLayer}`)
+    .join("|");
   return `${layer}\n${elementSig}\n${connSig}`;
 }

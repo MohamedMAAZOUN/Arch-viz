@@ -21,10 +21,22 @@ pnpm build
 
 All five must pass before opening a PR.
 
+## Five non-negotiable principles
+
+Every rule below descends from one of these. When rules conflict, reason from the principle.
+
+1. **One source of truth** — `Y.Doc` (via `docStore`) for the draft; the loaded file for committed. No parallel copies of any field.
+2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs`, `y-indexeddb` each enter through exactly one file. Every other file talks to our wrapper interfaces.
+3. **Render is a pure function** — `render(committedDoc, draftDoc, viewState) → DOM`. No side effects, no globals, no `Date.now()` inside render paths.
+4. **Boundaries validate** — Zod at every entry point. Trusted thereafter; no re-validation deep in the call graph.
+5. **Schema is law** — UI shapes itself to the schema. Change the schema first, then the UI.
+
 ## Hard rules
 
 - **TypeScript strict** with `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature`. Never weaken.
-- **No `any`**, no unexplained `as` casts, no `enum` (use string literal unions).
+- **No `any`**, no unexplained `as` casts (add a comment stating the safety argument), no `enum` (use string literal unions).
+- **`readonly`** on function parameters, array fields, and return types wherever it's accurate.
+- **Exhaustive switches** — when switching on a discriminated union, add `default: return assertNever(x)` from `@/core/errors` so new variants cause a compile error, not a silent gap.
 - **Wrapper rule** — these libraries enter through exactly one file each:
   - `@xyflow/react` → `src/features/canvas/Canvas.tsx` (+ node components in `src/features/canvas/nodes/`)
   - `elkjs` → `src/core/layout/ElkLayoutEngine.ts` and `src/core/layout/layout.worker.ts`
@@ -32,9 +44,11 @@ All five must pass before opening a PR.
   - `y-indexeddb` → `src/core/doc/persistence.ts`
   - ESLint enforces this via `no-restricted-imports`. Do not suppress.
 - **State tiers** — document data → Yjs (via `docStore`); view/UI state → Zustand stores in `src/core/state/`; component-local → `useState`.
+- **Loading a project** — always call `loadProject(project)` from `@/core/doc/loadProject`. It loads the doc AND resets view state so the canvas is never blank.
 - **Schema first** — anything that requires schema changes must update `src/core/schema/schema.ts` (including tests in `schema.test.ts`) before the UI.
 - **Theming** — colors and motion via design tokens (CSS variables in `tokens.css`, JS mirror in `tokens.ts`). Never hex literals, never magic ms.
-- **`useEffect`** is for syncing with external systems only. Never derive state in an effect.
+- **`useEffect`** is for syncing with external systems only. Never derive state from any reactive value in an effect — use `useMemo` or compute at call sites.
+- **Error handling** — expected failures (bad input, parse errors) return `Result<T, E>` from `@/core/errors`. Programming errors throw. Never `catch {}` silently.
 
 ## Repo map
 
@@ -61,6 +75,16 @@ docs/
 ## Commits
 
 Conventional Commits: `feat(scope): ...`, `fix(scope): ...`, `refactor(scope): ...`, `docs(scope): ...`, `test(scope): ...`, `chore(scope): ...`. One PR, one concern. Soft limit 400 LOC.
+
+## Deferred — do not build without explicit user confirmation
+
+These features are explicitly out of scope for v1 and must NOT be built speculatively,
+even though the schema already contains types for some of them:
+
+- Monaco YAML editor (plain textarea is sufficient for now)
+- Multiplayer (Yjs is wired; needs a sync server)
+- Tour mode playback / video export of MVP transitions
+- Live data hooks (Grafana / Jira / HTTP `DataSource` fetching)
 
 ## When uncertain
 

@@ -18,7 +18,7 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## The five non-negotiable principles
 
 1. **One source of truth** — `Y.Doc` for the draft, file for the committed.
-2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs` each enter through exactly one file. ESLint enforces this via `no-restricted-imports`. Do not suppress.
+2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs`, and `y-indexeddb` each enter through exactly one file. ESLint enforces this via `no-restricted-imports`. Do not suppress.
 3. **Render is a pure function** — `render(committedDoc, draftDoc, viewState) → DOM`. No `localStorage` reads, `Date.now()`, or globals inside render paths.
 4. **Boundaries validate** — Zod at every entrypoint. Trusted thereafter.
 5. **Schema is law** — UI shapes itself to the schema. Schema change first, UI second.
@@ -30,9 +30,17 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 - **Component-local state** → `useState`.
 
 The DocStore API surface (use these, don't reach into the Y.Doc):
-- `docStore.get()` / `docStore.subscribe(handler)`
-- `docStore.load(doc)` / `docStore.commit()` / `docStore.discard()` / `docStore.dirty()`
+- `docStore.get()` / `docStore.subscribe(handler)` / `docStore.dirty()`
+- `docStore.commit()` / `docStore.discard()`
 - `docStore.undo()` / `docStore.redo()` / `docStore.canUndo()` / `docStore.canRedo()`
+- `docStore.updateElementName(id, name)`
+- `docStore.updateElementProperty(id, key, value)` — pass `null` to remove the key
+- `docStore.updateElementPropertyPath(id, path, value)`
+- `docStore.updateConnectionProperty(id, key, value)`
+- `docStore.setElementLayoutOverride(layer, elementId, position)` — pass `null` to clear
+- `docStore.clearLayerOverrides(layer)`
+
+**Loading a project**: always call `loadProject(project)` from `@/core/doc/loadProject` — it loads the doc AND resets the view (MVP, layer) so the canvas is never blank after load. Don't call `docStore.load()` directly from feature code.
 
 For React, use the hooks: `useDocSnapshot()`, `useResolvedDoc()`, `useUndoRedoState()`.
 
@@ -59,6 +67,8 @@ Cross-feature communication flows through `core/state` and `core/doc`.
 4. Update `src/core/schema/schema.test.ts` to cover the new type.
 5. Add an instance to `src/data/example-project.yaml` so manual QA covers it.
 6. Bump `$schemaVersion` if the change isn't backward-compatible.
+7. Update `NODE_DIMENSIONS` in `src/features/canvas/types.ts` if the new type needs different dimensions.
+8. The exhaustive switches in `Canvas.tsx` (`isAnimatedEdge`, `edgeStroke`) will produce compile errors if the new type also introduces a new `ConnectionType` — fix those too.
 
 ### Add a new feature
 
@@ -81,14 +91,15 @@ pnpm build        # production build
 
 ## Style cheatsheet
 
-- TypeScript strict, zero `any`.
+- TypeScript strict, zero `any`, no unexplained `as` casts (add a comment explaining the safety argument).
+- `readonly` on parameters, arrays, and return types wherever it's accurate.
+- Exhaustive discriminated-union switches: `default: return assertNever(x)` from `@/core/errors`.
 - Function components, hooks named `use*`.
 - Props destructured at signature.
-- Discriminated unions over boolean flags.
-- String literal unions over `enum`.
-- `useEffect` only for syncing with external systems (subscriptions, focus, scroll). Never for derived state.
-- Zod for validation at all I/O boundaries.
-- `Result<T, E>` for expected failures; `throw` for invariant violations.
+- Discriminated unions over boolean flags. String literal unions over `enum`.
+- `useEffect` only for syncing with external systems (subscriptions, focus, scroll). Never for derived state — derived state from *any* reactive value (props, state, store) belongs in `useMemo` or at the call site.
+- Zod for validation at all I/O boundaries. `Result<T, E>` (from `@/core/errors`) for expected failures; `throw` for invariant violations. Never `catch {}`.
+- No hex colors, no magic px/ms values in component code — use design tokens.
 
 ## When something feels off
 
@@ -96,6 +107,13 @@ pnpm build        # production build
 - A library doesn't fit cleanly → wrap it (see existing wrappers as templates).
 - The schema can't express your feature → schema change first.
 - The engineering guide is wrong → fix the guide in the same PR.
+
+## Testing conventions
+
+- Unit tests live **next to the code** they test (`Foo.ts` ↔ `Foo.test.ts`). The `tests/` folder is for E2E only.
+- Never mock the schema — use the real Zod parser in every test.
+- Assert behavior, not implementation details.
+- `Result` helpers and DocStore mutations each need direct tests in `core/`.
 
 ## Things deferred to v1.5+
 

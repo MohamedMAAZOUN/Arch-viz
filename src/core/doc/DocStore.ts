@@ -174,7 +174,7 @@ export function createDocStore(): DocStore {
     dirty() {
       const current = readDoc();
       if (current === null && committedSnapshot === null) return false;
-      return JSON.stringify(current) !== JSON.stringify(committedSnapshot);
+      return stableStringify(current) !== stableStringify(committedSnapshot);
     },
 
     undo() {
@@ -279,6 +279,24 @@ export function createDocStore(): DocStore {
 // ----------------------------------------------------------------------------
 // Internal helpers
 // ----------------------------------------------------------------------------
+
+/**
+ * JSON.stringify with alphabetically-sorted keys at every nesting level.
+ * Guards against false dirty-positives caused by key-insertion-order differences
+ * between the committed snapshot and a document reconstructed via object spreads.
+ */
+function stableStringify(value: unknown): string {
+  return JSON.stringify(value, (_key, val: unknown): unknown => {
+    if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+      const sorted: Record<string, unknown> = {};
+      for (const k of Object.keys(val as Record<string, unknown>).sort()) {
+        sorted[k] = (val as Record<string, unknown>)[k];
+      }
+      return sorted;
+    }
+    return val;
+  });
+}
 
 /** Return a shallow copy of `obj` without the given key. Functional alternative
  *  to `delete`, which the codebase forbids via @typescript-eslint/no-dynamic-delete. */

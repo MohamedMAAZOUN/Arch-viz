@@ -2,7 +2,7 @@
 // resolve — pure function: ProjectDocument × layer × mvp → effective state
 // ============================================================================
 // Per the schema README's "Resolving the model at runtime" section.
-// Pure, memoizable, O(n) per call.
+// Pure, memoizable.
 //
 // Used by the Canvas to know what to render, and by the Inspector to know
 // the effective property values at the current view.
@@ -30,21 +30,28 @@ export function resolve(
   layer: LayerId,
   mvpId: MvpRef,
 ): ResolvedState {
-  const layerOrder = layerOrderOf(doc, layer);
-  const mvpOrder = mvpOrderOf(doc, mvpId);
+  // Pre-compute O(1) lookup maps — avoids O(n) linear scans inside the
+  // per-element and per-connection loops (was O(N×M) before).
+  const layerOrderMap = new Map<string, number>(doc.layers.map((l) => [l.id, l.order]));
+  const mvpOrderMap = new Map<string, number>(doc.mvps.map((m) => [m.id, m.order]));
+
+  const layerOrder = layerOrderMap.get(layer) ?? 0;
+  const mvpOrder = mvpOrderMap.get(mvpId) ?? 0;
 
   const aggregatingParents = aggregatingParentsAtLayer(doc, layer);
 
   const visibleElements: Element[] = [];
   for (const el of doc.elements) {
-    if (!elementVisibleAt(el, doc, layerOrder, mvpOrder, aggregatingParents)) continue;
-    visibleElements.push(resolveElementAt(el, mvpOrder, doc));
+    if (!elementVisibleAt(el, layerOrder, mvpOrder, layerOrderMap, mvpOrderMap, aggregatingParents))
+      continue;
+    visibleElements.push(resolveElementAt(el, mvpOrder, mvpOrderMap));
   }
 
   const visibleIds = new Set(visibleElements.map((e) => e.id));
   const visibleConnections: Connection[] = [];
   for (const c of doc.connections) {
-    if (!connectionVisibleAt(c, doc, layerOrder, mvpOrder, visibleIds)) continue;
+    if (!connectionVisibleAt(c, layerOrderMap, layerOrder, mvpOrder, mvpOrderMap, visibleIds))
+      continue;
     visibleConnections.push(c);
   }
 
@@ -54,16 +61,6 @@ export function resolve(
 // ----------------------------------------------------------------------------
 // Helpers
 // ----------------------------------------------------------------------------
-
-function layerOrderOf(doc: ProjectDocument, layerId: LayerId): number {
-  const layer = doc.layers.find((l) => l.id === layerId);
-  return layer?.order ?? 0;
-}
-
-function mvpOrderOf(doc: ProjectDocument, mvpId: MvpRef): number {
-  const mvp = doc.mvps.find((m) => m.id === mvpId);
-  return mvp?.order ?? 0;
-}
 
 /** Set of parent ids whose children should be hidden at this layer. */
 function aggregatingParentsAtLayer(doc: ProjectDocument, layer: LayerId): Set<string> {
@@ -78,18 +75,23 @@ function aggregatingParentsAtLayer(doc: ProjectDocument, layer: LayerId): Set<st
 
 function elementVisibleAt(
   el: Element,
-  doc: ProjectDocument,
   layerOrder: number,
   mvpOrder: number,
+  layerOrderMap: ReadonlyMap<string, number>,
+  mvpOrderMap: ReadonlyMap<string, number>,
   aggregatingParents: Set<string>,
 ): boolean {
-  // MVP gating
-  if (mvpOrderOf(doc, el.lifecycle.introducedIn) > mvpOrder) return false;
-  if (el.lifecycle.removedIn !== undefined && mvpOrderOf(doc, el.lifecycle.removedIn) <= mvpOrder) {
+  // MVP gating — unknown ids use Infinity so orphaned introducedIn refs
+  // never accidentally make an element visible (fail-safe direction).
+  if ((mvpOrderMap.get(el.lifecycle.introducedIn) ?? Infinity) > mvpOrder) return false;
+  if (
+    el.lifecycle.removedIn !== undefined &&
+    (mvpOrderMap.get(el.lifecycle.removedIn) ?? Infinity) <= mvpOrder
+  ) {
     return false;
   }
   // Layer gating
-  if (layerOrderOf(doc, el.minLayer) > layerOrder) return false;
+  if ((layerOrderMap.get(el.minLayer) ?? 0) > layerOrder) return false;
   // Aggregation: hidden if parent aggregates at this layer
   if (el.parent !== undefined && aggregatingParents.has(el.parent)) return false;
   return true;
@@ -97,33 +99,44 @@ function elementVisibleAt(
 
 function connectionVisibleAt(
   c: Connection,
-  doc: ProjectDocument,
+  layerOrderMap: ReadonlyMap<string, number>,
   layerOrder: number,
   mvpOrder: number,
+  mvpOrderMap: ReadonlyMap<string, number>,
   visibleIds: Set<string>,
 ): boolean {
-  if (mvpOrderOf(doc, c.lifecycle.introducedIn) > mvpOrder) return false;
-  if (c.lifecycle.removedIn !== undefined && mvpOrderOf(doc, c.lifecycle.removedIn) <= mvpOrder) {
+  if ((mvpOrderMap.get(c.lifecycle.introducedIn) ?? Infinity) > mvpOrder) return false;
+  if (
+    c.lifecycle.removedIn !== undefined &&
+    (mvpOrderMap.get(c.lifecycle.removedIn) ?? Infinity) <= mvpOrder
+  ) {
     return false;
   }
-  if (layerOrderOf(doc, c.minLayer) > layerOrder) return false;
+  if ((layerOrderMap.get(c.minLayer) ?? 0) > layerOrder) return false;
   if (!visibleIds.has(c.from) || !visibleIds.has(c.to)) return false;
   return true;
 }
 
 /** Apply lifecycle.modifiedIn patches up to mvpOrder. */
-function resolveElementAt(el: Element, mvpOrder: number, doc: ProjectDocument): Element {
+function resolveElementAt(
+  el: Element,
+  mvpOrder: number,
+  mvpOrderMap: ReadonlyMap<string, number>,
+): Element {
   if (el.lifecycle.modifiedIn === undefined) return el;
 
-  // Apply patches in MVP order
+  // Apply patches whose MVP order is ≤ current mvpOrder, in ascending order.
+  // Unknown MVP ids get Infinity so orphaned modifiedIn entries are never applied.
   const patches = Object.entries(el.lifecycle.modifiedIn)
-    .filter(([mvpId]) => mvpOrderOf(doc, mvpId) <= mvpOrder)
-    .sort((a, b) => mvpOrderOf(doc, a[0]) - mvpOrderOf(doc, b[0]));
+    .filter(([mvpId]) => (mvpOrderMap.get(mvpId) ?? Infinity) <= mvpOrder)
+    .sort(
+      (a, b) =>
+        (mvpOrderMap.get(a[0]) ?? Infinity) - (mvpOrderMap.get(b[0]) ?? Infinity),
+    );
 
   if (patches.length === 0) return el;
 
   // Shallow-merge the properties of each patch into a fresh element copy.
-  // We don't mutate the original element.
   let merged: Element = el;
   for (const [, patch] of patches) {
     merged = {

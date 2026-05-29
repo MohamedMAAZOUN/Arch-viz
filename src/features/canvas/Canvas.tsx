@@ -32,13 +32,14 @@ import { useEffect, useMemo, useRef } from "react";
 import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
+import { assertNever } from "@/core/errors";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useViewStore } from "@/core/state/viewStore";
 import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
 
-import type { Connection, ProjectDocument } from "@/core/schema/schema";
+import type { Connection, ConnectionType, ProjectDocument } from "@/core/schema/schema";
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { Edge, OnSelectionChangeFunc, ReactFlowInstance } from "@xyflow/react";
 
@@ -126,8 +127,12 @@ function CanvasInner() {
   };
 
   // Fit view once when the first batch of positions lands for a project.
+  // Re-arm only when the project ID changes (a different project was loaded),
+  // NOT on every doc mutation — otherwise any rename/edit resets the viewport.
   const flowRef = useRef<ReactFlowInstance<ElementNodeType> | null>(null);
   const fitOnFirstLayout = useRef(true);
+  const projectId = doc?.project.id ?? null;
+
   useEffect(() => {
     if (fitOnFirstLayout.current && nodes.length > 0 && flowRef.current !== null) {
       void flowRef.current.fitView({ duration: 400, padding: 0.2 });
@@ -137,7 +142,7 @@ function CanvasInner() {
 
   useEffect(() => {
     fitOnFirstLayout.current = true;
-  }, [doc]);
+  }, [projectId]);
 
   return (
     <div className="canvas">
@@ -181,27 +186,55 @@ function buildMvpColorMap(doc: ProjectDocument | null): ReadonlyMap<string, stri
 }
 
 // ---------------------------------------------------------------------------
-// Edge styling — type-aware
+// Edge styling — type-aware, exhaustive switch so adding a new ConnectionType
+// causes a compile error rather than a silent styling gap.
 // ---------------------------------------------------------------------------
 
 function edgeFromConnection(c: Connection): Edge {
-  const isAsync = c.type === "async" || c.type === "event";
-  const isData = c.type === "data";
-
   return {
     id: c.id,
     source: c.from,
     target: c.to,
     type: "smoothstep",
-    animated: isAsync,
+    animated: isAnimatedEdge(c.type),
     label: c.protocol,
     labelBgPadding: [6, 4],
     labelBgBorderRadius: 4,
     style: {
-      stroke: isData ? "var(--color-tone-success)" : "var(--color-fg-faint)",
+      stroke: edgeStroke(c.type),
       strokeWidth: 1.5,
     },
   };
+}
+
+function isAnimatedEdge(type: ConnectionType): boolean {
+  switch (type) {
+    case "sync":
+      return false;
+    case "async":
+      return true;
+    case "event":
+      return true;
+    case "data":
+      return false;
+    default:
+      return assertNever(type);
+  }
+}
+
+function edgeStroke(type: ConnectionType): string {
+  switch (type) {
+    case "sync":
+      return "var(--color-fg-faint)";
+    case "async":
+      return "var(--color-fg-faint)";
+    case "event":
+      return "var(--color-fg-faint)";
+    case "data":
+      return "var(--color-tone-success)";
+    default:
+      return assertNever(type);
+  }
 }
 
 // ---------------------------------------------------------------------------

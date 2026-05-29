@@ -4,7 +4,7 @@ These instructions apply to every Copilot interaction in this repository.
 
 ## Project
 
-This is **arch-vis**, an architecture-visualization tool. Frontend-only SPA built with Vite, React 19, TypeScript 5.7, Tailwind v4, React Flow, Yjs, ELK.js, Motion. The full design and rationale lives in `docs/engineering-guide.md` — defer to that file whenever it conflicts with anything here.
+This is **arch-vis**, an architecture-visualization tool. Frontend-only SPA built with Vite, React 19, TypeScript 5.7, Tailwind v4, React Flow, Yjs, ELK.js, Motion. The full design and rationale lives in `docs/engineering-guide.md` — defer to that file whenever it conflicts with anything here. **Read sections 1–6 of the engineering guide before writing any code.**
 
 ## Mandatory rules
 
@@ -12,7 +12,7 @@ This is **arch-vis**, an architecture-visualization tool. Frontend-only SPA buil
 - Never use `any`. Use `unknown` plus narrowing.
 - Never write `as` casts without an explanatory comment.
 - Never use `enum`. Use string literal unions.
-- Never use `useEffect` to derive state from props. Derive via `useMemo` or call sites.
+- Never use `useEffect` to derive state from any reactive value (props, state, store). Derive via `useMemo` or at call sites.
 - Never import `@xyflow/react` outside `src/features/canvas/Canvas.tsx` and `src/features/canvas/nodes/`.
 - Never import `elkjs` outside `src/core/layout/ElkLayoutEngine.ts` and `src/core/layout/layout.worker.ts`.
 - Never import `yjs` outside `src/core/doc/DocStore.ts`.
@@ -63,6 +63,17 @@ Never swallow errors silently with `catch {}`.
 - Soft limit: 400 LOC changed.
 - See `.github/PULL_REQUEST_TEMPLATE.md`.
 
+## Deferred features — do not build without explicit user confirmation
+
+The schema already contains types for these features, which may make them look ready to implement — they are not:
+
+- Monaco YAML editor
+- Multiplayer (Yjs is wired; needs a sync server)
+- Tour mode playback / video export of MVP transitions
+- Live data hooks (`DataSource`, `GrafanaSource`, `JiraSource`, `HttpSource` in the schema)
+
 ## When you don't know something
 
 Search `docs/engineering-guide.md` first. Then look at the most-similar existing feature in `src/features/` for the established pattern. Don't invent a new pattern when an existing one applies.
+
+If a rule blocks legitimate work, open an Architecture Decision Record in `docs/adr/NNNN-title.md` proposing the change rather than quietly bypassing the rule.

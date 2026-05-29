@@ -11,8 +11,6 @@ export interface LayoutNode {
   id: string;
   width: number;
   height: number;
-  /** Optional manual override; if set, layout should pin this node. */
-  pinnedPosition?: { x: number; y: number };
 }
 
 export interface LayoutEdge {

@@ -93,7 +93,7 @@ arch-vis/
 │   │   ├── doc/                  # the Yjs source of truth + draft mgmt
 │   │   │   ├── DocStore.ts       # ONLY file that imports yjs
 │   │   │   ├── resolve.ts        # effective-state-at-(layer, mvp) function
-│   │   │   └── persistence.ts    # file save/load + IndexedDB
+│   │   │   └── persistence.ts    # file save/load + IndexedDB (ONLY file that imports y-indexeddb)
 │   │   ├── state/                # Zustand stores (view state, not doc state)
 │   │   │   ├── viewStore.ts
 │   │   │   └── selectionStore.ts
@@ -101,7 +101,9 @@ arch-vis/
 │   │   │   ├── LayoutEngine.ts   # interface
 │   │   │   ├── ElkLayoutEngine.ts# ONLY file that imports elkjs
 │   │   │   └── layout.worker.ts  # the web worker
-│   │   └── errors.ts             # AppError, Result types
+│   │   └── errors/               # Result type, assertNever
+│   │       ├── index.ts          # public surface: Result, ok, err, unwrap, assertNever
+│   │       └── result.ts         # Result discriminated union + helpers
 │   │
 │   ├── features/                 # user-visible capabilities
 │   │   ├── canvas/               # React Flow wrapper + node renderers
@@ -202,11 +204,18 @@ We target strict TypeScript. Every escape hatch is a written exception, not a ha
 
 - **No `enum`s**. Use string literal unions: `type Layer = "business" | "architecture" | "engineering"`. They compile to nothing, work with `switch` exhaustiveness, and don't have the `enum` runtime weirdness.
 
-- **Exhaustive switches via `never`**. When switching on a discriminated union, end with `default: assertNever(x)` — TypeScript will fail the build if a new variant is added without a corresponding case.
+- **Exhaustive switches via `never`**. When switching on a discriminated union, end with `default: return assertNever(x)` — TypeScript will fail the build if a new variant is added without a corresponding case.
 
   ```ts
-  function assertNever(x: never): never {
-    throw new Error(`Unhandled variant: ${JSON.stringify(x)}`);
+  import { assertNever } from "@/core/errors";
+
+  function edgeIsAnimated(type: ConnectionType): boolean {
+    switch (type) {
+      case "sync": return false;
+      case "async": return true;
+      // ... other cases ...
+      default: return assertNever(type);
+    }
   }
   ```
 
@@ -334,17 +343,36 @@ const { currentLayer, currentMvp } = useViewStore(
 `DocStore` exposes high-level operations, never raw Y.Doc access. The rest of the app calls:
 
 ```ts
-DocStore.addElement(element);
-DocStore.updateElement(id, patch);
-DocStore.removeElement(id);
-DocStore.addConnection(connection);
-DocStore.setLayoutOverride(layer, elementId, position);
-DocStore.commit();         // draft → committed
-DocStore.discard();        // throw away draft
-DocStore.undo();
-DocStore.redo();
-DocStore.subscribe(handler);
+// Lifecycle
+docStore.load(project);               // load a project (use loadProject() helper instead)
+docStore.get();                        // current snapshot or null
+docStore.subscribe(handler);          // subscribe to doc changes; returns unsubscribe fn
+docStore.commit();                    // promote draft → committed (marks as saved)
+docStore.discard();                   // roll back draft to committed
+docStore.dirty();                     // true if draft differs from committed
+
+// Undo / redo
+docStore.undo();
+docStore.redo();
+docStore.canUndo();
+docStore.canRedo();
+
+// Element mutations
+docStore.updateElementName(id, name);
+docStore.updateElementProperty(id, key, value);        // pass null to remove the key
+docStore.updateElementPropertyPath(id, path, value);   // nested path, null to remove leaf
+
+// Connection mutations
+docStore.updateConnectionProperty(id, key, value);
+
+// Layout overrides
+docStore.setElementLayoutOverride(layer, elementId, position);  // null to clear
+docStore.clearLayerOverrides(layer);
 ```
+
+**Prefer `loadProject()` over `docStore.load()` directly.** `loadProject()` also resets
+the view state (current MVP, current layer) to sensible defaults so the canvas is
+never blank after load.
 
 The Y.Doc internals never leak. If a feature needs an operation that doesn't exist, add a new operation — don't reach into the doc directly.
 

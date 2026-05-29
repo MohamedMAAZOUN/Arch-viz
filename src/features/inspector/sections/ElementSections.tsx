@@ -40,8 +40,10 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
     );
   }
 
-  const incoming = doc.connections.filter((c) => c.to === elementId);
-  const outgoing = doc.connections.filter((c) => c.from === elementId);
+  // Use resolved connections so the Dependencies section only shows edges that
+  // are actually visible at the current layer and MVP — not all edges in the doc.
+  const incoming = (resolved?.connections ?? []).filter((c) => c.to === elementId);
+  const outgoing = (resolved?.connections ?? []).filter((c) => c.from === elementId);
 
   return (
     <>
@@ -154,15 +156,17 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
         </div>
         {element.lifecycle.modifiedIn !== undefined ? (
           <div className="inspector-history">
-            {Object.entries(element.lifecycle.modifiedIn).map(([mvpId, patch]) => (
-              <div key={mvpId} className="inspector-history-row">
-                <span className="inspector-history-mvp">{mvpId}</span>
-                <span className="inspector-history-detail">
-                  {Object.keys(patch.properties).length} property change
-                  {Object.keys(patch.properties).length === 1 ? "" : "s"}
-                </span>
-              </div>
-            ))}
+            {Object.entries(element.lifecycle.modifiedIn).map(([mvpId, patch]) => {
+              const changeCount = Object.keys(patch.properties).length;
+              return (
+                <div key={mvpId} className="inspector-history-row">
+                  <span className="inspector-history-mvp">{mvpId}</span>
+                  <span className="inspector-history-detail">
+                    {changeCount} property change{changeCount === 1 ? "" : "s"}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ) : null}
       </Section>
