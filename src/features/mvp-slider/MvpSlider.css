@@ -1,0 +1,63 @@
+/* ============================================================================
+ * MvpSlider.css
+ * ============================================================================ */
+
+.mvp-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mvp-slider-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+}
+
+.mvp-slider-chips {
+  display: inline-flex;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+
+.mvp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) 6px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.mvp-chip:hover {
+  color: var(--color-fg-default);
+  background: var(--color-bg-3);
+}
+
+.mvp-chip[data-active="true"] {
+  background: var(--color-highlight-soft);
+  color: var(--color-fg-default);
+  font-weight: var(--weight-semibold);
+}
+
+.mvp-chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mvp-chip-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+}

@@ -1,0 +1,34 @@
+/* ============================================================================
+ * ReorganizeButton.css
+ * ============================================================================ */
+
+.reorganize-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-muted);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  animation: reorganize-btn-in var(--duration-base) var(--ease-out);
+}
+
+.reorganize-btn:hover {
+  background: var(--color-bg-3);
+  border-color: var(--color-border-default);
+  color: var(--color-fg-default);
+}
+
+@keyframes reorganize-btn-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

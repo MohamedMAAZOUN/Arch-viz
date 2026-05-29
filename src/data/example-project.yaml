@@ -1,0 +1,290 @@
+# =============================================================================
+# Architecture Visualizer — Project Schema v1.0.0
+# =============================================================================
+# Single source of truth for a project. Edit by hand or via the UI — both
+# write the same shape. Runtime model is JSON; YAML is just an authoring
+# surface (humans read this; the app converts to JSON in memory).
+#
+# Sections, in order:
+#   1. project       — top-level metadata
+#   2. mvps          — linear timeline of versions
+#   3. layers        — fixed three: business / architecture / engineering
+#   4. elements      — flat list, hierarchy via `parent` references
+#   5. connections   — independent lifecycle from endpoints
+#   6. tours         — narrative / Prezi-feel walkthroughs
+#   7. layout        — per-layer manual position overrides (deltas only)
+# =============================================================================
+
+$schemaVersion: "1.0.0"
+
+# -- 1. Project ---------------------------------------------------------------
+project:
+  id: "shopfront"
+  name: "Shopfront Platform"
+  description: "Reference e-commerce platform — demonstrates every schema feature."
+  theme: "default"                     # references a design system theme bundle
+
+# -- 2. MVPs ------------------------------------------------------------------
+# Linear timeline. The slider scrubs through these in `order`. Forking would
+# be a v2 feature.
+mvps:
+  - id: mvp1
+    name: "Launch"
+    order: 1
+    color: "#7C9EFF"                   # used in overlay/diff modes
+  - id: mvp2
+    name: "Reviews & Ratings"
+    order: 2
+    color: "#FFB86B"
+  - id: mvp3
+    name: "Recommendations"
+    order: 3
+    color: "#A4F39A"
+
+# -- 3. Layers ----------------------------------------------------------------
+# Fixed three. Order = least to most detailed. Toggle switches view.
+layers:
+  - id: business
+    order: 1
+    label: "Business"
+  - id: architecture
+    order: 2
+    label: "Architecture"
+  - id: engineering
+    order: 3
+    label: "Engineering"
+
+# -- 4. Elements --------------------------------------------------------------
+# Flat list. Hierarchy via `parent`. No nesting (diffing nested YAML is hell).
+elements:
+
+  # --- A group. Aggregates its children at the business layer.
+  - id: storefront-domain
+    type: group
+    name: "Storefront"
+    aggregateAt: [business]            # at business layer, children disappear,
+                                       # this single box represents them all
+    minLayer: business
+    properties:
+      description: "All customer-facing surfaces."
+      owner: "team-storefront"
+    lifecycle:
+      introducedIn: mvp1
+
+  # --- A frontend inside the group. Hidden at business (aggregated into parent).
+  - id: web-app
+    type: frontend
+    name: "Web App"
+    parent: storefront-domain
+    minLayer: architecture
+    properties:
+      description: "Next.js storefront."
+      owner: "team-storefront"
+      tags: [public]
+      tech:                            # type-specific fields go in properties
+        framework: "Next.js 14"
+        language: "TypeScript"
+      _layerVisibility:                # per-property layer gating
+        tech: engineering              # 'tech' block only shows at engineering
+    lifecycle:
+      introducedIn: mvp1
+    style:
+      tone: neutral                    # references theme token, not hex
+
+  # --- A service whose internals get modified across MVPs (lifecycle in action).
+  - id: catalog-service
+    type: service
+    name: "Catalog Service"
+    parent: storefront-domain
+    minLayer: architecture
+    properties:
+      description: "Product browsing and search."
+      owner: "team-catalog"
+      tech:
+        language: "Go"
+        runtime: "k8s"
+      _layerVisibility:
+        tech: engineering
+    lifecycle:
+      introducedIn: mvp1
+      modifiedIn:                      # only diffs stored, base + diffs resolved at runtime
+        mvp3:
+          properties:
+            description: "Product browsing, search, and ML-driven recommendations."
+    dataSources:                       # live data hooks — the killer feature
+      - kind: grafana
+        query: "up{service='catalog'}"
+        binding: status                # → colored status dot on the node
+      - kind: jira
+        jql: "project=CAT AND status=Open"
+        binding: badge                 # → numeric badge
+    style:
+      tone: critical                   # this service is high-importance
+
+  - id: catalog-db
+    type: database
+    name: "Catalog DB"
+    parent: storefront-domain
+    minLayer: architecture
+    properties:
+      description: "Product catalog."
+      tech:
+        engine: "PostgreSQL 16"
+      _layerVisibility:
+        tech: engineering
+    lifecycle:
+      introducedIn: mvp1
+
+  # --- A service introduced LATER (mvp2). Doesn't exist on the canvas before.
+  - id: reviews-service
+    type: service
+    name: "Reviews Service"
+    parent: storefront-domain
+    minLayer: architecture
+    properties:
+      description: "User reviews and ratings."
+      owner: "team-social"
+      tech:
+        language: "Python"
+        runtime: "k8s"
+      _layerVisibility:
+        tech: engineering
+    lifecycle:
+      introducedIn: mvp2
+
+  # --- A service introduced in mvp3.
+  - id: recommendations-service
+    type: service
+    name: "Recommendations"
+    parent: storefront-domain
+    minLayer: architecture
+    properties:
+      description: "ML-powered product recommendations."
+      owner: "team-ml"
+      tech:
+        language: "Python"
+        runtime: "k8s"
+      _layerVisibility:
+        tech: engineering
+    lifecycle:
+      introducedIn: mvp3
+
+  # --- An external actor (the customer).
+  - id: end-user
+    type: actor
+    name: "Customer"
+    minLayer: business
+    properties:
+      description: "Anyone browsing or buying."
+    lifecycle:
+      introducedIn: mvp1
+
+# -- 5. Connections -----------------------------------------------------------
+# Each has its own lifecycle, independent of endpoints (you might add a
+# dependency between two existing services in a later MVP).
+connections:
+  - id: user-to-web
+    from: end-user
+    to: web-app
+    type: sync
+    protocol: "HTTPS"
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp1
+
+  - id: web-to-catalog
+    from: web-app
+    to: catalog-service
+    type: sync
+    protocol: "REST"
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+
+  - id: catalog-to-db
+    from: catalog-service
+    to: catalog-db
+    type: data
+    protocol: "TCP/5432"
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+
+  # --- New in mvp2 (links a new service)
+  - id: web-to-reviews
+    from: web-app
+    to: reviews-service
+    type: sync
+    protocol: "REST"
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+
+  # --- New in mvp3 (links two existing services in a new way)
+  - id: catalog-to-recs
+    from: catalog-service
+    to: recommendations-service
+    type: async
+    protocol: "Kafka"
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+
+# -- 6. Tours (the narrative / Prezi-feel) ------------------------------------
+# An author-defined path through the canvas. Press space to advance steps.
+tours:
+  - id: exec-overview
+    name: "5-minute exec walkthrough"
+    description: "From customer to catalog to recommendations."
+    steps:
+      - id: step1
+        viewpoint:
+          fit: all
+          layer: business
+          mvp: mvp3
+        caption: "Shopfront at MVP3 — business view"
+        duration: 4000
+
+      - id: step2
+        viewpoint:
+          focus: storefront-domain
+          zoom: 1.2
+          layer: architecture
+          mvp: mvp3
+        caption: "Zooming into the storefront domain"
+        highlight: [catalog-service, reviews-service]
+        duration: 5000
+
+      - id: step3
+        viewpoint:
+          focus: catalog-service
+          zoom: 1.8
+          layer: engineering
+          mvp: mvp3
+        caption: "Catalog now powers recommendations"
+        highlight: [recommendations-service, catalog-to-recs]
+        duration: 5000
+
+# -- 7. Layout (per-layer manual overrides) -----------------------------------
+# Positions are stored PER LAYER (rule #2 of position calculation). Only
+# manual drag-overrides are stored; auto-layout output is recomputed at
+# runtime. "Reorganize" wipes the entries for the current layer.
+#
+# Omit a layer or an element to use full auto-layout.
+layout:
+  business:
+    storefront-domain:
+      position: { x: 400, y: 300 }
+    end-user:
+      position: { x: 120, y: 300 }
+
+  architecture:
+    web-app:
+      position: { x: 300, y: 200 }
+    catalog-service:
+      position: { x: 540, y: 200 }
+    catalog-db:
+      position: { x: 540, y: 380 }
+    # reviews-service and recommendations-service: no override → auto-laid out
+
+  # engineering: no entries → fully auto-laid out

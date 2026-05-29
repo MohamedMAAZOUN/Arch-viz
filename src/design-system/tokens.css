@@ -1,0 +1,397 @@
+/* ============================================================================
+ * Architecture Visualizer — Design Tokens v1.0.0
+ * ============================================================================
+ * Tailwind v4 @theme block. Every visual decision in the app traces back here.
+ *
+ * Two organizing principles:
+ *   1. Golden ratio (1.618) governs MACRO composition — canvas vs inspector,
+ *      hero proportions, modal width vs viewport.
+ *   2. Perfect fourth (1.333) governs MICRO scale — type, spacing, radius —
+ *      because dense information UIs need tighter, more legible rhythm.
+ *
+ * Tokens are CSS custom properties so they cascade naturally, work without JS,
+ * and are readable by any tool (Storybook, design lint, the canvas renderer).
+ * ============================================================================ */
+
+@import "tailwindcss";
+@import "../root.css";
+
+@theme {
+
+  /* --------------------------------------------------------------------------
+   * Typography
+   * --------------------------------------------------------------------------
+   * Geist for UI: geometric, modern, technical. Vercel's open-source family.
+   * JetBrains Mono for code, labels, and any technical identifiers — proven
+   * for legibility at small sizes.
+   * Base size 14px keeps the canvas information-dense without becoming tiny.
+   * Scale: 14 × 1.333^n
+   * -------------------------------------------------------------------------- */
+
+  --font-sans: "Geist", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-display: "Geist", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --text-micro: 0.6875rem;   /* 11px — badges, data labels   */
+  --text-small: 0.75rem;     /* 12px — secondary text         */
+  --text-base: 0.875rem;     /* 14px — body, default UI       */
+  --text-emphasis: 1rem;     /* 16px — primary actions        */
+  --text-title: 1.1875rem;   /* 19px — section titles         */
+  --text-heading: 1.5625rem; /* 25px — panel headers          */
+  --text-hero: 2.0625rem;    /* 33px — tour captions          */
+  --text-display: 2.75rem;   /* 44px — project hero           */
+
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  --tracking-tight: -0.02em;   /* display sizes                */
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;     /* small caps, badges           */
+  --tracking-mono: 0.01em;     /* code legibility              */
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-display: 800;
+
+  /* --------------------------------------------------------------------------
+   * Spacing (base 4px, ~1.5× progression — perfect fifth, rounded)
+   * --------------------------------------------------------------------------
+   * Even ratio scaling produces awkward pixel values; we round to whole pixels
+   * while keeping the ratio approximately consistent. This is the spacing
+   * vocabulary the WHOLE app uses — paddings, gaps, margins.
+   * -------------------------------------------------------------------------- */
+
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px   */
+  --space-2: 0.375rem;  /* 6px   */
+  --space-3: 0.5rem;    /* 8px   */
+  --space-4: 0.75rem;   /* 12px  */
+  --space-5: 1rem;      /* 16px  */
+  --space-6: 1.5rem;    /* 24px  */
+  --space-7: 2rem;      /* 32px  */
+  --space-8: 3rem;      /* 48px  */
+  --space-9: 4rem;      /* 64px  */
+  --space-10: 6rem;     /* 96px  */
+  --space-11: 8rem;     /* 128px */
+
+  /* --------------------------------------------------------------------------
+   * Macro composition (golden ratio 1.618)
+   * --------------------------------------------------------------------------
+   * Canvas vs Inspector: the only place the golden ratio governs hard layout.
+   * Inspector = 100 / (1 + 1.618) ≈ 38.197% of viewport when expanded.
+   * Canvas takes the remaining 61.803%.
+   * -------------------------------------------------------------------------- */
+
+  --ratio-major: 0.61803398875;
+  --ratio-minor: 0.38196601125;
+
+  --layout-inspector-w: 38.2%;
+  --layout-canvas-w: 61.8%;
+  --layout-modal-max-w: 38.2vw;       /* dialog ≈ minor side */
+  --layout-tour-caption-w: 38.2%;     /* tour caption box    */
+
+  /* --------------------------------------------------------------------------
+   * Radii (1.618-based progression at the macro)
+   * -------------------------------------------------------------------------- */
+
+  --radius-xs: 0.25rem;    /* 4px  */
+  --radius-sm: 0.375rem;   /* 6px — default UI element */
+  --radius-md: 0.625rem;   /* 10px — cards, nodes      */
+  --radius-lg: 1rem;       /* 16px — panels            */
+  --radius-xl: 1.625rem;   /* 26px — hero containers   */
+  --radius-pill: 999rem;
+
+  /* --------------------------------------------------------------------------
+   * Color — Dark mode (default)
+   * --------------------------------------------------------------------------
+   * Deep ink-blue undertone (hue 250) instead of generic neutral grey.
+   * OKLCH gives perceptually uniform steps: each `bg-` level is roughly the
+   * same lightness difference apart, so they read as a clean depth ladder.
+   * -------------------------------------------------------------------------- */
+
+  --color-bg-0: oklch(13% 0.018 250);    /* page background          */
+  --color-bg-1: oklch(17% 0.022 250);    /* canvas, base surface     */
+  --color-bg-2: oklch(22% 0.026 250);    /* cards, inspector         */
+  --color-bg-3: oklch(27% 0.030 250);    /* elevated nodes, popovers */
+  --color-bg-4: oklch(33% 0.034 250);    /* topmost surfaces         */
+
+  --color-fg-default: oklch(96% 0.010 250);  /* primary text         */
+  --color-fg-muted: oklch(72% 0.012 250);    /* secondary text       */
+  --color-fg-faint: oklch(55% 0.014 250);    /* tertiary, disabled   */
+
+  --color-border-subtle: oklch(28% 0.020 250 / 0.6);
+  --color-border-default: oklch(40% 0.022 250 / 0.8);
+  --color-border-strong: oklch(55% 0.026 250);
+
+  /* Accent — electric cyan-blue. The signature brand pulse. */
+  --color-accent-base: oklch(75% 0.18 220);
+  --color-accent-soft: oklch(75% 0.18 220 / 0.15);
+  --color-accent-glow: oklch(75% 0.18 220 / 0.4);
+  --color-accent-fg-on: oklch(15% 0.02 220);  /* fg when on accent   */
+
+  /* Tone tokens — match the schema's `style.tone` enum exactly. */
+  --color-tone-neutral: oklch(75% 0.06 240);
+  --color-tone-critical: oklch(70% 0.21 22);
+  --color-tone-warning: oklch(82% 0.17 78);
+  --color-tone-success: oklch(76% 0.18 148);
+  --color-tone-muted: oklch(58% 0.04 250);
+
+  /* Layer hints — subtle background tints per architecture layer view */
+  --color-layer-business: oklch(20% 0.04 145 / 0.35);      /* greenish */
+  --color-layer-architecture: oklch(20% 0.04 250 / 0.35);  /* bluish   */
+  --color-layer-engineering: oklch(20% 0.04 300 / 0.35);   /* purplish */
+
+  /* MVP palette — 8 perceptually distinct hues at consistent L/C in OKLCH.
+   * Used for: MVP slider chips, lifecycle badges, and the diff/overlay mode. */
+  --color-mvp-1: oklch(72% 0.17 250);   /* blue        */
+  --color-mvp-2: oklch(76% 0.16 70);    /* amber       */
+  --color-mvp-3: oklch(72% 0.19 145);   /* green       */
+  --color-mvp-4: oklch(70% 0.21 350);   /* magenta     */
+  --color-mvp-5: oklch(76% 0.17 195);   /* teal        */
+  --color-mvp-6: oklch(70% 0.21 30);    /* coral       */
+  --color-mvp-7: oklch(74% 0.18 115);   /* lime        */
+  --color-mvp-8: oklch(70% 0.18 295);   /* purple      */
+
+  /* --------------------------------------------------------------------------
+   * Elevation — shadow ladder. Use color-mix with bg to keep tonal harmony.
+   * -------------------------------------------------------------------------- */
+
+  --elevation-0: none;
+  --elevation-1:
+    0 1px 2px oklch(0% 0 0 / 0.20),
+    0 0 0 1px oklch(0% 0 0 / 0.10);
+  --elevation-2:
+    0 2px 8px oklch(0% 0 0 / 0.28),
+    0 0 0 1px oklch(0% 0 0 / 0.12);
+  --elevation-3:
+    0 4px 24px oklch(0% 0 0 / 0.36),
+    0 0 0 1px oklch(0% 0 0 / 0.14);
+  --elevation-4:
+    0 8px 48px oklch(0% 0 0 / 0.46),
+    0 0 0 1px oklch(0% 0 0 / 0.16);
+
+  /* Selection glow — the "this thing is selected on the canvas" effect */
+  --elevation-glow:
+    0 0 0 2px var(--color-accent-base),
+    0 0 32px var(--color-accent-glow);
+
+  /* --------------------------------------------------------------------------
+   * Motion — the timing & easing vocabulary, in seconds for CSS.
+   * The TypeScript token file mirrors these as numbers in ms for Motion lib.
+   * -------------------------------------------------------------------------- */
+
+  --duration-instant: 50ms;       /* micro feedback (tap, focus)            */
+  --duration-fast: 150ms;         /* hover, button press, menu open         */
+  --duration-base: 250ms;         /* panel slides, layer toggle             */
+  --duration-slow: 450ms;         /* MVP scrub, layout reshuffle            */
+  --duration-cinematic: 800ms;    /* tour camera moves, hero transitions    */
+
+  --ease-out: cubic-bezier(0.16, 1, 0.30, 1);     /* pleasant decelerate    */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);  /* symmetric              */
+  --ease-emphasized: cubic-bezier(0.20, 0, 0, 1); /* material's "emphasized" */
+  --ease-anticipate: cubic-bezier(0.36, 0, 0.66, -0.56); /* dramatic       */
+
+  /* --------------------------------------------------------------------------
+   * Z-index ladder
+   * -------------------------------------------------------------------------- */
+
+  --z-canvas: 0;
+  --z-canvas-controls: 10;
+  --z-inspector: 20;
+  --z-topbar: 30;
+  --z-mvp-slider: 40;
+  --z-tour-overlay: 50;
+  --z-dialog: 100;
+  --z-toast: 200;
+  --z-tooltip: 300;
+
+  /* --------------------------------------------------------------------------
+   * Breakpoints (desktop-first tool, but responsive)
+   * -------------------------------------------------------------------------- */
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1440px;
+  --breakpoint-xl: 1920px;
+  --breakpoint-2xl: 2560px;
+
+  /* --------------------------------------------------------------------------
+   * Backdrop effects (futuristic depth without heavy material)
+   * -------------------------------------------------------------------------- */
+
+  --blur-soft: 12px;     /* faint backdrop blur on panels        */
+  --blur-strong: 32px;   /* modal scrim, tour overlay            */
+}
+
+/* ============================================================================
+ * Light-mode overrides
+ * ============================================================================
+ * Same token NAMES, different values. Components reference --color-bg-0 etc.
+ * and automatically pick up either theme via the data-theme attribute on root.
+ * The default (above) is dark; the override below is light.
+ * ============================================================================ */
+
+[data-theme="light"] {
+  --color-bg-0: oklch(99% 0.004 250);
+  --color-bg-1: oklch(97% 0.006 250);
+  --color-bg-2: oklch(95% 0.008 250);
+  --color-bg-3: oklch(92% 0.010 250);
+  --color-bg-4: oklch(88% 0.012 250);
+
+  --color-fg-default: oklch(20% 0.020 250);
+  --color-fg-muted: oklch(40% 0.018 250);
+  --color-fg-faint: oklch(58% 0.014 250);
+
+  --color-border-subtle: oklch(85% 0.012 250 / 0.8);
+  --color-border-default: oklch(72% 0.014 250);
+  --color-border-strong: oklch(55% 0.018 250);
+
+  --color-accent-base: oklch(58% 0.18 220);
+  --color-accent-soft: oklch(58% 0.18 220 / 0.10);
+  --color-accent-glow: oklch(58% 0.18 220 / 0.25);
+  --color-accent-fg-on: oklch(99% 0.004 220);
+
+  --color-tone-neutral: oklch(55% 0.07 240);
+  --color-tone-critical: oklch(56% 0.22 22);
+  --color-tone-warning: oklch(68% 0.18 78);
+  --color-tone-success: oklch(58% 0.18 148);
+  --color-tone-muted: oklch(50% 0.04 250);
+
+  --color-layer-business: oklch(95% 0.04 145 / 0.6);
+  --color-layer-architecture: oklch(95% 0.04 250 / 0.6);
+  --color-layer-engineering: oklch(95% 0.04 300 / 0.6);
+
+  /* Lighter shadows in light mode */
+  --elevation-1:
+    0 1px 2px oklch(0% 0 0 / 0.06),
+    0 0 0 1px oklch(0% 0 0 / 0.04);
+  --elevation-2:
+    0 2px 8px oklch(0% 0 0 / 0.08),
+    0 0 0 1px oklch(0% 0 0 / 0.05);
+  --elevation-3:
+    0 4px 24px oklch(0% 0 0 / 0.12),
+    0 0 0 1px oklch(0% 0 0 / 0.06);
+  --elevation-4:
+    0 8px 48px oklch(0% 0 0 / 0.18),
+    0 0 0 1px oklch(0% 0 0 / 0.08);
+}
+
+/* ============================================================================
+ * Brand variants
+ * ============================================================================
+ * Two named brands. Neon is the futuristic command-console aesthetic; Michelin
+ * is the corporate brand identity. Activate via the data-brand attribute on
+ * the root element:
+ *
+ *   <html data-brand="neon">
+ *   <html data-brand="michelin">
+ *
+ * The runtime helper in `theme.ts` manages this attribute alongside the theme
+ * preference and persists user choice to localStorage.
+ * ============================================================================ */
+
+/* -- Neon brand (default, cyan + violet) ------------------------------------ */
+
+[data-brand="neon"] {
+  /* Accent is unchanged from the base (electric cyan). Highlight is a
+   * complementary violet, used sparingly for the brand-word gradient and any
+   * dedicated "neon" branded moments. */
+  --color-highlight-base: oklch(70% 0.20 295);
+  --color-highlight-soft: oklch(70% 0.20 295 / 0.18);
+  --color-highlight-glow: oklch(70% 0.20 295 / 0.40);
+  --color-highlight-fg-on: oklch(98% 0.005 295);
+}
+
+/* -- Michelin brand (blue + yellow) ----------------------------------------- */
+
+[data-brand="michelin"] {
+  --color-accent-base: oklch(60% 0.20 260);
+  --color-accent-soft: oklch(60% 0.20 260 / 0.16);
+  --color-accent-glow: oklch(60% 0.20 260 / 0.42);
+  --color-accent-fg-on: oklch(98% 0.005 260);
+
+  --color-highlight-base: oklch(86% 0.18 95);
+  --color-highlight-soft: oklch(86% 0.18 95 / 0.18);
+  --color-highlight-glow: oklch(86% 0.18 95 / 0.40);
+  --color-highlight-fg-on: oklch(20% 0.04 95);
+
+  /* Warning tone shifts to orange to avoid colliding with brand yellow */
+  --color-tone-warning: oklch(76% 0.19 50);
+
+  /* Selection glow gains a soft yellow outer ring as a brand signature */
+  --elevation-glow:
+    0 0 0 2px var(--color-accent-base),
+    0 0 32px var(--color-accent-glow),
+    0 0 0 4px oklch(86% 0.18 95 / 0.08);
+}
+
+[data-theme="light"][data-brand="michelin"] {
+  --color-accent-base: oklch(40% 0.22 265);
+  --color-accent-soft: oklch(40% 0.22 265 / 0.10);
+  --color-accent-glow: oklch(40% 0.22 265 / 0.25);
+  --color-accent-fg-on: oklch(99% 0.004 265);
+  --color-highlight-base: oklch(80% 0.17 95);
+  --color-highlight-soft: oklch(80% 0.17 95 / 0.20);
+  --color-highlight-glow: oklch(80% 0.17 95 / 0.30);
+  --color-highlight-fg-on: oklch(22% 0.04 95);
+  --color-tone-warning: oklch(64% 0.20 50);
+}
+
+/* -- Brand atmospheres ------------------------------------------------------ */
+
+[data-brand="neon"] body {
+  background-image:
+    radial-gradient(circle at 12% 18%, oklch(20% 0.04 220 / 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 88% 80%, oklch(20% 0.04 290 / 0.30) 0%, transparent 50%);
+}
+
+[data-theme="light"][data-brand="neon"] body {
+  background-image:
+    radial-gradient(circle at 12% 18%, oklch(85% 0.05 220 / 0.55) 0%, transparent 45%),
+    radial-gradient(circle at 88% 80%, oklch(88% 0.05 290 / 0.45) 0%, transparent 50%);
+}
+
+[data-brand="michelin"] body {
+  background-image:
+    radial-gradient(circle at 12% 18%, oklch(28% 0.10 260 / 0.40) 0%, transparent 45%),
+    radial-gradient(circle at 88% 80%, oklch(35% 0.10 95 / 0.22) 0%, transparent 50%);
+}
+
+[data-theme="light"][data-brand="michelin"] body {
+  background-image:
+    radial-gradient(circle at 12% 18%, oklch(80% 0.12 260 / 0.45) 0%, transparent 45%),
+    radial-gradient(circle at 88% 80%, oklch(90% 0.14 95 / 0.55) 0%, transparent 50%);
+}
+
+/* -- Brand-word gradient ---------------------------------------------------- */
+/* Reserved for one word in one place: the project name in the hero. The
+ * gradient blends accent into highlight for both brands automatically. */
+
+.brand-word {
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-base) 0%,
+    var(--color-highlight-base) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ============================================================================
+ * Reduced motion respect — automatic.
+ * ============================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-cinematic: 0ms;
+  }
+}

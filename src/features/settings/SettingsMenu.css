@@ -1,0 +1,240 @@
+/* ============================================================================
+ * SettingsMenu.css
+ * ============================================================================ */
+
+.settings-scrim {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.4);
+  backdrop-filter: blur(var(--blur-soft));
+  z-index: var(--z-dialog);
+  animation: settings-scrim-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes settings-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 90vw);
+  background: var(--color-bg-2);
+  border-left: 1px solid var(--color-border-default);
+  box-shadow: var(--elevation-4);
+  z-index: calc(var(--z-dialog) + 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  animation: settings-panel-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes settings-panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* -- Header ---------------------------------------------------------------- */
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--space-6) var(--space-6) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.settings-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+  margin-bottom: var(--space-1);
+}
+
+.settings-title {
+  font-size: var(--text-heading);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-fg-default);
+  line-height: var(--leading-tight);
+}
+
+.settings-close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  font-size: 22px;
+  color: var(--color-fg-muted);
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.settings-close:hover {
+  background: var(--color-bg-3);
+  color: var(--color-fg-default);
+}
+
+/* -- Section --------------------------------------------------------------- */
+
+.settings-section {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.settings-section-title {
+  font-size: var(--text-title);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-fg-default);
+  margin-bottom: var(--space-2);
+}
+
+.settings-section-desc {
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-snug);
+}
+
+/* -- Segmented control ----------------------------------------------------- */
+
+.settings-segment {
+  display: inline-flex;
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 2px;
+}
+
+.settings-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.settings-seg-btn:hover {
+  color: var(--color-fg-default);
+}
+
+.settings-seg-btn[data-active="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-base);
+  font-weight: var(--weight-semibold);
+}
+
+/* -- Brand swatches in segments ------------------------------------------- */
+
+.settings-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.settings-swatch--neon {
+  background: linear-gradient(
+    135deg,
+    oklch(75% 0.18 220) 0%,
+    oklch(70% 0.20 295) 100%
+  );
+}
+
+.settings-swatch--michelin {
+  background: linear-gradient(
+    135deg,
+    oklch(60% 0.20 260) 0%,
+    oklch(86% 0.18 95) 100%
+  );
+}
+
+/* -- Footer ---------------------------------------------------------------- */
+
+.settings-footer {
+  margin-top: auto;
+  padding: var(--space-5) var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+  letter-spacing: var(--tracking-wide);
+}
+
+/* -- Example project list ---------------------------------------------- */
+
+.settings-example-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-example-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.settings-example-row:hover {
+  background: var(--color-bg-2);
+  border-color: var(--color-accent-base);
+  transform: translateY(-1px);
+}
+
+.settings-example-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.settings-example-name {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  color: var(--color-fg-default);
+}
+
+.settings-example-size {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+  white-space: nowrap;
+}
+
+.settings-example-desc {
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  line-height: var(--leading-snug);
+}

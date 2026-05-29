@@ -1,0 +1,171 @@
+/* ============================================================================
+ * ElementNode.css — the canvas node visual
+ * ============================================================================
+ * Tone drives the left-bar accent color. Selected state uses the design
+ * system's selection glow. Hover lifts the elevation one step.
+ * ============================================================================ */
+
+.element-node {
+  width: 220px;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-left: 3px solid var(--color-tone-neutral);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  box-shadow: var(--elevation-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.element-node:hover {
+  box-shadow: var(--elevation-2);
+  transform: translateY(-1px);
+}
+
+.element-node[data-selected="true"] {
+  box-shadow: var(--elevation-glow);
+  border-color: var(--color-accent-base);
+  border-left-color: var(--color-accent-base);
+}
+
+/* Tone variants drive the accent bar on the left edge */
+.element-node[data-tone="neutral"]  { border-left-color: var(--color-tone-neutral); }
+.element-node[data-tone="critical"] { border-left-color: var(--color-tone-critical); }
+.element-node[data-tone="warning"]  { border-left-color: var(--color-tone-warning); }
+.element-node[data-tone="success"]  { border-left-color: var(--color-tone-success); }
+.element-node[data-tone="muted"]    { border-left-color: var(--color-tone-muted); }
+
+/* External elements get a dashed border to read as "outside the system" */
+.element-node[data-type="external"] {
+  border-style: dashed;
+}
+
+/* Groups are de-emphasized — they're containers, not concrete services */
+.element-node[data-type="group"] {
+  background: color-mix(in oklch, var(--color-bg-2), transparent 30%);
+  border-style: dashed;
+}
+
+/* -- Row 1: type badge + name -------------------------------------------- */
+
+.element-node-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.element-node-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-3);
+  color: var(--color-fg-faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  flex-shrink: 0;
+}
+
+.element-node-type-label {
+  line-height: 1;
+}
+
+.element-node-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-fg-default);
+  letter-spacing: var(--tracking-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+
+/* -- Description --------------------------------------------------------- */
+
+.element-node-desc {
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  line-height: var(--leading-snug);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* -- Tags ---------------------------------------------------------------- */
+
+.element-node-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.element-node-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-muted);
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* -- Handles (connection endpoints) -------------------------------------- */
+
+.element-node-handle {
+  width: 8px !important;
+  height: 8px !important;
+  background: var(--color-border-strong) !important;
+  border: 2px solid var(--color-bg-1) !important;
+}
+
+.element-node[data-selected="true"] ~ .element-node-handle,
+.element-node[data-selected="true"] .element-node-handle {
+  background: var(--color-accent-base) !important;
+}
+
+/* -- MVP lifecycle badge (right-aligned in the header row) -------------- */
+/* Uses CSS custom prop `--mvp-color` set inline from the schema's mvp.color */
+
+.element-node-mvp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px 2px 4px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklch, var(--mvp-color) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--mvp-color) 45%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--mvp-color);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.element-node-mvp-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mvp-color);
+  box-shadow: 0 0 6px color-mix(in oklch, var(--mvp-color) 50%, transparent);
+  flex-shrink: 0;
+}
+
+.element-node-mvp-label {
+  line-height: 1;
+}
