@@ -191,7 +191,7 @@ We target strict TypeScript. Every escape hatch is a written exception, not a ha
 
 - **Discriminated unions for variants**. When a thing has "kinds," use a literal discriminator field. Never use boolean flags ("isService", "isDatabase") for what could be a `type: "service" | "database"`.
 
-- **Branded types for ids**. Element ids are not just strings — they have meaning. Brand them to prevent passing a connection id where an element id is expected:
+- **Branded types for ids** *(deferred — not yet implemented in v1)*. The intent is that element ids are not just strings — they carry meaning — and branding would prevent passing a connection id where an element id is expected:
 
   ```ts
   type Brand<T, B> = T & { readonly __brand: B };
@@ -199,6 +199,8 @@ We target strict TypeScript. Every escape hatch is a written exception, not a ha
   export type ConnectionId = Brand<string, "ConnectionId">;
   export type MvpId = Brand<string, "MvpId">;
   ```
+
+  **As of v1, ids are plain `string`** throughout `schema.ts` and the codebase. Branding is an aspirational improvement, not a current requirement — do not assume branded id types exist when writing code. Introducing them is a tracked future change (it touches every id-handling call site), not something to retrofit piecemeal.
 
 - **`readonly` everywhere it's accurate**. Function parameters, array fields, return types. The default mental model is "this value will not be mutated."
 
