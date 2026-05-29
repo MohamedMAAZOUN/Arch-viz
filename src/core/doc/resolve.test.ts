@@ -107,4 +107,41 @@ describe("resolve", () => {
     // end-user has minLayer: business → visible
     expect(atBusiness.elements.find((e) => e.id === "end-user")).toBeDefined();
   });
+
+  it("ignores modifiedIn patches keyed on an unknown MVP id", () => {
+    // Regression: an orphaned modifiedIn entry (its MVP was removed from the
+    // doc) must NOT be applied. Unknown ids resolve to Infinity order, so the
+    // patch is never <= the current mvpOrder. Previously the fallback was 0,
+    // which is <= every real order, so the patch leaked into every view.
+    //
+    // We assert on a field NO real patch touches, so the orphan can't be
+    // masked by a later legitimate patch overwriting the same key.
+    const base = loadExample();
+    const target = base.elements.find((e) => e.id === "catalog-service");
+    if (target === undefined) throw new Error("fixture missing catalog-service");
+
+    const doc = {
+      ...base,
+      elements: base.elements.map((e) =>
+        e.id === "catalog-service"
+          ? {
+              ...e,
+              lifecycle: {
+                ...e.lifecycle,
+                modifiedIn: {
+                  ...e.lifecycle.modifiedIn,
+                  // mvp99 does not exist in doc.mvps — orphaned reference.
+                  mvp99: { properties: { orphanField: "LEAK" } },
+                },
+              },
+            }
+          : e,
+      ),
+    };
+
+    const atLatest = resolve(doc, "architecture", "mvp3");
+    const cat = atLatest.elements.find((e) => e.id === "catalog-service");
+    // Under the old fallback-to-0 behavior this would be "LEAK".
+    expect(cat?.properties["orphanField"]).toBeUndefined();
+  });
 });
