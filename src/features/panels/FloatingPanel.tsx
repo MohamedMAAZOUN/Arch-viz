@@ -52,21 +52,40 @@ export default function FloatingPanel({
 
   const dismissable = open && !pinned && !keepOpen;
 
-  // Outside-click + Esc dismissal for unpinned, open panels.
+  // Outside-click + Esc dismissal for unpinned, open panels. We close on a
+  // genuine *click* outside the panel, not on pointerdown — otherwise the press
+  // that begins a canvas pan or node drag would collapse the panel. A click is
+  // a pointerdown + pointerup on a target outside the panel with negligible
+  // movement between them (anything more is a drag, which must not dismiss).
   useEffect(() => {
     if (!dismissable) return;
+    const DRAG_SLOP = 6; // px of movement allowed before it counts as a drag
+    let downX = 0;
+    let downY = 0;
+    let downOutside = false;
+
+    const isOutside = (target: EventTarget | null) =>
+      rootRef.current !== null && !rootRef.current.contains(target as Node);
+
     const onPointerDown = (e: PointerEvent) => {
-      if (rootRef.current !== null && !rootRef.current.contains(e.target as Node)) {
-        closePanel(id);
-      }
+      downX = e.clientX;
+      downY = e.clientY;
+      downOutside = isOutside(e.target);
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (!downOutside || !isOutside(e.target)) return;
+      const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+      if (moved <= DRAG_SLOP) closePanel(id);
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel(id);
     };
     document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("pointerup", onPointerUp);
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("pointerup", onPointerUp);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [dismissable, closePanel, id]);
