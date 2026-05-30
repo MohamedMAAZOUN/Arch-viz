@@ -75,6 +75,27 @@ export default function FloatingPanel({
     ? { duration: 0 }
     : { type: "spring", stiffness: 420, damping: 38 };
 
+  // During the shared-element morph the pill (icon included) scales up toward
+  // the panel's box, which otherwise reads as the icon "ballooning" before the
+  // text appears. Blurring + fading the pill on exit and the panel's content on
+  // enter masks that scale, so the swap reads as a soft cross-dissolve rather
+  // than a stretching glyph. Disabled under reduced-motion.
+  const BLUR = "blur(8px)";
+  const fadeBlur: Transition = reduceMotion
+    ? transition
+    : {
+        ...transition,
+        opacity: { duration: 0.18, ease: "easeOut" },
+        filter: { duration: 0.24, ease: "easeOut" },
+      };
+  const contentMotion = reduceMotion
+    ? {}
+    : {
+        initial: { filter: BLUR },
+        animate: { filter: "blur(0px)" },
+        transition: { filter: { duration: 0.26, ease: "easeOut" } } as Transition,
+      };
+
   return (
     <div className="floating-zone" data-side={side} ref={rootRef}>
       <AnimatePresence initial={false} mode="popLayout">
@@ -89,7 +110,11 @@ export default function FloatingPanel({
             exit={{ opacity: 0 }}
             aria-label={title}
           >
-            <motion.header layout className="floating-panel-header" transition={transition}>
+            <motion.header
+              className="floating-panel-header"
+              transition={transition}
+              {...contentMotion}
+            >
               <span className="floating-panel-title">{title}</span>
               <div className="floating-panel-actions">
                 <button
@@ -118,7 +143,7 @@ export default function FloatingPanel({
                 </button>
               </div>
             </motion.header>
-            <motion.div layout className="floating-panel-body" transition={transition}>
+            <motion.div className="floating-panel-body" {...contentMotion}>
               {children}
             </motion.div>
           </motion.section>
@@ -129,7 +154,10 @@ export default function FloatingPanel({
             layoutId={`floating-${id}`}
             className="floating-pill"
             data-side={side}
-            transition={transition}
+            transition={fadeBlur}
+            initial={reduceMotion ? false : { opacity: 0, filter: BLUR }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, filter: BLUR }}
             onClick={() => {
               openPanel(id);
             }}
