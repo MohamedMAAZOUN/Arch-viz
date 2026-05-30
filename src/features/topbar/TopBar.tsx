@@ -1,10 +1,12 @@
 // ============================================================================
-// TopBar — the persistent header
+// TopBar — the persistent header (app chrome)
 // ============================================================================
-// Three columns:
-//   Left   — tool brand + (when a project is loaded) project name pill
-//   Center — layer toggle + MVP slider (visible only when a project is loaded)
-//   Right  — settings menu trigger
+//   Left   — tool brand
+//   Center — project name pill (when a project is loaded)
+//   Right  — file actions (open / save), undo-redo, settings
+//
+// View controls (layer / MVP / reorganize) live in the floating top panel, not
+// here — they're view state, so they belong with the canvas.
 // ============================================================================
 
 import { useEffect, useState } from "react";
@@ -13,12 +15,8 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDirty } from "@/core/doc/useDirty";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useUndoRedoState } from "@/core/doc/useUndoRedoState";
-import { useUiStore } from "@/core/state/uiStore";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
-import LayerToggle from "@/features/layer-toggle/LayerToggle";
-import ReorganizeButton from "@/features/layer-toggle/ReorganizeButton";
-import MvpSlider from "@/features/mvp-slider/MvpSlider";
 import SettingsMenu from "@/features/settings/SettingsMenu";
 
 import "@/features/topbar/TopBar.css";
@@ -28,8 +26,6 @@ export default function TopBar() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const doc = useDocSnapshot();
-  const inspectorOpen = useUiStore((s) => s.inspectorOpen);
-  const toggleInspector = useUiStore((s) => s.toggleInspector);
   const { canUndo, canRedo } = useUndoRedoState();
   const dirty = useDirty();
 
@@ -83,9 +79,6 @@ export default function TopBar() {
               <span className="topbar-project-name">{doc.project.name}</span>
             </div>
           ) : null}
-          <LayerToggle />
-          <ReorganizeButton />
-          <MvpSlider />
         </div>
 
         <div className="topbar-actions">
@@ -140,17 +133,6 @@ export default function TopBar() {
               <RedoIcon />
             </button>
           </div>
-          <button
-            type="button"
-            className="topbar-action-btn"
-            onClick={toggleInspector}
-            aria-label={inspectorOpen ? "Hide sidebar" : "Show sidebar"}
-            title={inspectorOpen ? "Hide sidebar" : "Show sidebar"}
-            data-active={!inspectorOpen}
-          >
-            <SidebarIcon open={inspectorOpen} />
-            <span>{inspectorOpen ? "hide sidebar" : "show sidebar"}</span>
-          </button>
           <button
             type="button"
             className="topbar-action-btn"
@@ -245,30 +227,6 @@ function RedoIcon() {
     >
       <path d="M15 14l5-5-5-5" />
       <path d="M20 9H8a5 5 0 0 0 0 10h3" />
-    </svg>
-  );
-}
-
-function SidebarIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="3" y="5" width="18" height="14" rx="1.5" />
-      <line x1="15" y1="5" x2="15" y2="19" />
-      {open ? (
-        <line x1="18.5" y1="9" x2="18.5" y2="15" />
-      ) : (
-        <line x1="18" y1="10" x2="18" y2="14" strokeOpacity="0.4" />
-      )}
     </svg>
   );
 }
