@@ -27,9 +27,7 @@ export default function Inspector() {
       <div className="inspector">
         <header className="inspector-header">
           <div className="inspector-header-text">
-            <span className="inspector-eyebrow">
-              {selectedId === null ? "project" : "element"}
-            </span>
+            <span className="inspector-eyebrow">{selectedId === null ? "project" : "element"}</span>
             <h2 className="inspector-title">{selectedId ?? "Inspector"}</h2>
           </div>
           <button
@@ -46,11 +44,7 @@ export default function Inspector() {
         </header>
 
         <div className="inspector-body">
-          {selectedId === null ? (
-            <GlobalSections />
-          ) : (
-            <ElementSections elementId={selectedId} />
-          )}
+          {selectedId === null ? <GlobalSections /> : <ElementSections elementId={selectedId} />}
         </div>
       </div>
     </>

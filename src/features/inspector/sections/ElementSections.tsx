@@ -33,9 +33,7 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
   if (element === null) {
     return (
       <Section title="Overview" defaultOpen>
-        <div className="inspector-empty-row">
-          Element not visible at the current layer / MVP.
-        </div>
+        <div className="inspector-empty-row">Element not visible at the current layer / MVP.</div>
       </Section>
     );
   }
@@ -80,11 +78,7 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
               allowEmpty
               ariaLabel="owner"
               onChange={(next) => {
-                docStore.updateElementProperty(
-                  elementId,
-                  "owner",
-                  next === "" ? null : next,
-                );
+                docStore.updateElementProperty(elementId, "owner", next === "" ? null : next);
               }}
             />
           </span>
@@ -99,11 +93,7 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
             allowEmpty
             ariaLabel="description"
             onChange={(next) => {
-              docStore.updateElementProperty(
-                elementId,
-                "description",
-                next === "" ? null : next,
-              );
+              docStore.updateElementProperty(elementId, "description", next === "" ? null : next);
             }}
           />
         </div>
@@ -172,7 +162,9 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
       </Section>
 
       <Section title="Documentation">
-        <div className="inspector-empty-row">Markdown notes, links, attachments. (Coming soon.)</div>
+        <div className="inspector-empty-row">
+          Markdown notes, links, attachments. (Coming soon.)
+        </div>
       </Section>
 
       <Section title="Annotations">

@@ -5,2159 +5,2159 @@ project:
   description: Synthetic 91-element project for layout and performance benchmarking. Seed=42.
   theme: default
 mvps:
-- id: mvp1
-  name: MVP 1
-  order: 1
-  color: '#6366f1'
-- id: mvp2
-  name: MVP 2
-  order: 2
-  color: '#06b6d4'
-- id: mvp3
-  name: MVP 3
-  order: 3
-  color: '#10b981'
-- id: mvp4
-  name: MVP 4
-  order: 4
-  color: '#f59e0b'
-- id: mvp5
-  name: MVP 5
-  order: 5
-  color: '#ec4899'
-- id: mvp6
-  name: MVP 6
-  order: 6
-  color: '#8b5cf6'
+  - id: mvp1
+    name: MVP 1
+    order: 1
+    color: "#6366f1"
+  - id: mvp2
+    name: MVP 2
+    order: 2
+    color: "#06b6d4"
+  - id: mvp3
+    name: MVP 3
+    order: 3
+    color: "#10b981"
+  - id: mvp4
+    name: MVP 4
+    order: 4
+    color: "#f59e0b"
+  - id: mvp5
+    name: MVP 5
+    order: 5
+    color: "#ec4899"
+  - id: mvp6
+    name: MVP 6
+    order: 6
+    color: "#8b5cf6"
 layers:
-- id: business
-  order: 1
-  label: Business
-- id: architecture
-  order: 2
-  label: Architecture
-- id: engineering
-  order: 3
-  label: Engineering
+  - id: business
+    order: 1
+    label: Business
+  - id: architecture
+    order: 2
+    label: Architecture
+  - id: engineering
+    order: 3
+    label: Engineering
 elements:
-- id: domain-00
-  type: group
-  name: Domain 00
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #0.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp1
-- id: domain-01
-  type: group
-  name: Domain 01
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #1.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp2
-- id: domain-02
-  type: group
-  name: Domain 02
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #2.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp3
-- id: domain-03
-  type: group
-  name: Domain 03
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #3.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp4
-- id: domain-04
-  type: group
-  name: Domain 04
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #4.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp5
-- id: domain-05
-  type: group
-  name: Domain 05
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #5.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp6
-- id: domain-06
-  type: group
-  name: Domain 06
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #6.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp1
-- id: domain-07
-  type: group
-  name: Domain 07
-  minLayer: business
-  aggregateAt:
-  - business
-  properties:
-    description: 'Bounded context #7.'
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp2
-- id: actor-00
-  type: actor
-  name: Persona 00
-  minLayer: business
-  properties:
-    description: A system user.
-    tags:
-    - persona
-  lifecycle:
-    introducedIn: mvp1
-- id: actor-01
-  type: actor
-  name: Persona 01
-  minLayer: business
-  properties:
-    description: A system user.
-    tags:
-    - persona
-  lifecycle:
-    introducedIn: mvp1
-- id: actor-02
-  type: actor
-  name: Persona 02
-  minLayer: business
-  properties:
-    description: A system user.
-    tags:
-    - persona
-  lifecycle:
-    introducedIn: mvp1
-- id: external-00
-  type: external
-  name: 3rd-Party 00
-  minLayer: architecture
-  properties:
-    description: External provider.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp2
-- id: external-01
-  type: external
-  name: 3rd-Party 01
-  minLayer: architecture
-  properties:
-    description: External provider.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp1
-- id: external-02
-  type: external
-  name: 3rd-Party 02
-  minLayer: architecture
-  properties:
-    description: External provider.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp1
-- id: external-03
-  type: external
-  name: 3rd-Party 03
-  minLayer: architecture
-  properties:
-    description: External provider.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp1
-- id: svc-00-00
-  type: service
-  name: Service 00-00
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 0.
-    owner: team-00
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-    removedIn: mvp3
-  style:
-    tone: warning
-- id: svc-00-01
-  type: service
-  name: Service 00-01
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 0.
-    owner: team-00
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-  style:
-    tone: neutral
-- id: svc-00-02
-  type: service
-  name: Service 00-02
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 0.
-    owner: team-00
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: neutral
-- id: svc-00-03
-  type: service
-  name: Service 00-03
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 0.
-    owner: team-00
-    tech:
-      language: Rust
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: neutral
-- id: svc-00-04
-  type: service
-  name: Service 00-04
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 4 in domain 0.
-    owner: team-00
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-  style:
-    tone: neutral
-  dataSources:
-  - kind: grafana
-    query: svc_0_4_rps
-    binding: status
-- id: svc-00-05
-  type: service
-  name: Service 00-05
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 5 in domain 0.
-    owner: team-00
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: warning
-- id: svc-00-06
-  type: service
-  name: Service 00-06
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 6 in domain 0.
-    owner: team-00
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: neutral
-- id: svc-00-07
-  type: service
-  name: Service 00-07
-  parent: domain-00
-  minLayer: architecture
-  properties:
-    description: Service 7 in domain 0.
-    owner: team-00
-    tech:
-      language: Java
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: muted
-  dataSources:
-  - kind: http
-    url: https://status.example.com/svc/0/7
-    binding: status
-- id: db-00-00
-  type: database
-  name: Store 00-00
-  parent: domain-00
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-00
-    tech:
-      engine: Cassandra
-  lifecycle:
-    introducedIn: mvp1
-- id: db-00-01
-  type: database
-  name: Store 00-01
-  parent: domain-00
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-00
-    tech:
-      engine: MongoDB
-  lifecycle:
-    introducedIn: mvp1
-- id: db-00-02
-  type: database
-  name: Store 00-02
-  parent: domain-00
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-00
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp1
-- id: fe-01
-  type: frontend
-  name: App 01
-  parent: domain-01
-  minLayer: business
-  properties:
-    description: Domain UI.
-    owner: team-01
-    tags:
-    - spa
-    tech:
-      framework: Vue
-  lifecycle:
-    introducedIn: mvp2
-- id: svc-01-00
-  type: service
-  name: Service 01-00
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 1.
-    owner: team-01
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-    modifiedIn:
-      mvp3:
-        properties:
-          description: Updated capability in a later iteration.
-  style:
-    tone: muted
-- id: svc-01-01
-  type: service
-  name: Service 01-01
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 1.
-    owner: team-01
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: success
-- id: svc-01-02
-  type: service
-  name: Service 01-02
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 1.
-    owner: team-01
-    tech:
-      language: Python
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: critical
-- id: svc-01-03
-  type: service
-  name: Service 01-03
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 1.
-    owner: team-01
-    tech:
-      language: Java
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: success
-- id: svc-01-04
-  type: service
-  name: Service 01-04
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 4 in domain 1.
-    owner: team-01
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: neutral
-- id: svc-01-05
-  type: service
-  name: Service 01-05
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 5 in domain 1.
-    owner: team-01
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-    removedIn: mvp5
-  style:
-    tone: neutral
-- id: svc-01-06
-  type: service
-  name: Service 01-06
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 6 in domain 1.
-    owner: team-01
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: critical
-- id: svc-01-07
-  type: service
-  name: Service 01-07
-  parent: domain-01
-  minLayer: architecture
-  properties:
-    description: Service 7 in domain 1.
-    owner: team-01
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-    modifiedIn:
-      mvp5:
-        properties:
-          description: Updated capability in a later iteration.
-  style:
-    tone: success
-- id: db-01-00
-  type: database
-  name: Store 01-00
-  parent: domain-01
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-01
-    tech:
-      engine: MongoDB
-  lifecycle:
-    introducedIn: mvp2
-- id: db-01-01
-  type: database
-  name: Store 01-01
-  parent: domain-01
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-01
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp2
-- id: db-01-02
-  type: database
-  name: Store 01-02
-  parent: domain-01
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-01
-    tech:
-      engine: MySQL
-  lifecycle:
-    introducedIn: mvp2
-    modifiedIn:
-      mvp5:
-        properties:
-          description: Updated capability in a later iteration.
-- id: db-01-03
-  type: database
-  name: Store 01-03
-  parent: domain-01
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-01
-    tech:
-      engine: Redis
-  lifecycle:
-    introducedIn: mvp2
-- id: svc-02-00
-  type: service
-  name: Service 02-00
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 2.
-    owner: team-02
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp5
-    modifiedIn:
-      mvp6:
-        properties:
-          description: Updated capability in a later iteration.
-  style:
-    tone: muted
-- id: svc-02-01
-  type: service
-  name: Service 02-01
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 2.
-    owner: team-02
-    tech:
-      language: Java
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: neutral
-- id: svc-02-02
-  type: service
-  name: Service 02-02
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 2.
-    owner: team-02
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp5
-  style:
-    tone: neutral
-- id: svc-02-03
-  type: service
-  name: Service 02-03
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 2.
-    owner: team-02
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: warning
-- id: svc-02-04
-  type: service
-  name: Service 02-04
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 4 in domain 2.
-    owner: team-02
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: success
-- id: svc-02-05
-  type: service
-  name: Service 02-05
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 5 in domain 2.
-    owner: team-02
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: warning
-- id: svc-02-06
-  type: service
-  name: Service 02-06
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 6 in domain 2.
-    owner: team-02
-    tech:
-      language: Rust
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-    removedIn: mvp5
-  style:
-    tone: neutral
-  dataSources:
-  - kind: grafana
-    query: svc_2_6_rps
-    binding: metric
-- id: svc-02-07
-  type: service
-  name: Service 02-07
-  parent: domain-02
-  minLayer: architecture
-  properties:
-    description: Service 7 in domain 2.
-    owner: team-02
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: muted
-- id: q-02-00
-  type: queue
-  name: Queue 02-00
-  parent: domain-02
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-02
-    tech:
-      broker: RabbitMQ
-  lifecycle:
-    introducedIn: mvp3
-- id: db-02-01
-  type: database
-  name: Store 02-01
-  parent: domain-02
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-02
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp3
-- id: db-02-02
-  type: database
-  name: Store 02-02
-  parent: domain-02
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-02
-    tech:
-      engine: Cassandra
-  lifecycle:
-    introducedIn: mvp3
-- id: q-02-03
-  type: queue
-  name: Queue 02-03
-  parent: domain-02
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-02
-    tech:
-      broker: Pulsar
-  lifecycle:
-    introducedIn: mvp3
-- id: svc-03-00
-  type: service
-  name: Service 03-00
-  parent: domain-03
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 3.
-    owner: team-03
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-03-01
-  type: service
-  name: Service 03-01
-  parent: domain-03
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 3.
-    owner: team-03
-    tech:
-      language: Rust
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-    modifiedIn:
-      mvp5:
-        properties:
-          description: Updated capability in a later iteration.
-  style:
-    tone: neutral
-- id: svc-03-02
-  type: service
-  name: Service 03-02
-  parent: domain-03
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 3.
-    owner: team-03
-    tech:
-      language: Python
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-03-03
-  type: service
-  name: Service 03-03
-  parent: domain-03
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 3.
-    owner: team-03
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp5
-  style:
-    tone: muted
-- id: q-03-00
-  type: queue
-  name: Queue 03-00
-  parent: domain-03
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-03
-    tech:
-      broker: Kafka
-  lifecycle:
-    introducedIn: mvp4
-- id: db-03-01
-  type: database
-  name: Store 03-01
-  parent: domain-03
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-03
-    tech:
-      engine: MySQL
-  lifecycle:
-    introducedIn: mvp4
-- id: svc-04-00
-  type: service
-  name: Service 04-00
-  parent: domain-04
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 4.
-    owner: team-04
-    tech:
-      language: Python
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp5
-  style:
-    tone: critical
-- id: svc-04-01
-  type: service
-  name: Service 04-01
-  parent: domain-04
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 4.
-    owner: team-04
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: muted
-- id: svc-04-02
-  type: service
-  name: Service 04-02
-  parent: domain-04
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 4.
-    owner: team-04
-    tech:
-      language: Python
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-04-03
-  type: service
-  name: Service 04-03
-  parent: domain-04
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 4.
-    owner: team-04
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp5
-  style:
-    tone: success
-- id: q-04-00
-  type: queue
-  name: Queue 04-00
-  parent: domain-04
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-04
-    tech:
-      broker: Pulsar
-  lifecycle:
-    introducedIn: mvp5
-- id: q-04-01
-  type: queue
-  name: Queue 04-01
-  parent: domain-04
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-04
-    tech:
-      broker: Kafka
-  lifecycle:
-    introducedIn: mvp5
-    modifiedIn:
-      mvp6:
-        properties:
-          description: Updated capability in a later iteration.
-- id: db-04-02
-  type: database
-  name: Store 04-02
-  parent: domain-04
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-04
-    tech:
-      engine: MySQL
-  lifecycle:
-    introducedIn: mvp5
-- id: db-04-03
-  type: database
-  name: Store 04-03
-  parent: domain-04
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-04
-    tech:
-      engine: Redis
-  lifecycle:
-    introducedIn: mvp5
-- id: fe-05
-  type: frontend
-  name: App 05
-  parent: domain-05
-  minLayer: business
-  properties:
-    description: Domain UI.
-    owner: team-05
-    tags:
-    - spa
-    tech:
-      framework: Next.js
-  lifecycle:
-    introducedIn: mvp6
-- id: svc-05-00
-  type: service
-  name: Service 05-00
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 5.
-    owner: team-05
-    tech:
-      language: Rust
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-05-01
-  type: service
-  name: Service 05-01
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 5.
-    owner: team-05
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: success
-- id: svc-05-02
-  type: service
-  name: Service 05-02
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 5.
-    owner: team-05
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-05-03
-  type: service
-  name: Service 05-03
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 5.
-    owner: team-05
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-05-04
-  type: service
-  name: Service 05-04
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 4 in domain 5.
-    owner: team-05
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: svc-05-05
-  type: service
-  name: Service 05-05
-  parent: domain-05
-  minLayer: architecture
-  properties:
-    description: Service 5 in domain 5.
-    owner: team-05
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp6
-  style:
-    tone: neutral
-- id: q-05-00
-  type: queue
-  name: Queue 05-00
-  parent: domain-05
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-05
-    tech:
-      broker: Pulsar
-  lifecycle:
-    introducedIn: mvp6
-- id: db-05-01
-  type: database
-  name: Store 05-01
-  parent: domain-05
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-05
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp6
-- id: q-05-02
-  type: queue
-  name: Queue 05-02
-  parent: domain-05
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-05
-    tech:
-      broker: Kafka
-  lifecycle:
-    introducedIn: mvp6
-- id: db-05-03
-  type: database
-  name: Store 05-03
-  parent: domain-05
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-05
-    tech:
-      engine: Redis
-  lifecycle:
-    introducedIn: mvp6
-- id: fe-06
-  type: frontend
-  name: App 06
-  parent: domain-06
-  minLayer: business
-  properties:
-    description: Domain UI.
-    owner: team-06
-    tags:
-    - spa
-    tech:
-      framework: React
-  lifecycle:
-    introducedIn: mvp1
-- id: svc-06-00
-  type: service
-  name: Service 06-00
-  parent: domain-06
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 6.
-    owner: team-06
-    tech:
-      language: Java
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-  style:
-    tone: success
-- id: svc-06-01
-  type: service
-  name: Service 06-01
-  parent: domain-06
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 6.
-    owner: team-06
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: neutral
-- id: svc-06-02
-  type: service
-  name: Service 06-02
-  parent: domain-06
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 6.
-    owner: team-06
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-    modifiedIn:
-      mvp3:
-        properties:
-          description: Updated capability in a later iteration.
-  style:
-    tone: success
-  dataSources:
-  - kind: jira
-    jql: project=D6 AND status=Open
-    binding: badge
-- id: svc-06-03
-  type: service
-  name: Service 06-03
-  parent: domain-06
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 6.
-    owner: team-06
-    tech:
-      language: Kotlin
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: neutral
-  dataSources:
-  - kind: jira
-    jql: project=D6 AND status=Open
-    binding: badge
-- id: db-06-00
-  type: database
-  name: Store 06-00
-  parent: domain-06
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-06
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp1
-- id: db-06-01
-  type: database
-  name: Store 06-01
-  parent: domain-06
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-06
-    tech:
-      engine: Redis
-  lifecycle:
-    introducedIn: mvp1
-- id: fe-07
-  type: frontend
-  name: App 07
-  parent: domain-07
-  minLayer: business
-  properties:
-    description: Domain UI.
-    owner: team-07
-    tags:
-    - spa
-    tech:
-      framework: Next.js
-  lifecycle:
-    introducedIn: mvp2
-- id: svc-07-00
-  type: service
-  name: Service 07-00
-  parent: domain-07
-  minLayer: architecture
-  properties:
-    description: Service 0 in domain 7.
-    owner: team-07
-    tech:
-      language: Java
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: warning
-- id: svc-07-01
-  type: service
-  name: Service 07-01
-  parent: domain-07
-  minLayer: architecture
-  properties:
-    description: Service 1 in domain 7.
-    owner: team-07
-    tech:
-      language: TypeScript
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp3
-  style:
-    tone: muted
-- id: svc-07-02
-  type: service
-  name: Service 07-02
-  parent: domain-07
-  minLayer: architecture
-  properties:
-    description: Service 2 in domain 7.
-    owner: team-07
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp2
-  style:
-    tone: neutral
-- id: svc-07-03
-  type: service
-  name: Service 07-03
-  parent: domain-07
-  minLayer: architecture
-  properties:
-    description: Service 3 in domain 7.
-    owner: team-07
-    tech:
-      language: C#
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp4
-  style:
-    tone: muted
-- id: q-07-00
-  type: queue
-  name: Queue 07-00
-  parent: domain-07
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-07
-    tech:
-      broker: Kafka
-  lifecycle:
-    introducedIn: mvp2
-    modifiedIn:
-      mvp6:
-        properties:
-          description: Updated capability in a later iteration.
-- id: q-07-01
-  type: queue
-  name: Queue 07-01
-  parent: domain-07
-  minLayer: engineering
-  properties:
-    description: Async message channel.
-    owner: team-07
-    tech:
-      broker: Pulsar
-  lifecycle:
-    introducedIn: mvp2
-- id: db-07-02
-  type: database
-  name: Store 07-02
-  parent: domain-07
-  minLayer: engineering
-  properties:
-    description: Persistent store.
-    owner: team-07
-    tech:
-      engine: MySQL
-  lifecycle:
-    introducedIn: mvp2
-    removedIn: mvp4
+  - id: domain-00
+    type: group
+    name: Domain 00
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #0."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp1
+  - id: domain-01
+    type: group
+    name: Domain 01
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #1."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp2
+  - id: domain-02
+    type: group
+    name: Domain 02
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #2."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp3
+  - id: domain-03
+    type: group
+    name: Domain 03
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #3."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp4
+  - id: domain-04
+    type: group
+    name: Domain 04
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #4."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp5
+  - id: domain-05
+    type: group
+    name: Domain 05
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #5."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp6
+  - id: domain-06
+    type: group
+    name: Domain 06
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #6."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp1
+  - id: domain-07
+    type: group
+    name: Domain 07
+    minLayer: business
+    aggregateAt:
+      - business
+    properties:
+      description: "Bounded context #7."
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp2
+  - id: actor-00
+    type: actor
+    name: Persona 00
+    minLayer: business
+    properties:
+      description: A system user.
+      tags:
+        - persona
+    lifecycle:
+      introducedIn: mvp1
+  - id: actor-01
+    type: actor
+    name: Persona 01
+    minLayer: business
+    properties:
+      description: A system user.
+      tags:
+        - persona
+    lifecycle:
+      introducedIn: mvp1
+  - id: actor-02
+    type: actor
+    name: Persona 02
+    minLayer: business
+    properties:
+      description: A system user.
+      tags:
+        - persona
+    lifecycle:
+      introducedIn: mvp1
+  - id: external-00
+    type: external
+    name: 3rd-Party 00
+    minLayer: architecture
+    properties:
+      description: External provider.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp2
+  - id: external-01
+    type: external
+    name: 3rd-Party 01
+    minLayer: architecture
+    properties:
+      description: External provider.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp1
+  - id: external-02
+    type: external
+    name: 3rd-Party 02
+    minLayer: architecture
+    properties:
+      description: External provider.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp1
+  - id: external-03
+    type: external
+    name: 3rd-Party 03
+    minLayer: architecture
+    properties:
+      description: External provider.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp1
+  - id: svc-00-00
+    type: service
+    name: Service 00-00
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 0.
+      owner: team-00
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+      removedIn: mvp3
+    style:
+      tone: warning
+  - id: svc-00-01
+    type: service
+    name: Service 00-01
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 0.
+      owner: team-00
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+    style:
+      tone: neutral
+  - id: svc-00-02
+    type: service
+    name: Service 00-02
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 0.
+      owner: team-00
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: neutral
+  - id: svc-00-03
+    type: service
+    name: Service 00-03
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 0.
+      owner: team-00
+      tech:
+        language: Rust
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: neutral
+  - id: svc-00-04
+    type: service
+    name: Service 00-04
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 4 in domain 0.
+      owner: team-00
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+    style:
+      tone: neutral
+    dataSources:
+      - kind: grafana
+        query: svc_0_4_rps
+        binding: status
+  - id: svc-00-05
+    type: service
+    name: Service 00-05
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 5 in domain 0.
+      owner: team-00
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: warning
+  - id: svc-00-06
+    type: service
+    name: Service 00-06
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 6 in domain 0.
+      owner: team-00
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: neutral
+  - id: svc-00-07
+    type: service
+    name: Service 00-07
+    parent: domain-00
+    minLayer: architecture
+    properties:
+      description: Service 7 in domain 0.
+      owner: team-00
+      tech:
+        language: Java
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: muted
+    dataSources:
+      - kind: http
+        url: https://status.example.com/svc/0/7
+        binding: status
+  - id: db-00-00
+    type: database
+    name: Store 00-00
+    parent: domain-00
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-00
+      tech:
+        engine: Cassandra
+    lifecycle:
+      introducedIn: mvp1
+  - id: db-00-01
+    type: database
+    name: Store 00-01
+    parent: domain-00
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-00
+      tech:
+        engine: MongoDB
+    lifecycle:
+      introducedIn: mvp1
+  - id: db-00-02
+    type: database
+    name: Store 00-02
+    parent: domain-00
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-00
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp1
+  - id: fe-01
+    type: frontend
+    name: App 01
+    parent: domain-01
+    minLayer: business
+    properties:
+      description: Domain UI.
+      owner: team-01
+      tags:
+        - spa
+      tech:
+        framework: Vue
+    lifecycle:
+      introducedIn: mvp2
+  - id: svc-01-00
+    type: service
+    name: Service 01-00
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 1.
+      owner: team-01
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+      modifiedIn:
+        mvp3:
+          properties:
+            description: Updated capability in a later iteration.
+    style:
+      tone: muted
+  - id: svc-01-01
+    type: service
+    name: Service 01-01
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 1.
+      owner: team-01
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: success
+  - id: svc-01-02
+    type: service
+    name: Service 01-02
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 1.
+      owner: team-01
+      tech:
+        language: Python
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: critical
+  - id: svc-01-03
+    type: service
+    name: Service 01-03
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 1.
+      owner: team-01
+      tech:
+        language: Java
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: success
+  - id: svc-01-04
+    type: service
+    name: Service 01-04
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 4 in domain 1.
+      owner: team-01
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: neutral
+  - id: svc-01-05
+    type: service
+    name: Service 01-05
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 5 in domain 1.
+      owner: team-01
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+      removedIn: mvp5
+    style:
+      tone: neutral
+  - id: svc-01-06
+    type: service
+    name: Service 01-06
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 6 in domain 1.
+      owner: team-01
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: critical
+  - id: svc-01-07
+    type: service
+    name: Service 01-07
+    parent: domain-01
+    minLayer: architecture
+    properties:
+      description: Service 7 in domain 1.
+      owner: team-01
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+      modifiedIn:
+        mvp5:
+          properties:
+            description: Updated capability in a later iteration.
+    style:
+      tone: success
+  - id: db-01-00
+    type: database
+    name: Store 01-00
+    parent: domain-01
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-01
+      tech:
+        engine: MongoDB
+    lifecycle:
+      introducedIn: mvp2
+  - id: db-01-01
+    type: database
+    name: Store 01-01
+    parent: domain-01
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-01
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp2
+  - id: db-01-02
+    type: database
+    name: Store 01-02
+    parent: domain-01
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-01
+      tech:
+        engine: MySQL
+    lifecycle:
+      introducedIn: mvp2
+      modifiedIn:
+        mvp5:
+          properties:
+            description: Updated capability in a later iteration.
+  - id: db-01-03
+    type: database
+    name: Store 01-03
+    parent: domain-01
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-01
+      tech:
+        engine: Redis
+    lifecycle:
+      introducedIn: mvp2
+  - id: svc-02-00
+    type: service
+    name: Service 02-00
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 2.
+      owner: team-02
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp5
+      modifiedIn:
+        mvp6:
+          properties:
+            description: Updated capability in a later iteration.
+    style:
+      tone: muted
+  - id: svc-02-01
+    type: service
+    name: Service 02-01
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 2.
+      owner: team-02
+      tech:
+        language: Java
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: neutral
+  - id: svc-02-02
+    type: service
+    name: Service 02-02
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 2.
+      owner: team-02
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp5
+    style:
+      tone: neutral
+  - id: svc-02-03
+    type: service
+    name: Service 02-03
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 2.
+      owner: team-02
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: warning
+  - id: svc-02-04
+    type: service
+    name: Service 02-04
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 4 in domain 2.
+      owner: team-02
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: success
+  - id: svc-02-05
+    type: service
+    name: Service 02-05
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 5 in domain 2.
+      owner: team-02
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: warning
+  - id: svc-02-06
+    type: service
+    name: Service 02-06
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 6 in domain 2.
+      owner: team-02
+      tech:
+        language: Rust
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+      removedIn: mvp5
+    style:
+      tone: neutral
+    dataSources:
+      - kind: grafana
+        query: svc_2_6_rps
+        binding: metric
+  - id: svc-02-07
+    type: service
+    name: Service 02-07
+    parent: domain-02
+    minLayer: architecture
+    properties:
+      description: Service 7 in domain 2.
+      owner: team-02
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: muted
+  - id: q-02-00
+    type: queue
+    name: Queue 02-00
+    parent: domain-02
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-02
+      tech:
+        broker: RabbitMQ
+    lifecycle:
+      introducedIn: mvp3
+  - id: db-02-01
+    type: database
+    name: Store 02-01
+    parent: domain-02
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-02
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp3
+  - id: db-02-02
+    type: database
+    name: Store 02-02
+    parent: domain-02
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-02
+      tech:
+        engine: Cassandra
+    lifecycle:
+      introducedIn: mvp3
+  - id: q-02-03
+    type: queue
+    name: Queue 02-03
+    parent: domain-02
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-02
+      tech:
+        broker: Pulsar
+    lifecycle:
+      introducedIn: mvp3
+  - id: svc-03-00
+    type: service
+    name: Service 03-00
+    parent: domain-03
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 3.
+      owner: team-03
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-03-01
+    type: service
+    name: Service 03-01
+    parent: domain-03
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 3.
+      owner: team-03
+      tech:
+        language: Rust
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+      modifiedIn:
+        mvp5:
+          properties:
+            description: Updated capability in a later iteration.
+    style:
+      tone: neutral
+  - id: svc-03-02
+    type: service
+    name: Service 03-02
+    parent: domain-03
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 3.
+      owner: team-03
+      tech:
+        language: Python
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-03-03
+    type: service
+    name: Service 03-03
+    parent: domain-03
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 3.
+      owner: team-03
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp5
+    style:
+      tone: muted
+  - id: q-03-00
+    type: queue
+    name: Queue 03-00
+    parent: domain-03
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-03
+      tech:
+        broker: Kafka
+    lifecycle:
+      introducedIn: mvp4
+  - id: db-03-01
+    type: database
+    name: Store 03-01
+    parent: domain-03
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-03
+      tech:
+        engine: MySQL
+    lifecycle:
+      introducedIn: mvp4
+  - id: svc-04-00
+    type: service
+    name: Service 04-00
+    parent: domain-04
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 4.
+      owner: team-04
+      tech:
+        language: Python
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp5
+    style:
+      tone: critical
+  - id: svc-04-01
+    type: service
+    name: Service 04-01
+    parent: domain-04
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 4.
+      owner: team-04
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: muted
+  - id: svc-04-02
+    type: service
+    name: Service 04-02
+    parent: domain-04
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 4.
+      owner: team-04
+      tech:
+        language: Python
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-04-03
+    type: service
+    name: Service 04-03
+    parent: domain-04
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 4.
+      owner: team-04
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp5
+    style:
+      tone: success
+  - id: q-04-00
+    type: queue
+    name: Queue 04-00
+    parent: domain-04
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-04
+      tech:
+        broker: Pulsar
+    lifecycle:
+      introducedIn: mvp5
+  - id: q-04-01
+    type: queue
+    name: Queue 04-01
+    parent: domain-04
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-04
+      tech:
+        broker: Kafka
+    lifecycle:
+      introducedIn: mvp5
+      modifiedIn:
+        mvp6:
+          properties:
+            description: Updated capability in a later iteration.
+  - id: db-04-02
+    type: database
+    name: Store 04-02
+    parent: domain-04
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-04
+      tech:
+        engine: MySQL
+    lifecycle:
+      introducedIn: mvp5
+  - id: db-04-03
+    type: database
+    name: Store 04-03
+    parent: domain-04
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-04
+      tech:
+        engine: Redis
+    lifecycle:
+      introducedIn: mvp5
+  - id: fe-05
+    type: frontend
+    name: App 05
+    parent: domain-05
+    minLayer: business
+    properties:
+      description: Domain UI.
+      owner: team-05
+      tags:
+        - spa
+      tech:
+        framework: Next.js
+    lifecycle:
+      introducedIn: mvp6
+  - id: svc-05-00
+    type: service
+    name: Service 05-00
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 5.
+      owner: team-05
+      tech:
+        language: Rust
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-05-01
+    type: service
+    name: Service 05-01
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 5.
+      owner: team-05
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: success
+  - id: svc-05-02
+    type: service
+    name: Service 05-02
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 5.
+      owner: team-05
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-05-03
+    type: service
+    name: Service 05-03
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 5.
+      owner: team-05
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-05-04
+    type: service
+    name: Service 05-04
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 4 in domain 5.
+      owner: team-05
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: svc-05-05
+    type: service
+    name: Service 05-05
+    parent: domain-05
+    minLayer: architecture
+    properties:
+      description: Service 5 in domain 5.
+      owner: team-05
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp6
+    style:
+      tone: neutral
+  - id: q-05-00
+    type: queue
+    name: Queue 05-00
+    parent: domain-05
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-05
+      tech:
+        broker: Pulsar
+    lifecycle:
+      introducedIn: mvp6
+  - id: db-05-01
+    type: database
+    name: Store 05-01
+    parent: domain-05
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-05
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp6
+  - id: q-05-02
+    type: queue
+    name: Queue 05-02
+    parent: domain-05
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-05
+      tech:
+        broker: Kafka
+    lifecycle:
+      introducedIn: mvp6
+  - id: db-05-03
+    type: database
+    name: Store 05-03
+    parent: domain-05
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-05
+      tech:
+        engine: Redis
+    lifecycle:
+      introducedIn: mvp6
+  - id: fe-06
+    type: frontend
+    name: App 06
+    parent: domain-06
+    minLayer: business
+    properties:
+      description: Domain UI.
+      owner: team-06
+      tags:
+        - spa
+      tech:
+        framework: React
+    lifecycle:
+      introducedIn: mvp1
+  - id: svc-06-00
+    type: service
+    name: Service 06-00
+    parent: domain-06
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 6.
+      owner: team-06
+      tech:
+        language: Java
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+    style:
+      tone: success
+  - id: svc-06-01
+    type: service
+    name: Service 06-01
+    parent: domain-06
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 6.
+      owner: team-06
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: neutral
+  - id: svc-06-02
+    type: service
+    name: Service 06-02
+    parent: domain-06
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 6.
+      owner: team-06
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+      modifiedIn:
+        mvp3:
+          properties:
+            description: Updated capability in a later iteration.
+    style:
+      tone: success
+    dataSources:
+      - kind: jira
+        jql: project=D6 AND status=Open
+        binding: badge
+  - id: svc-06-03
+    type: service
+    name: Service 06-03
+    parent: domain-06
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 6.
+      owner: team-06
+      tech:
+        language: Kotlin
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: neutral
+    dataSources:
+      - kind: jira
+        jql: project=D6 AND status=Open
+        binding: badge
+  - id: db-06-00
+    type: database
+    name: Store 06-00
+    parent: domain-06
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-06
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp1
+  - id: db-06-01
+    type: database
+    name: Store 06-01
+    parent: domain-06
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-06
+      tech:
+        engine: Redis
+    lifecycle:
+      introducedIn: mvp1
+  - id: fe-07
+    type: frontend
+    name: App 07
+    parent: domain-07
+    minLayer: business
+    properties:
+      description: Domain UI.
+      owner: team-07
+      tags:
+        - spa
+      tech:
+        framework: Next.js
+    lifecycle:
+      introducedIn: mvp2
+  - id: svc-07-00
+    type: service
+    name: Service 07-00
+    parent: domain-07
+    minLayer: architecture
+    properties:
+      description: Service 0 in domain 7.
+      owner: team-07
+      tech:
+        language: Java
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: warning
+  - id: svc-07-01
+    type: service
+    name: Service 07-01
+    parent: domain-07
+    minLayer: architecture
+    properties:
+      description: Service 1 in domain 7.
+      owner: team-07
+      tech:
+        language: TypeScript
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp3
+    style:
+      tone: muted
+  - id: svc-07-02
+    type: service
+    name: Service 07-02
+    parent: domain-07
+    minLayer: architecture
+    properties:
+      description: Service 2 in domain 7.
+      owner: team-07
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp2
+    style:
+      tone: neutral
+  - id: svc-07-03
+    type: service
+    name: Service 07-03
+    parent: domain-07
+    minLayer: architecture
+    properties:
+      description: Service 3 in domain 7.
+      owner: team-07
+      tech:
+        language: C#
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp4
+    style:
+      tone: muted
+  - id: q-07-00
+    type: queue
+    name: Queue 07-00
+    parent: domain-07
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-07
+      tech:
+        broker: Kafka
+    lifecycle:
+      introducedIn: mvp2
+      modifiedIn:
+        mvp6:
+          properties:
+            description: Updated capability in a later iteration.
+  - id: q-07-01
+    type: queue
+    name: Queue 07-01
+    parent: domain-07
+    minLayer: engineering
+    properties:
+      description: Async message channel.
+      owner: team-07
+      tech:
+        broker: Pulsar
+    lifecycle:
+      introducedIn: mvp2
+  - id: db-07-02
+    type: database
+    name: Store 07-02
+    parent: domain-07
+    minLayer: engineering
+    properties:
+      description: Persistent store.
+      owner: team-07
+      tech:
+        engine: MySQL
+    lifecycle:
+      introducedIn: mvp2
+      removedIn: mvp4
 connections:
-- id: c-0001
-  from: svc-00-00
-  to: svc-00-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-- id: c-0002
-  from: svc-00-01
-  to: svc-00-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0003
-  from: svc-00-03
-  to: svc-00-04
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0004
-  from: svc-00-04
-  to: svc-00-05
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0005
-  from: svc-00-00
-  to: db-00-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-- id: c-0006
-  from: svc-00-02
-  to: db-00-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0007
-  from: svc-00-03
-  to: db-00-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0008
-  from: svc-00-03
-  to: db-00-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0009
-  from: svc-00-05
-  to: db-00-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0010
-  from: svc-00-05
-  to: db-00-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0011
-  from: svc-00-06
-  to: db-00-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0012
-  from: svc-00-06
-  to: db-00-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0013
-  from: svc-00-07
-  to: db-00-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0014
-  from: svc-00-07
-  to: db-00-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0015
-  from: svc-01-00
-  to: svc-01-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0016
-  from: svc-01-01
-  to: svc-01-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0017
-  from: svc-01-02
-  to: svc-01-03
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0018
-  from: svc-01-04
-  to: svc-01-05
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0019
-  from: svc-01-06
-  to: svc-01-07
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0020
-  from: svc-01-00
-  to: db-01-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0021
-  from: svc-01-00
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0022
-  from: svc-01-01
-  to: db-01-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0023
-  from: svc-01-02
-  to: db-01-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0024
-  from: svc-01-02
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0025
-  from: svc-01-03
-  to: db-01-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0026
-  from: svc-01-04
-  to: db-01-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0027
-  from: svc-01-04
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0028
-  from: svc-01-05
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0029
-  from: svc-01-06
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0030
-  from: svc-01-07
-  to: db-01-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0031
-  from: svc-01-07
-  to: db-01-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0032
-  from: svc-02-00
-  to: svc-02-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0033
-  from: svc-02-01
-  to: svc-02-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0034
-  from: svc-02-06
-  to: svc-02-07
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0035
-  from: svc-02-00
-  to: q-02-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0036
-  from: svc-02-00
-  to: db-02-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0037
-  from: svc-02-01
-  to: db-02-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0038
-  from: svc-02-02
-  to: db-02-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0039
-  from: svc-02-03
-  to: q-02-03
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0040
-  from: svc-02-04
-  to: db-02-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0041
-  from: svc-02-05
-  to: q-02-03
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0042
-  from: svc-02-05
-  to: db-02-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0043
-  from: svc-02-07
-  to: q-02-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0044
-  from: svc-02-07
-  to: db-02-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0045
-  from: svc-03-00
-  to: svc-03-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0046
-  from: svc-03-02
-  to: svc-03-03
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0047
-  from: svc-03-01
-  to: db-03-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0048
-  from: svc-03-01
-  to: q-03-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0049
-  from: svc-04-00
-  to: svc-04-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0050
-  from: svc-04-01
-  to: svc-04-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0051
-  from: svc-04-02
-  to: svc-04-03
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0052
-  from: svc-04-01
-  to: db-04-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0053
-  from: svc-04-02
-  to: q-04-01
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0054
-  from: svc-04-02
-  to: db-04-02
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0055
-  from: svc-04-03
-  to: db-04-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0056
-  from: svc-04-03
-  to: q-04-01
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0057
-  from: svc-05-00
-  to: svc-05-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0058
-  from: svc-05-01
-  to: svc-05-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0059
-  from: svc-05-01
-  to: db-05-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0060
-  from: svc-05-03
-  to: db-05-03
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0061
-  from: svc-05-03
-  to: q-05-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0062
-  from: svc-05-04
-  to: db-05-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0063
-  from: svc-05-04
-  to: q-05-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0064
-  from: svc-05-05
-  to: db-05-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0065
-  from: svc-06-00
-  to: db-06-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-- id: c-0066
-  from: svc-06-00
-  to: db-06-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-- id: c-0067
-  from: svc-06-01
-  to: db-06-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0068
-  from: svc-06-01
-  to: db-06-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0069
-  from: svc-06-03
-  to: db-06-01
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0070
-  from: svc-06-03
-  to: db-06-00
-  type: data
-  protocol: SQL
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0071
-  from: svc-07-00
-  to: svc-07-01
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0072
-  from: svc-07-01
-  to: svc-07-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0073
-  from: svc-07-00
-  to: q-07-01
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0074
-  from: svc-07-00
-  to: q-07-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0075
-  from: svc-07-01
-  to: q-07-01
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0076
-  from: svc-07-03
-  to: q-07-01
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0077
-  from: svc-07-03
-  to: q-07-00
-  type: event
-  protocol: Kafka
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0078
-  from: svc-02-04
-  to: svc-05-02
-  type: sync
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0079
-  from: svc-03-00
-  to: svc-07-02
-  type: sync
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0080
-  from: svc-01-05
-  to: svc-00-04
-  type: async
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0081
-  from: svc-02-05
-  to: svc-05-02
-  type: async
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0082
-  from: svc-00-03
-  to: svc-01-05
-  type: async
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0083
-  from: svc-05-05
-  to: svc-07-02
-  type: sync
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0084
-  from: svc-03-00
-  to: svc-04-02
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0085
-  from: svc-02-03
-  to: svc-03-00
-  type: async
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0086
-  from: svc-05-02
-  to: svc-06-00
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0087
-  from: svc-01-06
-  to: svc-02-01
-  type: async
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0088
-  from: svc-00-01
-  to: svc-03-00
-  type: async
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0089
-  from: svc-07-01
-  to: svc-03-01
-  type: event
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0090
-  from: svc-04-01
-  to: svc-01-00
-  type: event
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0091
-  from: svc-00-01
-  to: svc-03-01
-  type: event
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0092
-  from: svc-07-00
-  to: svc-00-01
-  type: sync
-  protocol: Kafka
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-- id: c-0093
-  from: svc-03-03
-  to: svc-01-00
-  type: async
-  protocol: gRPC
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0094
-  from: svc-02-00
-  to: external-00
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp5
-- id: c-0095
-  from: svc-02-04
-  to: external-01
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0096
-  from: svc-01-05
-  to: external-01
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0097
-  from: svc-02-04
-  to: external-02
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0098
-  from: svc-02-05
-  to: external-02
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0099
-  from: svc-02-01
-  to: external-03
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-- id: c-0100
-  from: svc-03-02
-  to: external-03
-  type: sync
-  protocol: HTTPS
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0101
-  from: actor-00
-  to: fe-01
-  type: sync
-  protocol: HTTPS
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0102
-  from: actor-00
-  to: fe-05
-  type: sync
-  protocol: HTTPS
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0103
-  from: actor-01
-  to: fe-01
-  type: sync
-  protocol: HTTPS
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp2
-- id: c-0104
-  from: actor-02
-  to: fe-05
-  type: sync
-  protocol: HTTPS
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp6
-- id: c-0105
-  from: actor-02
-  to: fe-06
-  type: sync
-  protocol: HTTPS
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp1
+  - id: c-0001
+    from: svc-00-00
+    to: svc-00-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+  - id: c-0002
+    from: svc-00-01
+    to: svc-00-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0003
+    from: svc-00-03
+    to: svc-00-04
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0004
+    from: svc-00-04
+    to: svc-00-05
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0005
+    from: svc-00-00
+    to: db-00-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+  - id: c-0006
+    from: svc-00-02
+    to: db-00-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0007
+    from: svc-00-03
+    to: db-00-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0008
+    from: svc-00-03
+    to: db-00-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0009
+    from: svc-00-05
+    to: db-00-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0010
+    from: svc-00-05
+    to: db-00-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0011
+    from: svc-00-06
+    to: db-00-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0012
+    from: svc-00-06
+    to: db-00-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0013
+    from: svc-00-07
+    to: db-00-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0014
+    from: svc-00-07
+    to: db-00-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0015
+    from: svc-01-00
+    to: svc-01-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0016
+    from: svc-01-01
+    to: svc-01-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0017
+    from: svc-01-02
+    to: svc-01-03
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0018
+    from: svc-01-04
+    to: svc-01-05
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0019
+    from: svc-01-06
+    to: svc-01-07
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0020
+    from: svc-01-00
+    to: db-01-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0021
+    from: svc-01-00
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0022
+    from: svc-01-01
+    to: db-01-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0023
+    from: svc-01-02
+    to: db-01-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0024
+    from: svc-01-02
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0025
+    from: svc-01-03
+    to: db-01-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0026
+    from: svc-01-04
+    to: db-01-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0027
+    from: svc-01-04
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0028
+    from: svc-01-05
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0029
+    from: svc-01-06
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0030
+    from: svc-01-07
+    to: db-01-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0031
+    from: svc-01-07
+    to: db-01-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0032
+    from: svc-02-00
+    to: svc-02-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0033
+    from: svc-02-01
+    to: svc-02-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0034
+    from: svc-02-06
+    to: svc-02-07
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0035
+    from: svc-02-00
+    to: q-02-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0036
+    from: svc-02-00
+    to: db-02-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0037
+    from: svc-02-01
+    to: db-02-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0038
+    from: svc-02-02
+    to: db-02-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0039
+    from: svc-02-03
+    to: q-02-03
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0040
+    from: svc-02-04
+    to: db-02-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0041
+    from: svc-02-05
+    to: q-02-03
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0042
+    from: svc-02-05
+    to: db-02-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0043
+    from: svc-02-07
+    to: q-02-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0044
+    from: svc-02-07
+    to: db-02-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0045
+    from: svc-03-00
+    to: svc-03-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0046
+    from: svc-03-02
+    to: svc-03-03
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0047
+    from: svc-03-01
+    to: db-03-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0048
+    from: svc-03-01
+    to: q-03-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0049
+    from: svc-04-00
+    to: svc-04-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0050
+    from: svc-04-01
+    to: svc-04-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0051
+    from: svc-04-02
+    to: svc-04-03
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0052
+    from: svc-04-01
+    to: db-04-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0053
+    from: svc-04-02
+    to: q-04-01
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0054
+    from: svc-04-02
+    to: db-04-02
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0055
+    from: svc-04-03
+    to: db-04-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0056
+    from: svc-04-03
+    to: q-04-01
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0057
+    from: svc-05-00
+    to: svc-05-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0058
+    from: svc-05-01
+    to: svc-05-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0059
+    from: svc-05-01
+    to: db-05-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0060
+    from: svc-05-03
+    to: db-05-03
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0061
+    from: svc-05-03
+    to: q-05-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0062
+    from: svc-05-04
+    to: db-05-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0063
+    from: svc-05-04
+    to: q-05-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0064
+    from: svc-05-05
+    to: db-05-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0065
+    from: svc-06-00
+    to: db-06-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+  - id: c-0066
+    from: svc-06-00
+    to: db-06-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+  - id: c-0067
+    from: svc-06-01
+    to: db-06-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0068
+    from: svc-06-01
+    to: db-06-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0069
+    from: svc-06-03
+    to: db-06-01
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0070
+    from: svc-06-03
+    to: db-06-00
+    type: data
+    protocol: SQL
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0071
+    from: svc-07-00
+    to: svc-07-01
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0072
+    from: svc-07-01
+    to: svc-07-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0073
+    from: svc-07-00
+    to: q-07-01
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0074
+    from: svc-07-00
+    to: q-07-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0075
+    from: svc-07-01
+    to: q-07-01
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0076
+    from: svc-07-03
+    to: q-07-01
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0077
+    from: svc-07-03
+    to: q-07-00
+    type: event
+    protocol: Kafka
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0078
+    from: svc-02-04
+    to: svc-05-02
+    type: sync
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0079
+    from: svc-03-00
+    to: svc-07-02
+    type: sync
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0080
+    from: svc-01-05
+    to: svc-00-04
+    type: async
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0081
+    from: svc-02-05
+    to: svc-05-02
+    type: async
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0082
+    from: svc-00-03
+    to: svc-01-05
+    type: async
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0083
+    from: svc-05-05
+    to: svc-07-02
+    type: sync
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0084
+    from: svc-03-00
+    to: svc-04-02
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0085
+    from: svc-02-03
+    to: svc-03-00
+    type: async
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0086
+    from: svc-05-02
+    to: svc-06-00
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0087
+    from: svc-01-06
+    to: svc-02-01
+    type: async
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0088
+    from: svc-00-01
+    to: svc-03-00
+    type: async
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0089
+    from: svc-07-01
+    to: svc-03-01
+    type: event
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0090
+    from: svc-04-01
+    to: svc-01-00
+    type: event
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0091
+    from: svc-00-01
+    to: svc-03-01
+    type: event
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0092
+    from: svc-07-00
+    to: svc-00-01
+    type: sync
+    protocol: Kafka
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+  - id: c-0093
+    from: svc-03-03
+    to: svc-01-00
+    type: async
+    protocol: gRPC
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0094
+    from: svc-02-00
+    to: external-00
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp5
+  - id: c-0095
+    from: svc-02-04
+    to: external-01
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0096
+    from: svc-01-05
+    to: external-01
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0097
+    from: svc-02-04
+    to: external-02
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0098
+    from: svc-02-05
+    to: external-02
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0099
+    from: svc-02-01
+    to: external-03
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+  - id: c-0100
+    from: svc-03-02
+    to: external-03
+    type: sync
+    protocol: HTTPS
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0101
+    from: actor-00
+    to: fe-01
+    type: sync
+    protocol: HTTPS
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0102
+    from: actor-00
+    to: fe-05
+    type: sync
+    protocol: HTTPS
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0103
+    from: actor-01
+    to: fe-01
+    type: sync
+    protocol: HTTPS
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp2
+  - id: c-0104
+    from: actor-02
+    to: fe-05
+    type: sync
+    protocol: HTTPS
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp6
+  - id: c-0105
+    from: actor-02
+    to: fe-06
+    type: sync
+    protocol: HTTPS
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp1

@@ -15,7 +15,7 @@ export type Theme = "dark" | "light";
 export type Brand = "neon" | "michelin";
 
 export interface ThemePreferences {
-  theme: Theme | "system";   // "system" = follow prefers-color-scheme
+  theme: Theme | "system"; // "system" = follow prefers-color-scheme
   brand: Brand;
 }
 
@@ -44,9 +44,7 @@ function read(): ThemePreferences {
 
     return {
       theme:
-        isTheme(themeCandidate) || themeCandidate === "system"
-          ? (themeCandidate)
-          : DEFAULTS.theme,
+        isTheme(themeCandidate) || themeCandidate === "system" ? themeCandidate : DEFAULTS.theme,
       brand: isBrand(brandCandidate) ? brandCandidate : DEFAULTS.brand,
     };
   } catch {

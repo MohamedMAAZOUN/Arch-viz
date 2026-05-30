@@ -22,7 +22,7 @@ project:
   id: "shopfront"
   name: "Shopfront Platform"
   description: "Reference e-commerce platform — demonstrates every schema feature."
-  theme: "default"                     # references a design system theme bundle
+  theme: "default" # references a design system theme bundle
 
 # -- 2. MVPs ------------------------------------------------------------------
 # Linear timeline. The slider scrubs through these in `order`. Forking would
@@ -31,7 +31,7 @@ mvps:
   - id: mvp1
     name: "Launch"
     order: 1
-    color: "#7C9EFF"                   # used in overlay/diff modes
+    color: "#7C9EFF" # used in overlay/diff modes
   - id: mvp2
     name: "Reviews & Ratings"
     order: 2
@@ -57,13 +57,13 @@ layers:
 # -- 4. Elements --------------------------------------------------------------
 # Flat list. Hierarchy via `parent`. No nesting (diffing nested YAML is hell).
 elements:
-
   # --- A group. Aggregates its children at the business layer.
   - id: storefront-domain
     type: group
     name: "Storefront"
-    aggregateAt: [business]            # at business layer, children disappear,
-                                       # this single box represents them all
+    aggregateAt:
+      [business] # at business layer, children disappear,
+      # this single box represents them all
     minLayer: business
     properties:
       description: "All customer-facing surfaces."
@@ -81,15 +81,15 @@ elements:
       description: "Next.js storefront."
       owner: "team-storefront"
       tags: [public]
-      tech:                            # type-specific fields go in properties
+      tech: # type-specific fields go in properties
         framework: "Next.js 14"
         language: "TypeScript"
-      _layerVisibility:                # per-property layer gating
-        tech: engineering              # 'tech' block only shows at engineering
+      _layerVisibility: # per-property layer gating
+        tech: engineering # 'tech' block only shows at engineering
     lifecycle:
       introducedIn: mvp1
     style:
-      tone: neutral                    # references theme token, not hex
+      tone: neutral # references theme token, not hex
 
   # --- A service whose internals get modified across MVPs (lifecycle in action).
   - id: catalog-service
@@ -107,19 +107,19 @@ elements:
         tech: engineering
     lifecycle:
       introducedIn: mvp1
-      modifiedIn:                      # only diffs stored, base + diffs resolved at runtime
+      modifiedIn: # only diffs stored, base + diffs resolved at runtime
         mvp3:
           properties:
             description: "Product browsing, search, and ML-driven recommendations."
-    dataSources:                       # live data hooks — the killer feature
+    dataSources: # live data hooks — the killer feature
       - kind: grafana
         query: "up{service='catalog'}"
-        binding: status                # → colored status dot on the node
+        binding: status # → colored status dot on the node
       - kind: jira
         jql: "project=CAT AND status=Open"
-        binding: badge                 # → numeric badge
+        binding: badge # → numeric badge
     style:
-      tone: critical                   # this service is high-importance
+      tone: critical # this service is high-importance
 
   - id: catalog-db
     type: database

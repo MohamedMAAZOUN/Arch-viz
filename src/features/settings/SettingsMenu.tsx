@@ -10,14 +10,9 @@ import { useEffect, useState } from "react";
 
 import { loadExampleById } from "@/core/doc/loadExampleById";
 import { EXAMPLES } from "@/data/examples";
-import {
-  getPreferences,
-  onChange,
-  setPreferences,
-} from "@/design-system/theme";
+import { getPreferences, onChange, setPreferences } from "@/design-system/theme";
 
 import type { Brand, Theme } from "@/design-system/theme";
-
 
 import "@/features/settings/SettingsMenu.css";
 
@@ -55,12 +50,7 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
   return (
     <>
       <div className="settings-scrim" onClick={onClose} aria-hidden />
-      <aside
-        className="settings-panel"
-        role="dialog"
-        aria-label="Settings"
-        aria-modal="true"
-      >
+      <aside className="settings-panel" role="dialog" aria-label="Settings" aria-modal="true">
         <header className="settings-header">
           <div>
             <span className="settings-eyebrow">preferences</span>
@@ -78,9 +68,7 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
 
         <section className="settings-section">
           <h3 className="settings-section-title">Brand</h3>
-          <p className="settings-section-desc">
-            Pick the visual identity used across the app.
-          </p>
+          <p className="settings-section-desc">Pick the visual identity used across the app.</p>
           <div className="settings-segment">
             <SegmentButton
               active={prefs.brand === "neon"}
@@ -105,9 +93,7 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
 
         <section className="settings-section">
           <h3 className="settings-section-title">Theme</h3>
-          <p className="settings-section-desc">
-            Auto follows your operating system preference.
-          </p>
+          <p className="settings-section-desc">Auto follows your operating system preference.</p>
           <div className="settings-segment">
             <SegmentButton
               active={prefs.theme === "system"}
@@ -187,12 +173,7 @@ interface SegmentButtonProps {
 
 function SegmentButton({ active, onClick, children }: SegmentButtonProps) {
   return (
-    <button
-      type="button"
-      className="settings-seg-btn"
-      data-active={active}
-      onClick={onClick}
-    >
+    <button type="button" className="settings-seg-btn" data-active={active} onClick={onClick}>
       {children}
     </button>
   );

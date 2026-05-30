@@ -28,11 +28,7 @@
 import ELK from "elkjs/lib/elk-api.js";
 import elkWorkerUrl from "elkjs/lib/elk-worker.min.js?url";
 
-import type {
-  LayoutEdge,
-  LayoutNode,
-  LayoutOptions,
-} from "@/core/layout/LayoutEngine";
+import type { LayoutEdge, LayoutNode, LayoutOptions } from "@/core/layout/LayoutEngine";
 
 interface LayoutRequest {
   id: number;

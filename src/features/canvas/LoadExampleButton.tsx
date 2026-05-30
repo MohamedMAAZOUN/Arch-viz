@@ -9,8 +9,6 @@ import { loadProject } from "@/core/doc/loadProject";
 import { parseProjectYaml } from "@/core/schema/parse";
 import exampleYaml from "@/data/example-project.yaml?raw";
 
- 
-
 interface LoadExampleButtonProps {
   variant?: "primary" | "secondary";
 }

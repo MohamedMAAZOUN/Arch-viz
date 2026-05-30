@@ -162,15 +162,51 @@ function ElementGlyph({ type }: { type: ElementType }) {
     case "queue":
       return (
         <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden>
-          <rect x="3" y="9" width="4" height="6" rx="0.5" fill="none" stroke={stroke} strokeWidth={sw} />
-          <rect x="10" y="9" width="4" height="6" rx="0.5" fill="none" stroke={stroke} strokeWidth={sw} />
-          <rect x="17" y="9" width="4" height="6" rx="0.5" fill="none" stroke={stroke} strokeWidth={sw} />
+          <rect
+            x="3"
+            y="9"
+            width="4"
+            height="6"
+            rx="0.5"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={sw}
+          />
+          <rect
+            x="10"
+            y="9"
+            width="4"
+            height="6"
+            rx="0.5"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={sw}
+          />
+          <rect
+            x="17"
+            y="9"
+            width="4"
+            height="6"
+            rx="0.5"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={sw}
+          />
         </svg>
       );
     case "frontend":
       return (
         <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden>
-          <rect x="3" y="4" width="18" height="13" rx="1.5" fill="none" stroke={stroke} strokeWidth={sw} />
+          <rect
+            x="3"
+            y="4"
+            width="18"
+            height="13"
+            rx="1.5"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={sw}
+          />
           <path d="M9 20h6M12 17v3" stroke={stroke} strokeWidth={sw} strokeLinecap={c} />
         </svg>
       );

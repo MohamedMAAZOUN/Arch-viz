@@ -101,12 +101,8 @@ function CanvasInner() {
   // Sync FROM doc → React Flow state, preserving selection across re-derives.
   useEffect(() => {
     setNodes((prev) => {
-      const selectedSet = new Set(
-        prev.filter((n) => n.selected === true).map((n) => n.id),
-      );
-      return derivedNodes.map((n) =>
-        selectedSet.has(n.id) ? { ...n, selected: true } : n,
-      );
+      const selectedSet = new Set(prev.filter((n) => n.selected === true).map((n) => n.id));
+      return derivedNodes.map((n) => (selectedSet.has(n.id) ? { ...n, selected: true } : n));
     });
   }, [derivedNodes, setNodes]);
 

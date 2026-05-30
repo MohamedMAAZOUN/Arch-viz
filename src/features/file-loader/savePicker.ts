@@ -118,10 +118,7 @@ export async function saveAs(): Promise<SaveResult> {
 // Helpers
 // ----------------------------------------------------------------------------
 
-async function writeDocToHandle(
-  handle: FileSystemFileHandle,
-  doc: ProjectDocument,
-): Promise<void> {
+async function writeDocToHandle(handle: FileSystemFileHandle, doc: ProjectDocument): Promise<void> {
   const yaml = stringifyYaml(doc, { indent: 2, lineWidth: 100 });
   const writable = await handle.createWritable();
   try {

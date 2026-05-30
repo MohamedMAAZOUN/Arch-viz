@@ -13,7 +13,6 @@ import { ProjectDocument } from "@/core/schema/schema";
 import type { Result } from "@/core/errors/result";
 import type { ProjectDocument as ProjectDocumentT } from "@/core/schema/schema";
 
-
 /** Parse a JSON-shaped value (already deserialized) into a trusted document. */
 export function parseProjectJson(raw: unknown): Result<ProjectDocumentT> {
   const parsed = ProjectDocument.safeParse(raw);
