@@ -64,8 +64,10 @@ button:focus-visible {
 .app-shell {
   display: grid;
   grid-template-rows: auto 1fr;
-  height: 100vh;
-  width: 100vw;
+  height: 100vh; /* fallback for browsers without dvh */
+  height: 100dvh; /* tracks the *visible* viewport incl. mobile browser chrome */
+  width: 100%; /* not 100vw — that includes the scrollbar gutter and overflows */
+  overflow: hidden;
 
   /* --inspector-width is set by uiStore. Default = golden-ratio minor side. */
   --inspector-width: 38.2vw;
@@ -73,7 +75,9 @@ button:focus-visible {
 
 .app-main {
   display: grid;
-  grid-template-columns: 1fr var(--inspector-width);
+  /* Clamp the inspector so it can never eat more than half the canvas, even if
+   * a wide pixel width was persisted on a larger display. */
+  grid-template-columns: 1fr min(var(--inspector-width), 50vw);
   min-height: 0;
   gap: 1px;
   background: var(--color-border-subtle);
@@ -109,8 +113,10 @@ button:focus-visible {
   pointer-events: none;
 }
 
-/* On narrow viewports, the inspector becomes an overlay rather than a column */
-@media (max-width: 1024px) {
+/* On narrow viewports (phones), the inspector becomes an overlay rather than a
+ * column. Kept at 768px so ordinary small desktop windows still get the
+ * side-by-side layout instead of an inspector that covers the canvas. */
+@media (max-width: 768px) {
   .app-main {
     grid-template-columns: 1fr;
   }
