@@ -89,7 +89,7 @@ export default function FloatingPanel({
             exit={{ opacity: 0 }}
             aria-label={title}
           >
-            <header className="floating-panel-header">
+            <motion.header layout className="floating-panel-header" transition={transition}>
               <span className="floating-panel-title">{title}</span>
               <div className="floating-panel-actions">
                 <button
@@ -117,8 +117,10 @@ export default function FloatingPanel({
                   <CollapseIcon side={side} />
                 </button>
               </div>
-            </header>
-            <div className="floating-panel-body">{children}</div>
+            </motion.header>
+            <motion.div layout className="floating-panel-body" transition={transition}>
+              {children}
+            </motion.div>
           </motion.section>
         ) : (
           <motion.button
@@ -136,9 +138,7 @@ export default function FloatingPanel({
             title={`Open ${title}`}
           >
             {icon}
-            {pillLabel !== undefined ? (
-              <span className="floating-pill-label">{pillLabel}</span>
-            ) : null}
+            <span className="floating-pill-label">{pillLabel ?? title}</span>
           </motion.button>
         )}
       </AnimatePresence>

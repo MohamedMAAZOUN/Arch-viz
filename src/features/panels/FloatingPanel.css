@@ -41,14 +41,19 @@
   display: flex;
   flex-direction: column;
   max-height: 100%;
-  /* Frosted glass: mostly-opaque surface + backdrop blur keeps text legible
-   * over a busy graph while still reading as translucent. */
-  background: color-mix(in oklch, var(--color-bg-2) 86%, transparent);
-  backdrop-filter: blur(var(--blur-soft));
-  -webkit-backdrop-filter: blur(var(--blur-soft));
+  /* Frosted glass: a translucent surface + blurred, saturated backdrop keeps
+   * text legible over a busy graph while reading as real glass rather than a
+   * flat card. The saturate() boost is what makes the blur look "expensive". */
+  background: color-mix(in oklch, var(--color-bg-2) 80%, transparent);
+  backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(160%);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
-  box-shadow: var(--elevation-3);
+  /* Drop shadow for elevation + a 1px inset top highlight so the surface
+   * catches light along its top edge. */
+  box-shadow:
+    var(--elevation-3),
+    inset 0 1px 0 oklch(100% 0 0 / 0.06);
   overflow: hidden;
 }
 
@@ -137,12 +142,14 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  background: color-mix(in oklch, var(--color-bg-2) 86%, transparent);
-  backdrop-filter: blur(var(--blur-soft));
-  -webkit-backdrop-filter: blur(var(--blur-soft));
+  background: color-mix(in oklch, var(--color-bg-2) 80%, transparent);
+  backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(160%);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-pill);
-  box-shadow: var(--elevation-2);
+  box-shadow:
+    var(--elevation-2),
+    inset 0 1px 0 oklch(100% 0 0 / 0.06);
   color: var(--color-fg-muted);
   transition:
     background var(--duration-fast) var(--ease-out),
@@ -156,11 +163,48 @@
   transform: scale(1.05);
 }
 
-/* Left/right collapse to a circle; top collapses to a rounded rectangle. */
+/* Left/right rest as a 40px icon circle and expand into a labelled pill on
+ * hover / keyboard focus, so the affordance is discoverable instead of a
+ * mystery dot. A faint accent-tinted ring + icon hints it is interactive. */
 .floating-pill[data-side="left"],
 .floating-pill[data-side="right"] {
-  width: 40px;
+  min-width: 40px;
   height: 40px;
+  padding: 0 var(--space-4); /* 12 + 16px icon + 12 = 40px → circle at rest */
+  gap: 0;
+  border-color: color-mix(in oklch, var(--color-border-default) 65%, var(--color-accent-base));
+  color: color-mix(in oklch, var(--color-fg-muted) 55%, var(--color-accent-base));
+}
+
+.floating-pill[data-side="left"] .floating-pill-label,
+.floating-pill[data-side="right"] .floating-pill-label {
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition:
+    max-width var(--duration-base) var(--ease-out),
+    margin-left var(--duration-base) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+
+.floating-pill[data-side="left"]:hover,
+.floating-pill[data-side="left"]:focus-visible,
+.floating-pill[data-side="right"]:hover,
+.floating-pill[data-side="right"]:focus-visible {
+  color: var(--color-accent-base);
+  border-color: var(--color-accent-base);
+  background: color-mix(in oklch, var(--color-bg-3) 85%, transparent);
+}
+
+.floating-pill[data-side="left"]:hover .floating-pill-label,
+.floating-pill[data-side="left"]:focus-visible .floating-pill-label,
+.floating-pill[data-side="right"]:hover .floating-pill-label,
+.floating-pill[data-side="right"]:focus-visible .floating-pill-label {
+  max-width: 12ch;
+  margin-left: var(--space-2);
+  opacity: 1;
 }
 
 .floating-pill[data-side="top"] {
