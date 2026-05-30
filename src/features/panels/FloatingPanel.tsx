@@ -52,21 +52,40 @@ export default function FloatingPanel({
 
   const dismissable = open && !pinned && !keepOpen;
 
-  // Outside-click + Esc dismissal for unpinned, open panels.
+  // Outside-click + Esc dismissal for unpinned, open panels. We close on a
+  // genuine *click* outside the panel, not on pointerdown — otherwise the press
+  // that begins a canvas pan or node drag would collapse the panel. A click is
+  // a pointerdown + pointerup on a target outside the panel with negligible
+  // movement between them (anything more is a drag, which must not dismiss).
   useEffect(() => {
     if (!dismissable) return;
+    const DRAG_SLOP = 6; // px of movement allowed before it counts as a drag
+    let downX = 0;
+    let downY = 0;
+    let downOutside = false;
+
+    const isOutside = (target: EventTarget | null) =>
+      rootRef.current !== null && !rootRef.current.contains(target as Node);
+
     const onPointerDown = (e: PointerEvent) => {
-      if (rootRef.current !== null && !rootRef.current.contains(e.target as Node)) {
-        closePanel(id);
-      }
+      downX = e.clientX;
+      downY = e.clientY;
+      downOutside = isOutside(e.target);
+    };
+    const onPointerUp = (e: PointerEvent) => {
+      if (!downOutside || !isOutside(e.target)) return;
+      const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+      if (moved <= DRAG_SLOP) closePanel(id);
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closePanel(id);
     };
     document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("pointerup", onPointerUp);
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("pointerup", onPointerUp);
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [dismissable, closePanel, id]);
@@ -74,6 +93,27 @@ export default function FloatingPanel({
   const transition: Transition = reduceMotion
     ? { duration: 0 }
     : { type: "spring", stiffness: 420, damping: 38 };
+
+  // During the shared-element morph the pill (icon included) scales up toward
+  // the panel's box, which otherwise reads as the icon "ballooning" before the
+  // text appears. Blurring + fading the pill on exit and the panel's content on
+  // enter masks that scale, so the swap reads as a soft cross-dissolve rather
+  // than a stretching glyph. Disabled under reduced-motion.
+  const BLUR = "blur(8px)";
+  const fadeBlur: Transition = reduceMotion
+    ? transition
+    : {
+        ...transition,
+        opacity: { duration: 0.18, ease: "easeOut" },
+        filter: { duration: 0.24, ease: "easeOut" },
+      };
+  const contentMotion = reduceMotion
+    ? {}
+    : {
+        initial: { filter: BLUR },
+        animate: { filter: "blur(0px)" },
+        transition: { filter: { duration: 0.26, ease: "easeOut" } } as Transition,
+      };
 
   return (
     <div className="floating-zone" data-side={side} ref={rootRef}>
@@ -89,7 +129,11 @@ export default function FloatingPanel({
             exit={{ opacity: 0 }}
             aria-label={title}
           >
-            <header className="floating-panel-header">
+            <motion.header
+              className="floating-panel-header"
+              transition={transition}
+              {...contentMotion}
+            >
               <span className="floating-panel-title">{title}</span>
               <div className="floating-panel-actions">
                 <button
@@ -117,8 +161,10 @@ export default function FloatingPanel({
                   <CollapseIcon side={side} />
                 </button>
               </div>
-            </header>
-            <div className="floating-panel-body">{children}</div>
+            </motion.header>
+            <motion.div className="floating-panel-body" {...contentMotion}>
+              {children}
+            </motion.div>
           </motion.section>
         ) : (
           <motion.button
@@ -127,7 +173,10 @@ export default function FloatingPanel({
             layoutId={`floating-${id}`}
             className="floating-pill"
             data-side={side}
-            transition={transition}
+            transition={fadeBlur}
+            initial={reduceMotion ? false : { opacity: 0, filter: BLUR }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, filter: BLUR }}
             onClick={() => {
               openPanel(id);
             }}
@@ -136,9 +185,7 @@ export default function FloatingPanel({
             title={`Open ${title}`}
           >
             {icon}
-            {pillLabel !== undefined ? (
-              <span className="floating-pill-label">{pillLabel}</span>
-            ) : null}
+            <span className="floating-pill-label">{pillLabel ?? title}</span>
           </motion.button>
         )}
       </AnimatePresence>

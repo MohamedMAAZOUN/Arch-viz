@@ -1,8 +1,16 @@
 name: Deploy to GitHub Pages
 
+# Deploy on a push to ANY branch, or on manual dispatch. GitHub Pages serves a
+# single live site, so the most-recently-pushed branch wins (older in-progress
+# deploys are cancelled by the concurrency group below).
+#
+# NOTE: the `github-pages` environment must also allow non-default branches.
+# In repo Settings → Environments → github-pages, set "Deployment branches"
+# to "All branches" (or add the patterns you want); otherwise deploys from
+# branches other than master are blocked at the deploy job regardless of this
+# trigger.
 on:
   push:
-    branches: [master]
   workflow_dispatch:
 
 # Allow GITHUB_TOKEN to deploy to Pages and verify the deployment origin.

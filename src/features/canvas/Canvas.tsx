@@ -14,7 +14,7 @@
 // useNodesState/useEdgesState. Without onNodesChange wired up, React Flow
 // drops the user's click-to-select change and selection silently fails.
 // We sync FROM the doc (when it changes) and TO our selection store
-// (via onSelectionChange).
+// (via onNodeClick — selection is click-driven, never on drag).
 // ============================================================================
 
 import {
@@ -41,7 +41,7 @@ import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
 
 import type { Connection, ConnectionType, ProjectDocument } from "@/core/schema/schema";
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
-import type { Edge, OnSelectionChangeFunc, ReactFlowInstance } from "@xyflow/react";
+import type { Edge, ReactFlowInstance } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 import "@/features/canvas/Canvas.css";
@@ -110,9 +110,17 @@ function CanvasInner() {
     setEdges(derivedEdges);
   }, [derivedEdges, setEdges]);
 
-  // Sync TO selection store (so the inspector can react).
-  const onSelectionChange: OnSelectionChangeFunc = ({ nodes: selectedNodes }) => {
-    select(selectedNodes[0]?.id ?? null);
+  // Sync TO selection store (so the inspector can react). Selection is
+  // CLICK-driven only: we deliberately do NOT use onSelectionChange, because
+  // React Flow fires it on pointer-down — the start of a drag — which would
+  // open the inspector the moment you begin moving a node. onNodeClick fires
+  // only on a true click (no drag), and onPaneClick clears it.
+  const onNodeClick = (_event: React.MouseEvent, node: ElementNodeType) => {
+    select(node.id);
+  };
+
+  const onPaneClick = () => {
+    select(null);
   };
 
   // Persist drag-to-position into the doc as a layer-scoped override.
@@ -150,7 +158,8 @@ function CanvasInner() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onSelectionChange={onSelectionChange}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
         nodeTypes={nodeTypes}
         proOptions={{ hideAttribution: true }}
