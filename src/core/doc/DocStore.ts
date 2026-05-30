@@ -23,12 +23,7 @@
 
 import * as Y from "yjs";
 
-import type {
-  Connection,
-  Element,
-  LayerId,
-  ProjectDocument,
-} from "@/core/schema/schema";
+import type { Connection, Element, LayerId, ProjectDocument } from "@/core/schema/schema";
 
 const DOC_KEY = "document";
 
@@ -66,11 +61,7 @@ export interface DocStore {
 
   /** Update a property at a nested path (e.g. ["tech", "language"]).
    *  Creates intermediate objects as needed. Use null to remove the leaf. */
-  updateElementPropertyPath(
-    elementId: string,
-    path: readonly string[],
-    value: unknown,
-  ): void;
+  updateElementPropertyPath(elementId: string, path: readonly string[], value: unknown): void;
 
   /** Update an element's name. */
   updateElementName(elementId: string, name: string): void;
@@ -236,11 +227,7 @@ export function createDocStore(): DocStore {
       mutate((doc) => {
         const elements = doc.elements.map((el): Element => {
           if (el.id !== elementId) return el;
-          const properties = setPath(
-            el.properties as Record<string, unknown>,
-            path,
-            value,
-          );
+          const properties = setPath(el.properties as Record<string, unknown>, path, value);
           return { ...el, properties };
         });
         return { ...doc, elements };

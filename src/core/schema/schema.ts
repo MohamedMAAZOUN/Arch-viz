@@ -14,9 +14,13 @@ import { z } from "zod";
 // Primitives
 // ----------------------------------------------------------------------------
 
-export const Id = z.string().min(1).max(80).regex(/^[a-z0-9][a-z0-9-_]*$/, {
-  message: "ids are kebab-case: lowercase letters, digits, dashes, underscores",
-});
+export const Id = z
+  .string()
+  .min(1)
+  .max(80)
+  .regex(/^[a-z0-9][a-z0-9-_]*$/, {
+    message: "ids are kebab-case: lowercase letters, digits, dashes, underscores",
+  });
 export type Id = z.infer<typeof Id>;
 
 export const MvpRef = z.string().regex(/^mvp\d+$/, "MVP id must match mvpN");
@@ -69,9 +73,7 @@ export const PropertyPatch = z.record(z.string(), z.unknown());
 export const Lifecycle = z.object({
   introducedIn: MvpRef,
   removedIn: MvpRef.optional(),
-  modifiedIn: z
-    .record(MvpRef, z.object({ properties: PropertyPatch }))
-    .optional(),
+  modifiedIn: z.record(MvpRef, z.object({ properties: PropertyPatch })).optional(),
 });
 export type Lifecycle = z.infer<typeof Lifecycle>;
 
@@ -103,11 +105,7 @@ export const HttpSource = z.object({
   binding: DataBinding,
 });
 
-export const DataSource = z.discriminatedUnion("kind", [
-  GrafanaSource,
-  JiraSource,
-  HttpSource,
-]);
+export const DataSource = z.discriminatedUnion("kind", [GrafanaSource, JiraSource, HttpSource]);
 export type DataSource = z.infer<typeof DataSource>;
 
 // ----------------------------------------------------------------------------
@@ -342,8 +340,12 @@ export const ProjectDocument = z
         }
       }
     };
-    doc.elements.forEach((e) => { checkLifecycle(e.lifecycle, `element:${e.id}`); });
-    doc.connections.forEach((c) => { checkLifecycle(c.lifecycle, `connection:${c.id}`); });
+    doc.elements.forEach((e) => {
+      checkLifecycle(e.lifecycle, `element:${e.id}`);
+    });
+    doc.connections.forEach((c) => {
+      checkLifecycle(c.lifecycle, `connection:${c.id}`);
+    });
   });
 
 export type ProjectDocument = z.infer<typeof ProjectDocument>;

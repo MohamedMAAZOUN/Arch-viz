@@ -117,8 +117,6 @@ function computeTopologyKey(doc: ProjectDocument | null, layer: LayerId): string
       return `${e.id}:${e.parent ?? ""}:${e.minLayer}${aggrPart}`;
     })
     .join("|");
-  const connSig = doc.connections
-    .map((c) => `${c.id}:${c.from}>${c.to}:${c.minLayer}`)
-    .join("|");
+  const connSig = doc.connections.map((c) => `${c.id}:${c.from}>${c.to}:${c.minLayer}`).join("|");
   return `${layer}\n${elementSig}\n${connSig}`;
 }

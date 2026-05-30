@@ -7,7 +7,6 @@
 //   - border style (external → dashed; group → thicker)
 // ============================================================================
 
- 
 import { Handle, Position, type NodeProps, type Node } from "@xyflow/react";
 
 import type { Element, ElementType } from "@/core/schema/schema";

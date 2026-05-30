@@ -36,11 +36,21 @@
 }
 
 /* Tone variants drive the accent bar on the left edge */
-.element-node[data-tone="neutral"]  { border-left-color: var(--color-tone-neutral); }
-.element-node[data-tone="critical"] { border-left-color: var(--color-tone-critical); }
-.element-node[data-tone="warning"]  { border-left-color: var(--color-tone-warning); }
-.element-node[data-tone="success"]  { border-left-color: var(--color-tone-success); }
-.element-node[data-tone="muted"]    { border-left-color: var(--color-tone-muted); }
+.element-node[data-tone="neutral"] {
+  border-left-color: var(--color-tone-neutral);
+}
+.element-node[data-tone="critical"] {
+  border-left-color: var(--color-tone-critical);
+}
+.element-node[data-tone="warning"] {
+  border-left-color: var(--color-tone-warning);
+}
+.element-node[data-tone="success"] {
+  border-left-color: var(--color-tone-success);
+}
+.element-node[data-tone="muted"] {
+  border-left-color: var(--color-tone-muted);
+}
 
 /* External elements get a dashed border to read as "outside the system" */
 .element-node[data-type="external"] {

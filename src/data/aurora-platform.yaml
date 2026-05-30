@@ -2,1113 +2,1114 @@ $schemaVersion: 1.0.0
 project:
   id: aurora-platform
   name: Aurora Platform
-  description: A fintech platform spanning banking, payments, lending, and ML intelligence — evolved across
+  description:
+    A fintech platform spanning banking, payments, lending, and ML intelligence — evolved across
     five quarters.
   theme: default
 mvps:
-- id: mvp1
-  name: Q1 · Foundation
-  order: 1
-  color: '#6366f1'
-- id: mvp2
-  name: Q2 · Payments
-  order: 2
-  color: '#06b6d4'
-- id: mvp3
-  name: Q3 · Lending
-  order: 3
-  color: '#10b981'
-- id: mvp4
-  name: Q4 · Intelligence
-  order: 4
-  color: '#f59e0b'
-- id: mvp5
-  name: Q5 · Scale
-  order: 5
-  color: '#ec4899'
+  - id: mvp1
+    name: Q1 · Foundation
+    order: 1
+    color: "#6366f1"
+  - id: mvp2
+    name: Q2 · Payments
+    order: 2
+    color: "#06b6d4"
+  - id: mvp3
+    name: Q3 · Lending
+    order: 3
+    color: "#10b981"
+  - id: mvp4
+    name: Q4 · Intelligence
+    order: 4
+    color: "#f59e0b"
+  - id: mvp5
+    name: Q5 · Scale
+    order: 5
+    color: "#ec4899"
 layers:
-- id: business
-  order: 1
-  label: Business
-- id: architecture
-  order: 2
-  label: Architecture
-- id: engineering
-  order: 3
-  label: Engineering
+  - id: business
+    order: 1
+    label: Business
+  - id: architecture
+    order: 2
+    label: Architecture
+  - id: engineering
+    order: 3
+    label: Engineering
 elements:
-- id: customer
-  type: actor
-  name: Retail Customer
-  minLayer: business
-  properties:
-    description: End user managing accounts and payments.
-    tags:
-    - external
-    - persona
-  lifecycle:
-    introducedIn: mvp1
-- id: merchant
-  type: actor
-  name: Merchant
-  minLayer: business
-  properties:
-    description: Business accepting payments.
-    tags:
-    - external
-    - persona
-  lifecycle:
-    introducedIn: mvp2
-- id: ops-analyst
-  type: actor
-  name: Operations Analyst
-  minLayer: business
-  properties:
-    description: Internal staff monitoring platform health.
-    tags:
-    - internal
-    - persona
-  lifecycle:
-    introducedIn: mvp1
-- id: risk-officer
-  type: actor
-  name: Risk Officer
-  minLayer: business
-  properties:
-    description: Reviews lending decisions and fraud flags.
-    tags:
-    - internal
-    - persona
-  lifecycle:
-    introducedIn: mvp3
-- id: banking-domain
-  type: group
-  name: Core Banking
-  minLayer: business
-  properties:
-    description: Accounts, ledger, and customer identity.
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp1
-  aggregateAt:
-  - business
-- id: payments-domain
-  type: group
-  name: Payments
-  minLayer: business
-  properties:
-    description: Money movement and settlement.
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp2
-  aggregateAt:
-  - business
-- id: lending-domain
-  type: group
-  name: Lending
-  minLayer: business
-  properties:
-    description: Credit decisioning and loan servicing.
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp3
-  aggregateAt:
-  - business
-- id: intelligence-domain
-  type: group
-  name: Intelligence
-  minLayer: business
-  properties:
-    description: ML-driven fraud, risk, and personalization.
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp4
-  aggregateAt:
-  - business
-- id: platform-domain
-  type: group
-  name: Shared Platform
-  minLayer: business
-  properties:
-    description: Cross-cutting infrastructure services.
-    tags:
-    - domain
-  lifecycle:
-    introducedIn: mvp1
-  aggregateAt:
-  - business
-- id: web-app
-  type: frontend
-  name: Web Banking App
-  minLayer: business
-  properties:
-    description: React SPA for retail banking.
-    owner: team-web
-    tags:
-    - spa
-    tech:
-      framework: React
-      hosting: CloudFront
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-  style:
-    tone: neutral
-- id: mobile-app
-  type: frontend
-  name: Mobile App
-  minLayer: business
-  properties:
-    description: iOS / Android banking client.
-    owner: team-mobile
-    tags:
-    - mobile
-    tech:
-      framework: React Native
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-- id: merchant-portal
-  type: frontend
-  name: Merchant Portal
-  minLayer: business
-  properties:
-    description: Dashboard for merchants.
-    owner: team-merchant
-    tags:
-    - spa
-    tech:
-      framework: Next.js
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: ops-console
-  type: frontend
-  name: Ops Console
-  minLayer: architecture
-  properties:
-    description: Internal operations dashboard.
-    owner: team-platform
-    tags:
-    - internal
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: api-gateway
-  type: service
-  name: API Gateway
-  minLayer: architecture
-  properties:
-    description: Edge routing, auth, rate limiting.
-    owner: team-platform
-    tags:
-    - edge
-    - critical
-    tech:
-      language: Go
-      runtime: Kubernetes
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-  dataSources:
-  - kind: grafana
-    query: gateway_rps
-    binding: metric
-  style:
-    tone: critical
-- id: auth-service
-  type: service
-  name: Identity & Auth
-  minLayer: architecture
-  properties:
-    description: OAuth2 / OIDC, session management.
-    owner: team-identity
-    tags:
-    - security
-    - critical
-    tech:
-      language: Go
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-  style:
-    tone: critical
-- id: account-service
-  type: service
-  name: Account Service
-  minLayer: architecture
-  properties:
-    description: Account lifecycle and balances.
-    owner: team-banking
-    tags:
-    - core
-    tech:
-      language: Java
-      framework: Spring Boot
-  lifecycle:
-    introducedIn: mvp1
-    modifiedIn:
-      mvp4:
-        properties:
-          description: Account lifecycle, balances, and ML-scored insights.
-  parent: banking-domain
-- id: ledger-service
-  type: service
-  name: Ledger Service
-  minLayer: architecture
-  properties:
-    description: Double-entry transaction ledger.
-    owner: team-banking
-    tags:
-    - core
-    - critical
-    tech:
-      language: Rust
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-  style:
-    tone: critical
-- id: customer-db
-  type: database
-  name: Customer DB
-  minLayer: engineering
-  properties:
-    description: PostgreSQL — customer & account records.
-    owner: team-banking
-    tags:
-    - postgres
-    tech:
-      engine: PostgreSQL
-      ha: multi-AZ
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-- id: ledger-db
-  type: database
-  name: Ledger DB
-  minLayer: engineering
-  properties:
-    description: Append-only ledger store.
-    owner: team-banking
-    tags:
-    - postgres
-    - critical
-    tech:
-      engine: PostgreSQL
-  lifecycle:
-    introducedIn: mvp1
-  parent: banking-domain
-  style:
-    tone: critical
-- id: payment-service
-  type: service
-  name: Payment Service
-  minLayer: architecture
-  properties:
-    description: Initiates and tracks payments.
-    owner: team-payments
-    tags:
-    - core
-    tech:
-      language: Java
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-  dataSources:
-  - kind: jira
-    jql: project=PAY AND status=Open
-    binding: badge
-- id: settlement-service
-  type: service
-  name: Settlement Service
-  minLayer: architecture
-  properties:
-    description: Batch settlement with banking partners.
-    owner: team-payments
-    tags:
-    - batch
-    tech:
-      language: Java
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: payment-queue
-  type: queue
-  name: Payment Events
-  minLayer: engineering
-  properties:
-    description: Kafka topic for payment lifecycle events.
-    owner: team-payments
-    tags:
-    - kafka
-    tech:
-      broker: Kafka
-      partitions: 24
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: payment-db
-  type: database
-  name: Payment DB
-  minLayer: engineering
-  properties:
-    description: Payment records and state machine.
-    owner: team-payments
-    tech:
-      engine: PostgreSQL
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: card-network
-  type: external
-  name: Card Networks
-  minLayer: architecture
-  properties:
-    description: Visa / Mastercard rails.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: bank-rails
-  type: external
-  name: Banking Rails (ACH/SEPA)
-  minLayer: architecture
-  properties:
-    description: Direct bank transfer networks.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp2
-  parent: payments-domain
-- id: lending-service
-  type: service
-  name: Lending Service
-  minLayer: architecture
-  properties:
-    description: Loan origination and servicing.
-    owner: team-lending
-    tech:
-      language: Kotlin
-  lifecycle:
-    introducedIn: mvp3
-  parent: lending-domain
-- id: credit-engine
-  type: service
-  name: Credit Decision Engine
-  minLayer: architecture
-  properties:
-    description: Rules + ML credit scoring.
-    owner: team-lending
-    tags:
-    - critical
-    tech:
-      language: Python
-  lifecycle:
-    introducedIn: mvp3
-  parent: lending-domain
-  style:
-    tone: warning
-- id: lending-db
-  type: database
-  name: Lending DB
-  minLayer: engineering
-  properties:
-    description: Loan records and repayment schedules.
-    owner: team-lending
-    tech:
-      engine: PostgreSQL
-  lifecycle:
-    introducedIn: mvp3
-  parent: lending-domain
-- id: credit-bureau
-  type: external
-  name: Credit Bureau
-  minLayer: architecture
-  properties:
-    description: External credit-history provider.
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp3
-  parent: lending-domain
-- id: fraud-service
-  type: service
-  name: Fraud Detection
-  minLayer: architecture
-  properties:
-    description: Real-time transaction fraud scoring.
-    owner: team-ml
-    tags:
-    - ml
-    - critical
-    tech:
-      language: Python
-      framework: PyTorch
-  lifecycle:
-    introducedIn: mvp4
-  parent: intelligence-domain
-  dataSources:
-  - kind: grafana
-    query: fraud_score_p99
-    binding: metric
-  style:
-    tone: warning
-- id: risk-service
-  type: service
-  name: Risk Scoring
-  minLayer: architecture
-  properties:
-    description: Portfolio and counterparty risk.
-    owner: team-ml
-    tags:
-    - ml
-    tech:
-      language: Python
-  lifecycle:
-    introducedIn: mvp4
-  parent: intelligence-domain
-- id: reco-service
-  type: service
-  name: Personalization
-  minLayer: architecture
-  properties:
-    description: Product recommendations.
-    owner: team-ml
-    tags:
-    - ml
-    tech:
-      language: Python
-  lifecycle:
-    introducedIn: mvp4
-  parent: intelligence-domain
-- id: feature-store
-  type: database
-  name: Feature Store
-  minLayer: engineering
-  properties:
-    description: Online + offline ML features.
-    owner: team-ml
-    tags:
-    - redis
-    - ml
-    tech:
-      engine: Redis + S3
-  lifecycle:
-    introducedIn: mvp4
-  parent: intelligence-domain
-- id: event-stream
-  type: queue
-  name: Event Stream
-  minLayer: engineering
-  properties:
-    description: Unified event bus for ML pipelines.
-    owner: team-ml
-    tech:
-      broker: Kafka
-  lifecycle:
-    introducedIn: mvp4
-  parent: intelligence-domain
-- id: notification-service
-  type: service
-  name: Notifications
-  minLayer: architecture
-  properties:
-    description: Email / SMS / push fan-out.
-    owner: team-platform
-    tech:
-      language: Go
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: audit-service
-  type: service
-  name: Audit Log
-  minLayer: architecture
-  properties:
-    description: Immutable audit trail for compliance.
-    owner: team-platform
-    tags:
-    - compliance
-    tech:
-      language: Go
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: config-service
-  type: service
-  name: Config & Flags
-  minLayer: architecture
-  properties:
-    description: Feature flags and dynamic config.
-    owner: team-platform
-    tech:
-      language: Go
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: notification-queue
-  type: queue
-  name: Notification Queue
-  minLayer: engineering
-  properties:
-    description: Async delivery queue.
-    owner: team-platform
-    tech:
-      broker: RabbitMQ
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: audit-db
-  type: database
-  name: Audit Store
-  minLayer: engineering
-  properties:
-    description: Write-once audit records.
-    owner: team-platform
-    tech:
-      engine: ClickHouse
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: observability
-  type: service
-  name: Observability
-  minLayer: engineering
-  properties:
-    description: Metrics, traces, logs (Grafana stack).
-    owner: team-platform
-    tags:
-    - ops
-    tech:
-      stack: Grafana/Loki/Tempo
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-  dataSources:
-  - kind: grafana
-    query: up
-    binding: status
-- id: email-provider
-  type: external
-  name: Email Provider
-  minLayer: architecture
-  properties:
-    description: Transactional email (SendGrid).
-    tags:
-    - third-party
-  lifecycle:
-    introducedIn: mvp1
-  parent: platform-domain
-- id: legacy-batch
-  type: service
-  name: Legacy Batch (deprecated)
-  minLayer: architecture
-  properties:
-    description: Old nightly batch — retired in Q5.
-    owner: team-platform
-    tags:
-    - legacy
-  lifecycle:
-    introducedIn: mvp1
-    removedIn: mvp5
-  parent: platform-domain
-  style:
-    tone: muted
+  - id: customer
+    type: actor
+    name: Retail Customer
+    minLayer: business
+    properties:
+      description: End user managing accounts and payments.
+      tags:
+        - external
+        - persona
+    lifecycle:
+      introducedIn: mvp1
+  - id: merchant
+    type: actor
+    name: Merchant
+    minLayer: business
+    properties:
+      description: Business accepting payments.
+      tags:
+        - external
+        - persona
+    lifecycle:
+      introducedIn: mvp2
+  - id: ops-analyst
+    type: actor
+    name: Operations Analyst
+    minLayer: business
+    properties:
+      description: Internal staff monitoring platform health.
+      tags:
+        - internal
+        - persona
+    lifecycle:
+      introducedIn: mvp1
+  - id: risk-officer
+    type: actor
+    name: Risk Officer
+    minLayer: business
+    properties:
+      description: Reviews lending decisions and fraud flags.
+      tags:
+        - internal
+        - persona
+    lifecycle:
+      introducedIn: mvp3
+  - id: banking-domain
+    type: group
+    name: Core Banking
+    minLayer: business
+    properties:
+      description: Accounts, ledger, and customer identity.
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp1
+    aggregateAt:
+      - business
+  - id: payments-domain
+    type: group
+    name: Payments
+    minLayer: business
+    properties:
+      description: Money movement and settlement.
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp2
+    aggregateAt:
+      - business
+  - id: lending-domain
+    type: group
+    name: Lending
+    minLayer: business
+    properties:
+      description: Credit decisioning and loan servicing.
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp3
+    aggregateAt:
+      - business
+  - id: intelligence-domain
+    type: group
+    name: Intelligence
+    minLayer: business
+    properties:
+      description: ML-driven fraud, risk, and personalization.
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp4
+    aggregateAt:
+      - business
+  - id: platform-domain
+    type: group
+    name: Shared Platform
+    minLayer: business
+    properties:
+      description: Cross-cutting infrastructure services.
+      tags:
+        - domain
+    lifecycle:
+      introducedIn: mvp1
+    aggregateAt:
+      - business
+  - id: web-app
+    type: frontend
+    name: Web Banking App
+    minLayer: business
+    properties:
+      description: React SPA for retail banking.
+      owner: team-web
+      tags:
+        - spa
+      tech:
+        framework: React
+        hosting: CloudFront
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+    style:
+      tone: neutral
+  - id: mobile-app
+    type: frontend
+    name: Mobile App
+    minLayer: business
+    properties:
+      description: iOS / Android banking client.
+      owner: team-mobile
+      tags:
+        - mobile
+      tech:
+        framework: React Native
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+  - id: merchant-portal
+    type: frontend
+    name: Merchant Portal
+    minLayer: business
+    properties:
+      description: Dashboard for merchants.
+      owner: team-merchant
+      tags:
+        - spa
+      tech:
+        framework: Next.js
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: ops-console
+    type: frontend
+    name: Ops Console
+    minLayer: architecture
+    properties:
+      description: Internal operations dashboard.
+      owner: team-platform
+      tags:
+        - internal
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: api-gateway
+    type: service
+    name: API Gateway
+    minLayer: architecture
+    properties:
+      description: Edge routing, auth, rate limiting.
+      owner: team-platform
+      tags:
+        - edge
+        - critical
+      tech:
+        language: Go
+        runtime: Kubernetes
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+    dataSources:
+      - kind: grafana
+        query: gateway_rps
+        binding: metric
+    style:
+      tone: critical
+  - id: auth-service
+    type: service
+    name: Identity & Auth
+    minLayer: architecture
+    properties:
+      description: OAuth2 / OIDC, session management.
+      owner: team-identity
+      tags:
+        - security
+        - critical
+      tech:
+        language: Go
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+    style:
+      tone: critical
+  - id: account-service
+    type: service
+    name: Account Service
+    minLayer: architecture
+    properties:
+      description: Account lifecycle and balances.
+      owner: team-banking
+      tags:
+        - core
+      tech:
+        language: Java
+        framework: Spring Boot
+    lifecycle:
+      introducedIn: mvp1
+      modifiedIn:
+        mvp4:
+          properties:
+            description: Account lifecycle, balances, and ML-scored insights.
+    parent: banking-domain
+  - id: ledger-service
+    type: service
+    name: Ledger Service
+    minLayer: architecture
+    properties:
+      description: Double-entry transaction ledger.
+      owner: team-banking
+      tags:
+        - core
+        - critical
+      tech:
+        language: Rust
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+    style:
+      tone: critical
+  - id: customer-db
+    type: database
+    name: Customer DB
+    minLayer: engineering
+    properties:
+      description: PostgreSQL — customer & account records.
+      owner: team-banking
+      tags:
+        - postgres
+      tech:
+        engine: PostgreSQL
+        ha: multi-AZ
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+  - id: ledger-db
+    type: database
+    name: Ledger DB
+    minLayer: engineering
+    properties:
+      description: Append-only ledger store.
+      owner: team-banking
+      tags:
+        - postgres
+        - critical
+      tech:
+        engine: PostgreSQL
+    lifecycle:
+      introducedIn: mvp1
+    parent: banking-domain
+    style:
+      tone: critical
+  - id: payment-service
+    type: service
+    name: Payment Service
+    minLayer: architecture
+    properties:
+      description: Initiates and tracks payments.
+      owner: team-payments
+      tags:
+        - core
+      tech:
+        language: Java
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+    dataSources:
+      - kind: jira
+        jql: project=PAY AND status=Open
+        binding: badge
+  - id: settlement-service
+    type: service
+    name: Settlement Service
+    minLayer: architecture
+    properties:
+      description: Batch settlement with banking partners.
+      owner: team-payments
+      tags:
+        - batch
+      tech:
+        language: Java
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: payment-queue
+    type: queue
+    name: Payment Events
+    minLayer: engineering
+    properties:
+      description: Kafka topic for payment lifecycle events.
+      owner: team-payments
+      tags:
+        - kafka
+      tech:
+        broker: Kafka
+        partitions: 24
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: payment-db
+    type: database
+    name: Payment DB
+    minLayer: engineering
+    properties:
+      description: Payment records and state machine.
+      owner: team-payments
+      tech:
+        engine: PostgreSQL
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: card-network
+    type: external
+    name: Card Networks
+    minLayer: architecture
+    properties:
+      description: Visa / Mastercard rails.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: bank-rails
+    type: external
+    name: Banking Rails (ACH/SEPA)
+    minLayer: architecture
+    properties:
+      description: Direct bank transfer networks.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp2
+    parent: payments-domain
+  - id: lending-service
+    type: service
+    name: Lending Service
+    minLayer: architecture
+    properties:
+      description: Loan origination and servicing.
+      owner: team-lending
+      tech:
+        language: Kotlin
+    lifecycle:
+      introducedIn: mvp3
+    parent: lending-domain
+  - id: credit-engine
+    type: service
+    name: Credit Decision Engine
+    minLayer: architecture
+    properties:
+      description: Rules + ML credit scoring.
+      owner: team-lending
+      tags:
+        - critical
+      tech:
+        language: Python
+    lifecycle:
+      introducedIn: mvp3
+    parent: lending-domain
+    style:
+      tone: warning
+  - id: lending-db
+    type: database
+    name: Lending DB
+    minLayer: engineering
+    properties:
+      description: Loan records and repayment schedules.
+      owner: team-lending
+      tech:
+        engine: PostgreSQL
+    lifecycle:
+      introducedIn: mvp3
+    parent: lending-domain
+  - id: credit-bureau
+    type: external
+    name: Credit Bureau
+    minLayer: architecture
+    properties:
+      description: External credit-history provider.
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp3
+    parent: lending-domain
+  - id: fraud-service
+    type: service
+    name: Fraud Detection
+    minLayer: architecture
+    properties:
+      description: Real-time transaction fraud scoring.
+      owner: team-ml
+      tags:
+        - ml
+        - critical
+      tech:
+        language: Python
+        framework: PyTorch
+    lifecycle:
+      introducedIn: mvp4
+    parent: intelligence-domain
+    dataSources:
+      - kind: grafana
+        query: fraud_score_p99
+        binding: metric
+    style:
+      tone: warning
+  - id: risk-service
+    type: service
+    name: Risk Scoring
+    minLayer: architecture
+    properties:
+      description: Portfolio and counterparty risk.
+      owner: team-ml
+      tags:
+        - ml
+      tech:
+        language: Python
+    lifecycle:
+      introducedIn: mvp4
+    parent: intelligence-domain
+  - id: reco-service
+    type: service
+    name: Personalization
+    minLayer: architecture
+    properties:
+      description: Product recommendations.
+      owner: team-ml
+      tags:
+        - ml
+      tech:
+        language: Python
+    lifecycle:
+      introducedIn: mvp4
+    parent: intelligence-domain
+  - id: feature-store
+    type: database
+    name: Feature Store
+    minLayer: engineering
+    properties:
+      description: Online + offline ML features.
+      owner: team-ml
+      tags:
+        - redis
+        - ml
+      tech:
+        engine: Redis + S3
+    lifecycle:
+      introducedIn: mvp4
+    parent: intelligence-domain
+  - id: event-stream
+    type: queue
+    name: Event Stream
+    minLayer: engineering
+    properties:
+      description: Unified event bus for ML pipelines.
+      owner: team-ml
+      tech:
+        broker: Kafka
+    lifecycle:
+      introducedIn: mvp4
+    parent: intelligence-domain
+  - id: notification-service
+    type: service
+    name: Notifications
+    minLayer: architecture
+    properties:
+      description: Email / SMS / push fan-out.
+      owner: team-platform
+      tech:
+        language: Go
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: audit-service
+    type: service
+    name: Audit Log
+    minLayer: architecture
+    properties:
+      description: Immutable audit trail for compliance.
+      owner: team-platform
+      tags:
+        - compliance
+      tech:
+        language: Go
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: config-service
+    type: service
+    name: Config & Flags
+    minLayer: architecture
+    properties:
+      description: Feature flags and dynamic config.
+      owner: team-platform
+      tech:
+        language: Go
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: notification-queue
+    type: queue
+    name: Notification Queue
+    minLayer: engineering
+    properties:
+      description: Async delivery queue.
+      owner: team-platform
+      tech:
+        broker: RabbitMQ
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: audit-db
+    type: database
+    name: Audit Store
+    minLayer: engineering
+    properties:
+      description: Write-once audit records.
+      owner: team-platform
+      tech:
+        engine: ClickHouse
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: observability
+    type: service
+    name: Observability
+    minLayer: engineering
+    properties:
+      description: Metrics, traces, logs (Grafana stack).
+      owner: team-platform
+      tags:
+        - ops
+      tech:
+        stack: Grafana/Loki/Tempo
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+    dataSources:
+      - kind: grafana
+        query: up
+        binding: status
+  - id: email-provider
+    type: external
+    name: Email Provider
+    minLayer: architecture
+    properties:
+      description: Transactional email (SendGrid).
+      tags:
+        - third-party
+    lifecycle:
+      introducedIn: mvp1
+    parent: platform-domain
+  - id: legacy-batch
+    type: service
+    name: Legacy Batch (deprecated)
+    minLayer: architecture
+    properties:
+      description: Old nightly batch — retired in Q5.
+      owner: team-platform
+      tags:
+        - legacy
+    lifecycle:
+      introducedIn: mvp1
+      removedIn: mvp5
+    parent: platform-domain
+    style:
+      tone: muted
 connections:
-- id: web-app-to-gateway
-  from: web-app
-  to: api-gateway
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: mobile-app-to-gateway
-  from: mobile-app
-  to: api-gateway
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: merchant-portal-to-gateway
-  from: merchant-portal
-  to: api-gateway
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: HTTPS
-- id: ops-console-to-gateway
-  from: ops-console
-  to: api-gateway
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: gateway-to-auth-service
-  from: api-gateway
-  to: auth-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: gRPC
-- id: gateway-to-account-service
-  from: api-gateway
-  to: account-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: gRPC
-- id: gateway-to-payment-service
-  from: api-gateway
-  to: payment-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: gRPC
-- id: gateway-to-lending-service
-  from: api-gateway
-  to: lending-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: gRPC
-- id: gateway-to-fraud-service
-  from: api-gateway
-  to: fraud-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: gRPC
-- id: account-to-ledger
-  from: account-service
-  to: ledger-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: gRPC
-- id: account-to-db
-  from: account-service
-  to: customer-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: SQL
-- id: ledger-to-db
-  from: ledger-service
-  to: ledger-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: SQL
-- id: auth-to-db
-  from: auth-service
-  to: customer-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: SQL
-- id: payment-to-ledger
-  from: payment-service
-  to: ledger-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: gRPC
-- id: payment-to-settlement
-  from: payment-service
-  to: settlement-service
-  type: async
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: Kafka
-- id: payment-to-queue
-  from: payment-service
-  to: payment-queue
-  type: event
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-  protocol: Kafka
-- id: payment-to-db
-  from: payment-service
-  to: payment-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp2
-  protocol: SQL
-- id: settlement-to-cards
-  from: settlement-service
-  to: card-network
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: ISO8583
-- id: settlement-to-banks
-  from: settlement-service
-  to: bank-rails
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: ISO20022
-- id: merchant-to-payment
-  from: merchant-portal
-  to: payment-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: HTTPS
-- id: lending-to-credit
-  from: lending-service
-  to: credit-engine
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: gRPC
-- id: credit-to-bureau
-  from: credit-engine
-  to: credit-bureau
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: HTTPS
-- id: lending-to-db
-  from: lending-service
-  to: lending-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp3
-  protocol: SQL
-- id: lending-to-ledger
-  from: lending-service
-  to: ledger-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: gRPC
-- id: credit-to-bureau-data
-  from: credit-engine
-  to: feature-store
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Redis
-- id: payment-q-to-stream
-  from: payment-queue
-  to: event-stream
-  type: event
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Kafka
-- id: stream-to-fraud
-  from: event-stream
-  to: fraud-service
-  type: event
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Kafka
-- id: stream-to-risk
-  from: event-stream
-  to: risk-service
-  type: event
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Kafka
-- id: fraud-to-features
-  from: fraud-service
-  to: feature-store
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Redis
-- id: risk-to-features
-  from: risk-service
-  to: feature-store
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Redis
-- id: reco-to-features
-  from: reco-service
-  to: feature-store
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp4
-  protocol: Redis
-- id: fraud-to-payment
-  from: fraud-service
-  to: payment-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: gRPC
-- id: reco-to-account
-  from: reco-service
-  to: account-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: gRPC
-- id: risk-to-lending
-  from: risk-service
-  to: lending-service
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp4
-  protocol: gRPC
-- id: payment-to-notif
-  from: payment-service
-  to: notification-service
-  type: async
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: AMQP
-- id: account-to-notif
-  from: account-service
-  to: notification-service
-  type: async
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: AMQP
-- id: lending-to-notif
-  from: lending-service
-  to: notification-service
-  type: async
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: AMQP
-- id: notif-to-queue
-  from: notification-service
-  to: notification-queue
-  type: event
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: AMQP
-- id: notif-to-email
-  from: notification-service
-  to: email-provider
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: notif-q-to-email
-  from: notification-queue
-  to: email-provider
-  type: async
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: audit-to-db
-  from: audit-service
-  to: audit-db
-  type: data
-  minLayer: engineering
-  lifecycle:
-    introducedIn: mvp1
-  protocol: SQL
-- id: ledger-to-audit
-  from: ledger-service
-  to: audit-service
-  type: event
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: Kafka
-- id: payment-to-audit
-  from: payment-service
-  to: audit-service
-  type: event
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp2
-  protocol: Kafka
-- id: lending-to-audit
-  from: lending-service
-  to: audit-service
-  type: event
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp3
-  protocol: Kafka
-- id: ops-to-obs
-  from: ops-console
-  to: observability
-  type: sync
-  minLayer: architecture
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: customer-uses-web
-  from: customer
-  to: web-app
-  type: sync
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: customer-uses-mobile
-  from: customer
-  to: mobile-app
-  type: sync
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: merchant-uses-portal
-  from: merchant
-  to: merchant-portal
-  type: sync
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp2
-  protocol: HTTPS
-- id: ops-uses-console
-  from: ops-analyst
-  to: ops-console
-  type: sync
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp1
-  protocol: HTTPS
-- id: risk-uses-console
-  from: risk-officer
-  to: ops-console
-  type: sync
-  minLayer: business
-  lifecycle:
-    introducedIn: mvp3
-  protocol: HTTPS
+  - id: web-app-to-gateway
+    from: web-app
+    to: api-gateway
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: mobile-app-to-gateway
+    from: mobile-app
+    to: api-gateway
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: merchant-portal-to-gateway
+    from: merchant-portal
+    to: api-gateway
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: HTTPS
+  - id: ops-console-to-gateway
+    from: ops-console
+    to: api-gateway
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: gateway-to-auth-service
+    from: api-gateway
+    to: auth-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: gRPC
+  - id: gateway-to-account-service
+    from: api-gateway
+    to: account-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: gRPC
+  - id: gateway-to-payment-service
+    from: api-gateway
+    to: payment-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: gRPC
+  - id: gateway-to-lending-service
+    from: api-gateway
+    to: lending-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: gRPC
+  - id: gateway-to-fraud-service
+    from: api-gateway
+    to: fraud-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: gRPC
+  - id: account-to-ledger
+    from: account-service
+    to: ledger-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: gRPC
+  - id: account-to-db
+    from: account-service
+    to: customer-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: SQL
+  - id: ledger-to-db
+    from: ledger-service
+    to: ledger-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: SQL
+  - id: auth-to-db
+    from: auth-service
+    to: customer-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: SQL
+  - id: payment-to-ledger
+    from: payment-service
+    to: ledger-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: gRPC
+  - id: payment-to-settlement
+    from: payment-service
+    to: settlement-service
+    type: async
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: Kafka
+  - id: payment-to-queue
+    from: payment-service
+    to: payment-queue
+    type: event
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+    protocol: Kafka
+  - id: payment-to-db
+    from: payment-service
+    to: payment-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp2
+    protocol: SQL
+  - id: settlement-to-cards
+    from: settlement-service
+    to: card-network
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: ISO8583
+  - id: settlement-to-banks
+    from: settlement-service
+    to: bank-rails
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: ISO20022
+  - id: merchant-to-payment
+    from: merchant-portal
+    to: payment-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: HTTPS
+  - id: lending-to-credit
+    from: lending-service
+    to: credit-engine
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: gRPC
+  - id: credit-to-bureau
+    from: credit-engine
+    to: credit-bureau
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: HTTPS
+  - id: lending-to-db
+    from: lending-service
+    to: lending-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp3
+    protocol: SQL
+  - id: lending-to-ledger
+    from: lending-service
+    to: ledger-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: gRPC
+  - id: credit-to-bureau-data
+    from: credit-engine
+    to: feature-store
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Redis
+  - id: payment-q-to-stream
+    from: payment-queue
+    to: event-stream
+    type: event
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Kafka
+  - id: stream-to-fraud
+    from: event-stream
+    to: fraud-service
+    type: event
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Kafka
+  - id: stream-to-risk
+    from: event-stream
+    to: risk-service
+    type: event
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Kafka
+  - id: fraud-to-features
+    from: fraud-service
+    to: feature-store
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Redis
+  - id: risk-to-features
+    from: risk-service
+    to: feature-store
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Redis
+  - id: reco-to-features
+    from: reco-service
+    to: feature-store
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp4
+    protocol: Redis
+  - id: fraud-to-payment
+    from: fraud-service
+    to: payment-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: gRPC
+  - id: reco-to-account
+    from: reco-service
+    to: account-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: gRPC
+  - id: risk-to-lending
+    from: risk-service
+    to: lending-service
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp4
+    protocol: gRPC
+  - id: payment-to-notif
+    from: payment-service
+    to: notification-service
+    type: async
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: AMQP
+  - id: account-to-notif
+    from: account-service
+    to: notification-service
+    type: async
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: AMQP
+  - id: lending-to-notif
+    from: lending-service
+    to: notification-service
+    type: async
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: AMQP
+  - id: notif-to-queue
+    from: notification-service
+    to: notification-queue
+    type: event
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: AMQP
+  - id: notif-to-email
+    from: notification-service
+    to: email-provider
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: notif-q-to-email
+    from: notification-queue
+    to: email-provider
+    type: async
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: audit-to-db
+    from: audit-service
+    to: audit-db
+    type: data
+    minLayer: engineering
+    lifecycle:
+      introducedIn: mvp1
+    protocol: SQL
+  - id: ledger-to-audit
+    from: ledger-service
+    to: audit-service
+    type: event
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: Kafka
+  - id: payment-to-audit
+    from: payment-service
+    to: audit-service
+    type: event
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp2
+    protocol: Kafka
+  - id: lending-to-audit
+    from: lending-service
+    to: audit-service
+    type: event
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp3
+    protocol: Kafka
+  - id: ops-to-obs
+    from: ops-console
+    to: observability
+    type: sync
+    minLayer: architecture
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: customer-uses-web
+    from: customer
+    to: web-app
+    type: sync
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: customer-uses-mobile
+    from: customer
+    to: mobile-app
+    type: sync
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: merchant-uses-portal
+    from: merchant
+    to: merchant-portal
+    type: sync
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp2
+    protocol: HTTPS
+  - id: ops-uses-console
+    from: ops-analyst
+    to: ops-console
+    type: sync
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp1
+    protocol: HTTPS
+  - id: risk-uses-console
+    from: risk-officer
+    to: ops-console
+    type: sync
+    minLayer: business
+    lifecycle:
+      introducedIn: mvp3
+    protocol: HTTPS
 tours:
-- id: exec-overview
-  name: Executive Overview
-  description: The platform at the business layer, domain by domain.
-  steps:
-  - id: exec-1
-    viewpoint:
-      fit: all
-      layer: business
-      mvp: mvp5
-    caption: Aurora platform — five domains at full scale.
-    duration: 5000
-  - id: exec-2
-    viewpoint:
-      focus: banking-domain
-      layer: business
-      mvp: mvp1
-      zoom: 1.4
-    caption: It started with Core Banking in Q1.
-    highlight:
-    - banking-domain
-    duration: 4000
-  - id: exec-3
-    viewpoint:
-      focus: payments-domain
-      layer: business
-      mvp: mvp2
-      zoom: 1.4
-    caption: Payments arrived in Q2.
-    highlight:
-    - payments-domain
-    duration: 4000
-  - id: exec-4
-    viewpoint:
-      focus: intelligence-domain
-      layer: business
-      mvp: mvp4
-      zoom: 1.4
-    caption: ML-driven intelligence in Q4 ties it together.
-    highlight:
-    - intelligence-domain
-    duration: 4000
-- id: payment-flow
-  name: A Payment, End to End
-  description: Follow a single payment through the architecture.
-  steps:
-  - id: pay-1
-    viewpoint:
-      focus: web-app
-      layer: architecture
-      mvp: mvp4
-      zoom: 1.6
-    caption: A customer initiates a payment in the web app.
-    highlight:
-    - web-app
-    - customer
-    duration: 3500
-  - id: pay-2
-    viewpoint:
-      focus: payment-service
-      layer: architecture
-      mvp: mvp4
-      zoom: 1.5
-    caption: The payment service orchestrates the flow.
-    highlight:
-    - payment-service
-    - api-gateway
-    duration: 3500
-  - id: pay-3
-    viewpoint:
-      focus: fraud-service
-      layer: architecture
-      mvp: mvp4
-      zoom: 1.5
-    caption: Fraud detection scores it in real time.
-    highlight:
-    - fraud-service
-    - event-stream
-    duration: 3500
-  - id: pay-4
-    viewpoint:
-      focus: settlement-service
-      layer: architecture
-      mvp: mvp4
-      zoom: 1.5
-    caption: Settlement moves money via the card networks.
-    highlight:
-    - settlement-service
-    - card-network
-    - bank-rails
-    duration: 4000
+  - id: exec-overview
+    name: Executive Overview
+    description: The platform at the business layer, domain by domain.
+    steps:
+      - id: exec-1
+        viewpoint:
+          fit: all
+          layer: business
+          mvp: mvp5
+        caption: Aurora platform — five domains at full scale.
+        duration: 5000
+      - id: exec-2
+        viewpoint:
+          focus: banking-domain
+          layer: business
+          mvp: mvp1
+          zoom: 1.4
+        caption: It started with Core Banking in Q1.
+        highlight:
+          - banking-domain
+        duration: 4000
+      - id: exec-3
+        viewpoint:
+          focus: payments-domain
+          layer: business
+          mvp: mvp2
+          zoom: 1.4
+        caption: Payments arrived in Q2.
+        highlight:
+          - payments-domain
+        duration: 4000
+      - id: exec-4
+        viewpoint:
+          focus: intelligence-domain
+          layer: business
+          mvp: mvp4
+          zoom: 1.4
+        caption: ML-driven intelligence in Q4 ties it together.
+        highlight:
+          - intelligence-domain
+        duration: 4000
+  - id: payment-flow
+    name: A Payment, End to End
+    description: Follow a single payment through the architecture.
+    steps:
+      - id: pay-1
+        viewpoint:
+          focus: web-app
+          layer: architecture
+          mvp: mvp4
+          zoom: 1.6
+        caption: A customer initiates a payment in the web app.
+        highlight:
+          - web-app
+          - customer
+        duration: 3500
+      - id: pay-2
+        viewpoint:
+          focus: payment-service
+          layer: architecture
+          mvp: mvp4
+          zoom: 1.5
+        caption: The payment service orchestrates the flow.
+        highlight:
+          - payment-service
+          - api-gateway
+        duration: 3500
+      - id: pay-3
+        viewpoint:
+          focus: fraud-service
+          layer: architecture
+          mvp: mvp4
+          zoom: 1.5
+        caption: Fraud detection scores it in real time.
+        highlight:
+          - fraud-service
+          - event-stream
+        duration: 3500
+      - id: pay-4
+        viewpoint:
+          focus: settlement-service
+          layer: architecture
+          mvp: mvp4
+          zoom: 1.5
+        caption: Settlement moves money via the card networks.
+        highlight:
+          - settlement-service
+          - card-network
+          - bank-rails
+        duration: 4000

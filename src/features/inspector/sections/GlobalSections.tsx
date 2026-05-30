@@ -100,9 +100,7 @@ function SearchPanel({ doc }: { doc: ProjectDocument }) {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q === "") return [];
-    return doc.elements
-      .filter((e) => elementMatches(e, q))
-      .slice(0, 25);
+    return doc.elements.filter((e) => elementMatches(e, q)).slice(0, 25);
   }, [doc, query]);
 
   return (
@@ -152,7 +150,10 @@ function elementMatches(el: Element, q: string): boolean {
   const owner = el.properties.owner;
   if (typeof owner === "string" && owner.toLowerCase().includes(q)) return true;
   const tags = el.properties.tags;
-  if (Array.isArray(tags) && tags.some((t) => typeof t === "string" && t.toLowerCase().includes(q))) {
+  if (
+    Array.isArray(tags) &&
+    tags.some((t) => typeof t === "string" && t.toLowerCase().includes(q))
+  ) {
     return true;
   }
   return false;

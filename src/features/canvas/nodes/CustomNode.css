@@ -60,11 +60,21 @@
   background: var(--cnode-tone, var(--color-tone-neutral));
 }
 
-.cnode[data-tone="neutral"]  { --cnode-tone: var(--color-tone-neutral); }
-.cnode[data-tone="critical"] { --cnode-tone: var(--color-tone-critical); }
-.cnode[data-tone="warning"]  { --cnode-tone: var(--color-tone-warning); }
-.cnode[data-tone="success"]  { --cnode-tone: var(--color-tone-success); }
-.cnode[data-tone="muted"]    { --cnode-tone: var(--color-tone-muted); }
+.cnode[data-tone="neutral"] {
+  --cnode-tone: var(--color-tone-neutral);
+}
+.cnode[data-tone="critical"] {
+  --cnode-tone: var(--color-tone-critical);
+}
+.cnode[data-tone="warning"] {
+  --cnode-tone: var(--color-tone-warning);
+}
+.cnode[data-tone="success"] {
+  --cnode-tone: var(--color-tone-success);
+}
+.cnode[data-tone="muted"] {
+  --cnode-tone: var(--color-tone-muted);
+}
 
 /* -- Rows ------------------------------------------------------------------ */
 

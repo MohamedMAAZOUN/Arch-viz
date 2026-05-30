@@ -8,13 +8,7 @@
 // the effective property values at the current view.
 // ============================================================================
 
-import type {
-  Connection,
-  Element,
-  LayerId,
-  MvpRef,
-  ProjectDocument,
-} from "@/core/schema/schema";
+import type { Connection, Element, LayerId, MvpRef, ProjectDocument } from "@/core/schema/schema";
 
 export interface ResolvedState {
   elements: readonly Element[];
@@ -25,11 +19,7 @@ export interface ResolvedState {
  * Compute which elements and connections are visible — and with what
  * resolved properties — at the given (layer, mvp).
  */
-export function resolve(
-  doc: ProjectDocument,
-  layer: LayerId,
-  mvpId: MvpRef,
-): ResolvedState {
+export function resolve(doc: ProjectDocument, layer: LayerId, mvpId: MvpRef): ResolvedState {
   // Pre-compute O(1) lookup maps — avoids O(n) linear scans inside the
   // per-element and per-connection loops (was O(N×M) before).
   const layerOrderMap = new Map<string, number>(doc.layers.map((l) => [l.id, l.order]));
@@ -129,10 +119,7 @@ function resolveElementAt(
   // Unknown MVP ids get Infinity so orphaned modifiedIn entries are never applied.
   const patches = Object.entries(el.lifecycle.modifiedIn)
     .filter(([mvpId]) => (mvpOrderMap.get(mvpId) ?? Infinity) <= mvpOrder)
-    .sort(
-      (a, b) =>
-        (mvpOrderMap.get(a[0]) ?? Infinity) - (mvpOrderMap.get(b[0]) ?? Infinity),
-    );
+    .sort((a, b) => (mvpOrderMap.get(a[0]) ?? Infinity) - (mvpOrderMap.get(b[0]) ?? Infinity));
 
   if (patches.length === 0) return el;
 
