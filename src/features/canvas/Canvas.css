@@ -153,6 +153,19 @@
   box-shadow: var(--elevation-1);
 }
 
+/* -- Animated reflow on expand / collapse ------------------------------- */
+/* React Flow positions nodes by writing `transform` inline. A transition on
+ * that transform animates layout changes (expand/collapse re-runs ELK and
+ * nodes glide to their new spots). Disabled mid-drag so dragging stays 1:1. */
+
+.canvas .react-flow__node {
+  transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.canvas .react-flow__node.dragging {
+  transition: none;
+}
+
 /* -- React Flow edge label styling ------------------------------------- */
 
 .canvas .react-flow__edge-textbg {

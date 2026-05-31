@@ -1,0 +1,65 @@
+/* ============================================================================
+ * GroupNode.css — the canvas container (expanded parent) visual
+ * ============================================================================
+ * A framed, de-emphasized box that holds nested child nodes. The header sits
+ * at the top; `--group-header-height` is kept in sync with CONTAINER_PADDING.top
+ * in types.ts so ELK reserves exactly enough room for it.
+ * ============================================================================ */
+
+.group-node {
+  --group-header-height: 44px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: color-mix(in oklch, var(--color-bg-1), transparent 35%);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  font-family: var(--font-sans);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.group-node[data-selected="true"] {
+  box-shadow: var(--elevation-glow);
+  border-color: var(--color-accent-base);
+}
+
+/* Tone tints the container frame */
+.group-node[data-tone="critical"] {
+  border-color: color-mix(in oklch, var(--color-tone-critical) 55%, var(--color-border-default));
+}
+.group-node[data-tone="warning"] {
+  border-color: color-mix(in oklch, var(--color-tone-warning) 55%, var(--color-border-default));
+}
+.group-node[data-tone="success"] {
+  border-color: color-mix(in oklch, var(--color-tone-success) 55%, var(--color-border-default));
+}
+
+/* -- Header -------------------------------------------------------------- */
+
+.group-node-header {
+  height: var(--group-header-height);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: color-mix(in oklch, var(--color-bg-2), transparent 10%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  cursor: pointer;
+}
+
+.group-node-name {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-fg-default);
+  letter-spacing: var(--tracking-tight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}

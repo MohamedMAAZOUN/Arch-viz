@@ -26,8 +26,25 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## State tiers — getting this wrong is the #1 bug source
 
 - **Document state** → `Y.Doc` via `docStore` operations. Touch `yjs` only in `src/core/doc/DocStore.ts`.
-- **View state** (layer, MVP, selection, viewport) → Zustand stores in `src/core/state/`.
+- **View state** (layer, MVP, selection, viewport, **group expand/collapse**) → Zustand stores in `src/core/state/`.
 - **Component-local state** → `useState`.
+
+### Hierarchical containment (nested view)
+
+Groups/parents render as nested React Flow sub-flows. The decision of what is
+expanded vs collapsed is made in **one place — `resolve()`** — by merging:
+- a **layer-driven default**: a `group` whose `aggregateAt` includes the
+  current layer defaults to collapsed; everything else defaults to expanded;
+- a **user override**: `viewStore.groupExpansion[elementId]` (set by the node
+  chevron) always wins. Cleared on project load.
+
+`resolve()` returns `elements`, real `connections` (inspector), canvas `edges`
+(cross-boundary endpoints rerouted to the nearest visible ancestor), and a
+`containment` map. The canvas (`Canvas.tsx`) maps an expanded element to a
+`GroupNode` container and its children to `parentId`/`extent:"parent"` nodes;
+a collapsed element is an `ElementNode` with a chevron. Nested ELK layout lives
+in `layout.worker.ts` (`INCLUDE_CHILDREN`); the tree is built by
+`buildLayoutTree.ts`. See `docs/adr/0003-nested-containment.md`.
 
 The DocStore API surface (use these, don't reach into the Y.Doc):
 - `docStore.get()` / `docStore.subscribe(handler)` / `docStore.dirty()`
@@ -62,7 +79,7 @@ Cross-feature communication flows through `core/state` and `core/doc`.
 ### Add a new element type to the schema
 
 1. Update the `ElementType` enum and `Element` discriminated union in `src/core/schema/schema.ts`.
-2. Add a glyph case in `src/features/canvas/nodes/ElementNode.tsx` → `ElementGlyph`.
+2. Add a glyph case in `src/features/canvas/nodes/NodeParts.tsx` → `ElementGlyph` (shared by `ElementNode` and `GroupNode`).
 3. Add tone-aware styles in `ElementNode.css` if it has special visual treatment.
 4. Update `src/core/schema/schema.test.ts` to cover the new type.
 5. Add an instance to `src/data/example-project.yaml` so manual QA covers it.

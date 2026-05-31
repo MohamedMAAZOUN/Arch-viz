@@ -16,15 +16,31 @@ export interface ViewState {
   currentMvp: MvpRef | null;
   viewport: { x: number; y: number; zoom: number };
 
+  /**
+   * Per-element expand/collapse overrides for hierarchical containment.
+   * Keyed by element id; the value is the user's *explicit* choice. An element
+   * absent from this map falls back to its layer-driven default (a group whose
+   * `aggregateAt` includes the current layer defaults to collapsed; everything
+   * else defaults to expanded). See `resolve()` for how the default combines
+   * with the override.
+   *
+   * Overrides are view state, not document state — they are per-session and per
+   * user, and are cleared whenever a different project is loaded.
+   */
+  groupExpansion: Readonly<Record<string, boolean>>;
+
   setLayer: (layer: LayerId) => void;
   setMvp: (mvp: MvpRef) => void;
   setViewport: (vp: { x: number; y: number; zoom: number }) => void;
+  setGroupExpansion: (elementId: string, expanded: boolean) => void;
+  clearGroupExpansion: () => void;
 }
 
 export const useViewStore = create<ViewState>((set) => ({
   currentLayer: "architecture",
   currentMvp: null,
   viewport: { x: 0, y: 0, zoom: 1 },
+  groupExpansion: {},
 
   setLayer: (currentLayer) => {
     set({ currentLayer });
@@ -34,5 +50,13 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   setViewport: (viewport) => {
     set({ viewport });
+  },
+  setGroupExpansion: (elementId, expanded) => {
+    set((state) => ({
+      groupExpansion: { ...state.groupExpansion, [elementId]: expanded },
+    }));
+  },
+  clearGroupExpansion: () => {
+    set({ groupExpansion: {} });
   },
 }));

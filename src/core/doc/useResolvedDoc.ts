@@ -18,9 +18,10 @@ export function useResolvedDoc(): ResolvedState | null {
   const doc = useDocSnapshot();
   const currentLayer = useViewStore((s) => s.currentLayer);
   const currentMvp = useViewStore((s) => s.currentMvp);
+  const groupExpansion = useViewStore((s) => s.groupExpansion);
 
   return useMemo(() => {
     if (doc === null || currentMvp === null) return null;
-    return resolve(doc, currentLayer, currentMvp);
-  }, [doc, currentLayer, currentMvp]);
+    return resolve(doc, currentLayer, currentMvp, groupExpansion);
+  }, [doc, currentLayer, currentMvp, groupExpansion]);
 }

@@ -1073,6 +1073,23 @@ Strict app-code typechecking with `noUncheckedIndexedAccess` + `exactOptionalPro
 
 Without `useNodesState` + `onNodesChange` wired up, the first click on a node is silently dropped (React Flow has no internal node store to apply the selection change to). See `Canvas.tsx` for the established pattern. The same applies to `onEdgesChange` if we ever make edges interactive.
 
+### Nested nodes: parents must precede children, and ELK needs `INCLUDE_CHILDREN`
+
+React Flow silently drops a node whose `parentId` references a node that does
+not appear *earlier* in the nodes array. `Canvas.tsx` sorts nodes by layout
+depth (ancestors first) before handing them to React Flow — keep that sort if
+you touch node construction. A child's position is **relative to its parent**;
+a top-level node's position is absolute. `useLayoutedGraph` exposes both so the
+canvas can fall back to absolute placement when an intermediate container is
+hidden by MVP scrubbing.
+
+On the layout side, the worker sets `elk.hierarchyHandling: INCLUDE_CHILDREN`
+so a single ELK pass recurses into compound nodes and routes edges that cross
+container boundaries. Container size is computed by ELK (don't pin width/height
+on a node that has children); per-container `elk.padding` reserves the header
+strip (`CONTAINER_PADDING` in `types.ts`, kept in sync with
+`--group-header-height` in `GroupNode.css`).
+
 ### `noPropertyAccessFromIndexSignature` requires bracket notation for `dataset`
 
 `element.dataset.theme = ...` fails the strict flag because `DOMStringMap` is index-signature-typed. Use `element.dataset["theme"] = ...` instead. See `design-system/theme.ts`.
