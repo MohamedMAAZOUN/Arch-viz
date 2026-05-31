@@ -7,9 +7,10 @@
 // these parts don't import @xyflow at all — they're pure presentation.
 // ============================================================================
 
+import { useLiveData } from "@/core/live/useLiveData";
 import { useViewStore } from "@/core/state/viewStore";
 
-import type { ElementType } from "@/core/schema/schema";
+import type { Element, ElementType } from "@/core/schema/schema";
 
 // ---------------------------------------------------------------------------
 // Containment data carried on every node so the chevron knows what to do.
@@ -65,6 +66,45 @@ export function ExpandToggle({
       </svg>
     </button>
   );
+}
+
+// ---------------------------------------------------------------------------
+// LiveIndicator — compact live-data status dot + first value chip on a node.
+// ---------------------------------------------------------------------------
+// Subscribes (via useLiveData) to the element's data sources and renders a
+// status dot and, when present, the first metric/badge/label value. Renders
+// nothing when the element declares no data sources.
+
+export function LiveIndicator({ element }: { element: Element }) {
+  const live = useLiveData(element);
+  if (live.state === "idle") return null;
+
+  const firstChip = live.chips[0];
+  const title = liveTitle(live.state, live.error);
+
+  return (
+    <span className="live-indicator" data-state={live.state} title={title}>
+      <span className="live-dot" data-status={live.status ?? "unknown"} />
+      {firstChip !== undefined ? <span className="live-chip">{firstChip.text}</span> : null}
+    </span>
+  );
+}
+
+function liveTitle(state: string, error: string | null): string {
+  switch (state) {
+    case "offline":
+      return "Live data: no proxy configured";
+    case "loading":
+      return "Live data: loading…";
+    case "ok":
+      return "Live data: connected";
+    case "stale":
+      return `Live data: stale${error !== null ? ` — ${error}` : ""}`;
+    case "error":
+      return `Live data: unavailable${error !== null ? ` — ${error}` : ""}`;
+    default:
+      return "Live data";
+  }
 }
 
 // ---------------------------------------------------------------------------

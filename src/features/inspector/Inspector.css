@@ -729,3 +729,81 @@
   accent-color: var(--color-accent-base);
   cursor: pointer;
 }
+
+/* -- Export section -------------------------------------------------------- */
+
+.inspector-export-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.inspector-export-btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-2);
+  color: var(--color-fg-default);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  letter-spacing: var(--tracking-wide);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.inspector-export-btn:hover:not(:disabled) {
+  background: var(--color-bg-3);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+
+.inspector-export-btn:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 1px;
+}
+
+.inspector-export-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.inspector-export-hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+  line-height: var(--leading-snug);
+}
+
+.inspector-export-error {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-small);
+  color: var(--color-tone-critical);
+}
+
+/* -- Live status readout --------------------------------------------------- */
+
+.inspector-live-readout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.inspector-live-state {
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+}
+
+.inspector-live-readout[data-state="ok"] .inspector-live-state {
+  color: var(--color-fg-default);
+}
+
+.inspector-live-error {
+  font-size: var(--text-micro);
+  color: var(--color-tone-warning);
+  margin-bottom: var(--space-2);
+}

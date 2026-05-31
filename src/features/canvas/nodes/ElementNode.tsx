@@ -24,6 +24,7 @@ import { duration, ease } from "@/design-system/tokens";
 import {
   ElementTypeBadge,
   ExpandToggle,
+  LiveIndicator,
   MvpLifecycleBadge,
 } from "@/features/canvas/nodes/NodeParts";
 
@@ -41,11 +42,13 @@ export interface ElementNodeData extends Record<string, unknown>, ContainmentDat
   introducedColor: string | null;
   /** Id of the introducing MVP — shown next to the color dot. */
   introducedIn: string;
+  /** Faded during a tour step that highlights other nodes. */
+  dimmed: boolean;
 }
 export type ElementNodeType = Node<ElementNodeData, "element">;
 
 export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
-  const { element, introducedColor, introducedIn, canExpand, isExpanded } = data;
+  const { element, introducedColor, introducedIn, canExpand, isExpanded, dimmed } = data;
   const tone = element.style?.tone ?? "neutral";
 
   return (
@@ -58,6 +61,7 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
         data-type={element.type}
         data-selected={selected}
         data-collapsed={canExpand ? true : undefined}
+        data-dimmed={dimmed ? true : undefined}
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: duration.slow / 1000, ease: ease.out }}
@@ -71,6 +75,7 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
           {introducedColor !== null ? (
             <MvpLifecycleBadge color={introducedColor} mvpId={introducedIn} />
           ) : null}
+          <LiveIndicator element={element} />
           {canExpand ? <ExpandToggle elementId={element.id} isExpanded={isExpanded} /> : null}
         </div>
 

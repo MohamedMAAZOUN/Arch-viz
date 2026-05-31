@@ -4,6 +4,12 @@ A layered, time-aware platform diagramming tool. Browse platforms across busines
 
 Groups and their children render as **nested containers** (domain → service → data): expand a box to look inside, collapse it to a single node. Containment follows the layer by default (a group's `aggregateAt`) and is overridable per element with a chevron. See `docs/adr/0003-nested-containment.md`.
 
+**Guided tours** play the project's `tours` as a focused, Prezi-style walkthrough: the camera glides between steps, non-highlighted nodes dim, and a caption explains each one. Pick a tour from the floating "Tours" pill; Space advances, arrows step, Esc exits. See `docs/adr/0004-tour-playback.md`.
+
+**Live data**: elements with `dataSources` show a live status dot / value. `http` sources are fetched directly; Grafana/Jira go through a proxy at `VITE_LIVE_PROXY_URL` (the token lives at the proxy, never in the bundle) — unset, they render "offline". Failures degrade to a stale marker, never a crash. See `docs/adr/0005-live-data.md`.
+
+**Export** (inspector → Export): **JSON** (round-trips through the parser), plus **PNG / SVG** of the visible graph at the current layer + MVP. See `docs/adr/0006-export.md`.
+
 ## Quickstart
 
 ```bash

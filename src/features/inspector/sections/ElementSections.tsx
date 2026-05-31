@@ -14,6 +14,7 @@
 import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
+import { useLiveData } from "@/core/live/useLiveData";
 import { EditableField } from "@/features/inspector/sections/EditableField";
 import { Section } from "@/features/inspector/sections/Section";
 
@@ -119,18 +120,7 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
       </Section>
 
       <Section title="Live status">
-        {element.dataSources !== undefined && element.dataSources.length > 0 ? (
-          <ul className="inspector-list">
-            {element.dataSources.map((ds, i) => (
-              <li key={i} className="inspector-list-row">
-                <span className="inspector-list-key">{ds.kind}</span>
-                <span className="inspector-list-val">→ {ds.binding}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="inspector-empty-row">No data sources configured.</div>
-        )}
+        <LiveStatusSection element={element} />
       </Section>
 
       <Section title="History">
@@ -170,6 +160,51 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
       <Section title="Annotations">
         <div className="inspector-empty-row">Comments. (Coming soon.)</div>
       </Section>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// LiveStatusSection — configured data sources + their live readout
+// ---------------------------------------------------------------------------
+
+const LIVE_STATE_LABEL: Record<string, string> = {
+  idle: "no data sources",
+  offline: "offline — no proxy configured",
+  loading: "connecting…",
+  ok: "live",
+  stale: "stale (last known)",
+  error: "unavailable",
+};
+
+function LiveStatusSection({ element }: { element: Element }) {
+  const live = useLiveData(element);
+  const sources = element.dataSources ?? [];
+
+  if (sources.length === 0) {
+    return <div className="inspector-empty-row">No data sources configured.</div>;
+  }
+
+  return (
+    <>
+      <div className="inspector-live-readout" data-state={live.state}>
+        <span className="live-dot" data-status={live.status ?? "unknown"} />
+        <span className="inspector-live-state">{LIVE_STATE_LABEL[live.state] ?? live.state}</span>
+        {live.chips.map((chip, i) => (
+          <span key={i} className="live-chip">
+            {chip.text}
+          </span>
+        ))}
+      </div>
+      {live.error !== null ? <div className="inspector-live-error">{live.error}</div> : null}
+      <ul className="inspector-list">
+        {sources.map((ds, i) => (
+          <li key={i} className="inspector-list-row">
+            <span className="inspector-list-key">{ds.kind}</span>
+            <span className="inspector-list-val">→ {ds.binding}</span>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

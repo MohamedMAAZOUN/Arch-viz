@@ -18,12 +18,18 @@
   font-family: var(--font-sans);
   transition:
     border-color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out);
+    box-shadow var(--duration-fast) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out);
 }
 
 .group-node[data-selected="true"] {
   box-shadow: var(--elevation-glow);
   border-color: var(--color-accent-base);
+}
+
+/* Tour dimming — fade containers the current step doesn't highlight. */
+.group-node[data-dimmed="true"] {
+  opacity: 0.22;
 }
 
 /* Tone tints the container frame */

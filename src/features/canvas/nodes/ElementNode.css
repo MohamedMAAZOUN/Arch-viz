@@ -223,3 +223,93 @@
     4px 4px 0 -1px var(--color-bg-3),
     5px 5px 0 -1px var(--color-border-subtle);
 }
+
+/* Tour dimming — fade nodes the current step doesn't highlight. */
+.element-node {
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out);
+}
+
+.element-node[data-dimmed="true"] {
+  opacity: 0.22;
+}
+
+/* -- Live data indicator (shared by ElementNode and GroupNode) ----------- */
+
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-fg-faint);
+  box-shadow: 0 0 0 0 transparent;
+}
+
+.live-dot[data-status="ok"] {
+  background: var(--color-tone-success);
+  box-shadow: 0 0 6px color-mix(in oklch, var(--color-tone-success) 55%, transparent);
+}
+.live-dot[data-status="warn"] {
+  background: var(--color-tone-warning);
+  box-shadow: 0 0 6px color-mix(in oklch, var(--color-tone-warning) 55%, transparent);
+}
+.live-dot[data-status="critical"] {
+  background: var(--color-tone-critical);
+  box-shadow: 0 0 6px color-mix(in oklch, var(--color-tone-critical) 55%, transparent);
+}
+
+/* Offline / not-configured: hollow, muted. */
+.live-indicator[data-state="offline"] .live-dot {
+  background: transparent;
+  border: 1.5px solid var(--color-border-strong);
+}
+
+/* Stale: keep the status color but ring it to signal "last known". */
+.live-indicator[data-state="stale"] .live-dot {
+  outline: 1.5px solid var(--color-border-strong);
+  outline-offset: 1px;
+  opacity: 0.7;
+}
+
+/* Error with nothing to show. */
+.live-indicator[data-state="error"] .live-dot {
+  background: var(--color-tone-critical);
+  opacity: 0.5;
+}
+
+/* Loading: gentle pulse. */
+.live-indicator[data-state="loading"] .live-dot {
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.live-chip {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-muted);
+  background: var(--color-bg-3);
+  border-radius: var(--radius-xs);
+  padding: 0 4px;
+  max-width: 88px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

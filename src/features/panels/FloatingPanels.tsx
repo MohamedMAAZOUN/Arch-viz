@@ -12,6 +12,7 @@
 import { useEffect } from "react";
 
 import { useSelectionStore } from "@/core/state/selectionStore";
+import { useTourStore } from "@/core/state/tourStore";
 import { useUiStore } from "@/core/state/uiStore";
 import ElementSections from "@/features/inspector/sections/ElementSections";
 import GlobalSections from "@/features/inspector/sections/GlobalSections";
@@ -26,6 +27,7 @@ export default function FloatingPanels() {
   const openPanel = useUiStore((s) => s.openPanel);
   const closePanel = useUiStore((s) => s.closePanel);
   const rightPinned = useUiStore((s) => s.panels.right.pinned);
+  const tourActive = useTourStore((s) => s.activeTourId !== null);
 
   // Drive the right inspector from selection (when unpinned): open on select,
   // tuck away on deselect.
@@ -36,6 +38,10 @@ export default function FloatingPanels() {
       closePanel("right");
     }
   }, [selectedId, rightPinned, openPanel, closePanel]);
+
+  // Tour playback minimizes chrome: the panels step aside and let the
+  // TourPlayer overlay drive.
+  if (tourActive) return null;
 
   return (
     <>
