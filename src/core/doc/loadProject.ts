@@ -12,12 +12,16 @@
 // ============================================================================
 
 import { docStore } from "@/core/doc/DocStore";
+import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
 
 import type { ProjectDocument } from "@/core/schema/schema";
 
 export function loadProject(project: ProjectDocument): void {
   docStore.load(project);
+
+  // A tour belongs to the project that was open — leave any active playback.
+  useTourStore.getState().exit();
 
   const viewStore = useViewStore.getState();
 

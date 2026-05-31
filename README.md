@@ -4,6 +4,8 @@ A layered, time-aware platform diagramming tool. Browse platforms across busines
 
 Groups and their children render as **nested containers** (domain → service → data): expand a box to look inside, collapse it to a single node. Containment follows the layer by default (a group's `aggregateAt`) and is overridable per element with a chevron. See `docs/adr/0003-nested-containment.md`.
 
+**Guided tours** play the project's `tours` as a focused, Prezi-style walkthrough: the camera glides between steps, non-highlighted nodes dim, and a caption explains each one. Pick a tour from the floating "Tours" pill; Space advances, arrows step, Esc exits. See `docs/adr/0004-tour-playback.md`.
+
 ## Quickstart
 
 ```bash

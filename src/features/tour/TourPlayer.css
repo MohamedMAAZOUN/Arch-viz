@@ -1,0 +1,192 @@
+/* ============================================================================
+ * TourPlayer.css — focused playback overlay
+ * ============================================================================
+ * Two pieces float over the canvas: an exit affordance (top-right) and a
+ * transport dock (bottom-center) with the caption above it. Frosted glass, so
+ * the graph behind stays legible. Pointer events only on the controls — the
+ * canvas underneath is untouched between clicks.
+ * ============================================================================ */
+
+.tour-player {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-tour-overlay);
+  pointer-events: none;
+}
+
+/* -- Exit (top-right) ---------------------------------------------------- */
+
+.tour-exit {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-subtle);
+  background: color-mix(in oklch, var(--color-bg-2) 80%, transparent);
+  backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur-soft)) saturate(160%);
+  box-shadow: var(--elevation-2);
+  color: var(--color-fg-default);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.tour-exit:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--elevation-3);
+}
+
+.tour-exit-key {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 0 4px;
+}
+
+/* -- Transport dock (bottom-center) -------------------------------------- */
+
+.tour-dock {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-6);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: min(560px, calc(100vw - var(--space-8)));
+}
+
+.tour-caption-card {
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  background: color-mix(in oklch, var(--color-bg-2) 86%, transparent);
+  backdrop-filter: blur(var(--blur-strong)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur-strong)) saturate(160%);
+  box-shadow: var(--elevation-3);
+  text-align: center;
+}
+
+.tour-caption-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+  margin-bottom: var(--space-2);
+}
+
+.tour-caption-text {
+  font-size: var(--text-heading);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-fg-default);
+}
+
+/* -- Controls ------------------------------------------------------------ */
+
+.tour-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-subtle);
+  background: color-mix(in oklch, var(--color-bg-2) 86%, transparent);
+  backdrop-filter: blur(var(--blur-strong)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur-strong)) saturate(160%);
+  box-shadow: var(--elevation-3);
+}
+
+.tour-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-fg-muted);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.tour-btn:hover:not(:disabled) {
+  color: var(--color-fg-default);
+  background: var(--color-bg-3);
+}
+
+.tour-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tour-btn:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 1px;
+}
+
+.tour-btn-primary {
+  background: var(--color-accent-base);
+  color: var(--color-accent-fg-on);
+}
+
+.tour-btn-primary:hover:not(:disabled) {
+  background: var(--color-accent-base);
+  color: var(--color-accent-fg-on);
+  filter: brightness(1.08);
+}
+
+.tour-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-border-strong);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.tour-dot:hover {
+  transform: scale(1.25);
+}
+
+.tour-dot[data-active="true"] {
+  background: var(--color-accent-base);
+  transform: scale(1.25);
+}
+
+.tour-dot:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 2px;
+}

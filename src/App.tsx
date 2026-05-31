@@ -11,6 +11,8 @@ import Canvas from "@/features/canvas/Canvas";
 import FileLoader from "@/features/file-loader/FileLoader";
 import FloatingPanels from "@/features/panels/FloatingPanels";
 import TopBar from "@/features/topbar/TopBar";
+import TourLauncher from "@/features/tour/TourLauncher";
+import TourMount from "@/features/tour/TourMount";
 
 export default function App() {
   useUndoRedoShortcuts();
@@ -22,6 +24,8 @@ export default function App() {
         <main className="app-stage">
           <Canvas />
           <FloatingPanels />
+          <TourLauncher />
+          <TourMount />
         </main>
       </div>
     </FileLoader>

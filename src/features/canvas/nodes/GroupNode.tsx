@@ -28,11 +28,13 @@ export interface GroupNodeData extends Record<string, unknown>, ContainmentData 
   element: Element;
   introducedColor: string | null;
   introducedIn: string;
+  /** Faded during a tour step that highlights other nodes. */
+  dimmed: boolean;
 }
 export type GroupNodeType = Node<GroupNodeData, "group">;
 
 export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
-  const { element, introducedColor, introducedIn, isExpanded } = data;
+  const { element, introducedColor, introducedIn, isExpanded, dimmed } = data;
   const tone = element.style?.tone ?? "neutral";
 
   return (
@@ -44,6 +46,7 @@ export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
         data-tone={tone}
         data-type={element.type}
         data-selected={selected}
+        data-dimmed={dimmed ? true : undefined}
       >
         <div className="group-node-header">
           <ElementTypeBadge type={element.type} />

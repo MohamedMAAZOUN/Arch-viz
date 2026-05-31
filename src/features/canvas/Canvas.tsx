@@ -33,21 +33,25 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
 import { useSelectionStore } from "@/core/state/selectionStore";
+import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
+import { duration } from "@/design-system/tokens";
 import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
 import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
+import { resolveCameraAction } from "@/features/tour/cameraAction";
+import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 
 import type { ResolvedEdge } from "@/core/doc/resolve";
-import type { ConnectionType, ProjectDocument } from "@/core/schema/schema";
+import type { ConnectionType, ProjectDocument, Viewpoint } from "@/core/schema/schema";
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { GroupNodeType } from "@/features/canvas/nodes/GroupNode";
 import type { PlacementMap } from "@/features/canvas/useLayoutedGraph";
@@ -76,19 +80,31 @@ function CanvasInner() {
 
   const select = useSelectionStore((s) => s.select);
 
+  // Tour playback — the Canvas owns the camera + node dimming. The step's
+  // highlight set (when present) dims everything else; an inactive tour or a
+  // step with no highlight leaves all nodes at full opacity.
+  const activeTourId = useTourStore((s) => s.activeTourId);
+  const tourStepIndex = useTourStore((s) => s.stepIndex);
+  const highlightIds = useMemo<ReadonlySet<string> | null>(() => {
+    if (activeTourId === null) return null;
+    const step = doc?.tours?.find((t) => t.id === activeTourId)?.steps[tourStepIndex];
+    if (step?.highlight === undefined || step.highlight.length === 0) return null;
+    return new Set(step.highlight);
+  }, [doc, activeTourId, tourStepIndex]);
+
   // Build a fast lookup of MVP id → signature color (passed into every node)
   const mvpColors = useMemo(() => buildMvpColorMap(doc), [doc]);
 
   // Derive the "next" set of nodes from the doc + layout + containment.
   const derivedNodes = useMemo<CanvasNode[]>(() => {
     if (resolved === null) return [];
-    return buildNodes(resolved, placements, mvpColors);
-  }, [resolved, placements, mvpColors]);
+    return buildNodes(resolved, placements, mvpColors, highlightIds);
+  }, [resolved, placements, mvpColors, highlightIds]);
 
   const derivedEdges = useMemo<Edge[]>(() => {
     if (resolved === null) return [];
-    return resolved.edges.map((e): Edge => edgeFromResolved(e));
-  }, [resolved]);
+    return resolved.edges.map((e): Edge => edgeFromResolved(e, isEdgeDimmed(e, highlightIds)));
+  }, [resolved, highlightIds]);
 
   // React Flow state — owns selection internally. Without these handlers,
   // single-click selection silently fails (the change event is dropped).
@@ -160,6 +176,87 @@ function CanvasInner() {
     fitOnFirstLayout.current = true;
   }, [projectId]);
 
+  // -- Save / restore view around a tour -----------------------------------
+  // On entering a tour, snapshot the viewport + selection + layer + MVP and
+  // clear the selection (so dimming reads cleanly). On exit, restore them.
+  // This effect is declared BEFORE the camera effect so, on the enter render,
+  // the snapshot is taken before a step's layer/MVP override is applied.
+  const tourSnapshot = useRef<{
+    viewport: { x: number; y: number; zoom: number };
+    selectedId: string | null;
+    layer: ProjectDocument["layers"][number]["id"];
+    mvp: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const flow = flowRef.current;
+    if (activeTourId !== null && tourSnapshot.current === null) {
+      tourSnapshot.current = {
+        viewport: flow?.getViewport() ?? { x: 0, y: 0, zoom: 1 },
+        selectedId: useSelectionStore.getState().selectedId,
+        layer: useViewStore.getState().currentLayer,
+        mvp: useViewStore.getState().currentMvp,
+      };
+      select(null);
+    } else if (activeTourId === null && tourSnapshot.current !== null) {
+      const snap = tourSnapshot.current;
+      tourSnapshot.current = null;
+      useViewStore.getState().setLayer(snap.layer);
+      if (snap.mvp !== null) useViewStore.getState().setMvp(snap.mvp);
+      select(snap.selectedId);
+      if (flow !== null) {
+        void flow.setViewport(snap.viewport, {
+          duration: prefersReducedMotion() ? 0 : duration.base,
+        });
+      }
+    }
+  }, [activeTourId, select]);
+
+  // -- Tour camera ---------------------------------------------------------
+  // Move the camera per the active step (animated, or instant under reduced
+  // motion). A step may also override the layer / MVP; we apply those first,
+  // then move the camera on the next tick so freshly-revealed nodes exist.
+  const applyCamera = useCallback((viewpoint: Viewpoint) => {
+    const flow = flowRef.current;
+    if (flow === null) return;
+    const dur = prefersReducedMotion() ? 0 : duration.cinematic;
+    const action = resolveCameraAction(viewpoint);
+    switch (action.kind) {
+      case "fitAll":
+        void flow.fitView({ duration: dur, padding: 0.2 });
+        return;
+      case "focus":
+        void flow.fitView({
+          nodes: [{ id: action.id }],
+          duration: dur,
+          padding: 0.45,
+          maxZoom: action.zoom ?? 1.6,
+        });
+        return;
+      case "center":
+        void flow.setCenter(action.x, action.y, { zoom: action.zoom ?? 1.4, duration: dur });
+        return;
+      case "none":
+        return;
+      default:
+        assertNever(action);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTourId === null) return;
+    const step = doc?.tours?.find((t) => t.id === activeTourId)?.steps[tourStepIndex];
+    if (step === undefined) return;
+    if (step.viewpoint.layer !== undefined) useViewStore.getState().setLayer(step.viewpoint.layer);
+    if (step.viewpoint.mvp !== undefined) useViewStore.getState().setMvp(step.viewpoint.mvp);
+    const timer = window.setTimeout(() => {
+      applyCamera(step.viewpoint);
+    }, 90);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [activeTourId, tourStepIndex, doc, applyCamera]);
+
   return (
     <div className="canvas">
       <ReactFlow<CanvasNode, Edge>
@@ -201,6 +298,7 @@ function buildNodes(
   resolved: NonNullable<ReturnType<typeof useResolvedDoc>>,
   placements: PlacementMap,
   mvpColors: ReadonlyMap<string, string>,
+  highlightIds: ReadonlySet<string> | null,
 ): CanvasNode[] {
   const visibleIds = new Set(resolved.elements.map((e) => e.id));
 
@@ -227,6 +325,8 @@ function buildNodes(
       introducedIn: element.lifecycle.introducedIn,
       canExpand: containment?.canExpand ?? false,
       isExpanded: containment?.isExpanded ?? true,
+      // Dimmed when a tour step highlights a set this node isn't part of.
+      dimmed: highlightIds !== null && !highlightIds.has(element.id),
     };
 
     const common = {
@@ -279,7 +379,7 @@ function buildMvpColorMap(doc: ProjectDocument | null): ReadonlyMap<string, stri
 // causes a compile error rather than a silent styling gap.
 // ---------------------------------------------------------------------------
 
-function edgeFromResolved(e: ResolvedEdge): Edge {
+function edgeFromResolved(e: ResolvedEdge, dimmed: boolean): Edge {
   // Aggregated edges (standing in for ≥2 rerouted connections) show a count;
   // 1:1 edges show their protocol if any.
   const label = e.aggregated && e.count > 1 ? `×${String(e.count)}` : e.protocol;
@@ -288,7 +388,7 @@ function edgeFromResolved(e: ResolvedEdge): Edge {
     source: e.from,
     target: e.to,
     type: "smoothstep",
-    animated: isAnimatedEdge(e.type),
+    animated: !dimmed && isAnimatedEdge(e.type),
     label,
     labelBgPadding: [6, 4],
     labelBgBorderRadius: 4,
@@ -296,8 +396,17 @@ function edgeFromResolved(e: ResolvedEdge): Edge {
       stroke: edgeStroke(e.type),
       strokeWidth: e.aggregated ? 2.25 : 1.5,
       ...(e.aggregated ? { strokeDasharray: "6 3" } : {}),
+      // Tour dimming: fade edges that don't touch a highlighted node.
+      opacity: dimmed ? 0.12 : 1,
+      transition: "opacity var(--duration-base) var(--ease-out)",
     },
   };
+}
+
+/** An edge is dimmed during a tour step unless one of its endpoints is highlighted. */
+function isEdgeDimmed(e: ResolvedEdge, highlightIds: ReadonlySet<string> | null): boolean {
+  if (highlightIds === null) return false;
+  return !highlightIds.has(e.from) && !highlightIds.has(e.to);
 }
 
 function isAnimatedEdge(type: ConnectionType): boolean {

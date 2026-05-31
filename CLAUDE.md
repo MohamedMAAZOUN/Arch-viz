@@ -26,8 +26,20 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## State tiers — getting this wrong is the #1 bug source
 
 - **Document state** → `Y.Doc` via `docStore` operations. Touch `yjs` only in `src/core/doc/DocStore.ts`.
-- **View state** (layer, MVP, selection, viewport, **group expand/collapse**) → Zustand stores in `src/core/state/`.
+- **View state** (layer, MVP, selection, viewport, **group expand/collapse**, **tour playback**) → Zustand stores in `src/core/state/`.
 - **Component-local state** → `useState`.
+
+### Guided tours (playback)
+
+`tours` in the schema are played by the `tour` feature. `tourStore` (view
+state) holds `activeTourId` / `stepIndex` / `isPlaying`. The **Canvas** owns the
+camera and node dimming (only it may touch React Flow): a pure
+`resolveCameraAction(viewpoint)` decides `fitAll` / `focus` / `center` / `none`,
+and the active step's `highlight` set dims everything else. `TourLauncher`
+(picker) and `TourMount` → `TourPlayer` (overlay, lazy) are mounted from
+`App.tsx`; the player owns the timer + keyboard. Entering a tour snapshots and
+later restores the viewport/selection/layer/MVP. See
+`docs/adr/0004-tour-playback.md`.
 
 ### Hierarchical containment (nested view)
 
@@ -136,7 +148,6 @@ pnpm build        # production build
 
 - Monaco YAML editor (currently a plain textarea is good enough when needed)
 - Multiplayer (Yjs is wired, just needs a sync server)
-- Tour mode playback
 - Video export of MVP transitions
 - Live data hooks (Grafana / Jira fetching)
 

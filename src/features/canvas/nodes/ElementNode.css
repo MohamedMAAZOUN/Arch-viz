@@ -223,3 +223,16 @@
     4px 4px 0 -1px var(--color-bg-3),
     5px 5px 0 -1px var(--color-border-subtle);
 }
+
+/* Tour dimming — fade nodes the current step doesn't highlight. */
+.element-node {
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    opacity var(--duration-base) var(--ease-out);
+}
+
+.element-node[data-dimmed="true"] {
+  opacity: 0.22;
+}
