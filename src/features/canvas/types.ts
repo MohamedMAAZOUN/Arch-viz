@@ -19,15 +19,22 @@ export interface CanvasEdge {
   connection: Connection;
 }
 
-/** Default node dimensions used both for layout input and rendering. */
+/**
+ * Default node dimensions used both for layout input and rendering. Height is
+ * the WORST case a card reaches (header row + 2-line clamped description +
+ * a row of tags + padding) so ELK never lets a tall card overlap the row
+ * beneath it. Shorter cards simply leave a little breathing room — which reads
+ * as a clean, consistent grid.
+ */
 export const NODE_DIMENSIONS = {
-  default: { width: 220, height: 84 },
-  group: { width: 260, height: 96 },
+  default: { width: 220, height: 116 },
+  group: { width: 260, height: 120 },
 } as const;
 
 /**
- * Inner padding ELK reserves inside an expanded container. `top` is larger to
- * leave room for the container header (name + chevron); the rest frames the
- * nested children. Kept in sync with `--group-header-height` in GroupNode.css.
+ * Inner padding ELK reserves inside an expanded container. `top` clears the
+ * container header (name + chevron) AND leaves a gap below it; the rest frames
+ * the nested children. Kept in sync with `--group-header-height` in
+ * GroupNode.css (header 44 + ~16 gap).
  */
-export const CONTAINER_PADDING = { top: 44, left: 20, bottom: 20, right: 20 } as const;
+export const CONTAINER_PADDING = { top: 60, left: 28, bottom: 28, right: 28 } as const;

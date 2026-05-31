@@ -20,8 +20,8 @@ import type {
 
 const DEFAULT_OPTIONS: Required<LayoutOptions> = {
   direction: "DOWN",
-  nodeNodeSpacing: 60,
-  rankSpacing: 80,
+  nodeNodeSpacing: 90,
+  rankSpacing: 110,
 };
 
 type WorkerResponse =

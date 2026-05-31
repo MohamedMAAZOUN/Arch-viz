@@ -93,7 +93,10 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
         "elk.hierarchyHandling": "INCLUDE_CHILDREN",
         "elk.spacing.nodeNode": String(options.nodeNodeSpacing),
         "elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSpacing),
-        "elk.padding": "[top=24, left=24, bottom=24, right=24]",
+        // Keep edges (and their labels) from crowding the nodes they pass.
+        "elk.spacing.edgeNode": "40",
+        "elk.layered.spacing.edgeNodeBetweenLayers": "40",
+        "elk.padding": "[top=32, left=32, bottom=32, right=32]",
       },
       children: nodes.map(toElkNode),
       // All edges are declared at the root; INCLUDE_CHILDREN routes the ones
