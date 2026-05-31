@@ -32,4 +32,8 @@ export function loadProject(project: ProjectDocument): void {
   // Without this, loading a project while on "engineering" yields a blank canvas
   // when the new project only defines business-layer elements.
   viewStore.setLayer("business");
+
+  // Expand/collapse overrides belong to the previous project — drop them so the
+  // new project starts from its layer-driven containment defaults.
+  viewStore.clearGroupExpansion();
 }

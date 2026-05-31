@@ -2,6 +2,8 @@
 
 A layered, time-aware platform diagramming tool. Browse platforms across business / architecture / engineering layers, scrub through MVP evolution, drill into live status from Grafana and Jira.
 
+Groups and their children render as **nested containers** (domain → service → data): expand a box to look inside, collapse it to a single node. Containment follows the layer by default (a group's `aggregateAt`) and is overridable per element with a chevron. See `docs/adr/0003-nested-containment.md`.
+
 ## Quickstart
 
 ```bash

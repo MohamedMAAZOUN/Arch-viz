@@ -6,9 +6,13 @@
 // the layout cost for users who never trigger one.
 //
 // Wire protocol:
-//   in:  { id, nodes, edges, options }
-//   out: { id, ok: true,  positions: [string, {x,y}][] }
+//   in:  { id, nodes, edges, options }   // nodes form a tree (children[])
+//   out: { id, ok: true,  nodes: ResultNode[] }
 //        | { id, ok: false, error: string }
+//
+// Each ResultNode carries position RELATIVE TO ITS PARENT plus the parent id,
+// which is exactly what React Flow's sub-flow (parentId + extent:"parent")
+// model needs. Container sizes are computed by ELK to fit their children.
 //
 // id roundtrips so the main thread can correlate responses with requests
 // and discard stale ones.
@@ -37,9 +41,31 @@ interface LayoutRequest {
   options: Required<LayoutOptions>;
 }
 
+interface ResultNode {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  parentId: string | null;
+}
+
 type LayoutResponse =
-  | { id: number; ok: true; positions: [string, { x: number; y: number }][] }
+  | { id: number; ok: true; nodes: ResultNode[] }
   | { id: number; ok: false; error: string };
+
+// Minimal shape of an ELK graph node — recursive. We build these from our
+// LayoutNode tree and read x/y/width/height back off the result.
+interface ElkNode {
+  id: string;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  layoutOptions?: Record<string, string>;
+  children?: ElkNode[];
+  edges?: { id: string; sources: string[]; targets: string[] }[];
+}
 
 // Use elk-api with elk-worker.min.js loaded as a real sub-worker script.
 // elk-api uses the global Worker constructor with the provided workerUrl,
@@ -57,36 +83,30 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
   const { id, nodes, edges, options } = event.data;
 
   try {
-    const graph = {
+    const graph: ElkNode = {
       id: "root",
       layoutOptions: {
         "elk.algorithm": "layered",
         "elk.direction": options.direction,
+        // INCLUDE_CHILDREN lets edges span hierarchy boundaries and lets the
+        // layered algorithm recurse into compound nodes in one pass.
+        "elk.hierarchyHandling": "INCLUDE_CHILDREN",
         "elk.spacing.nodeNode": String(options.nodeNodeSpacing),
         "elk.layered.spacing.nodeNodeBetweenLayers": String(options.rankSpacing),
         "elk.padding": "[top=24, left=24, bottom=24, right=24]",
       },
-      children: nodes.map((n) => ({
-        id: n.id,
-        width: n.width,
-        height: n.height,
-      })),
-      edges: edges.map((e) => ({
-        id: e.id,
-        sources: [e.source],
-        targets: [e.target],
-      })),
+      children: nodes.map(toElkNode),
+      // All edges are declared at the root; INCLUDE_CHILDREN routes the ones
+      // that cross into nested containers.
+      edges: edges.map((e) => ({ id: e.id, sources: [e.source], targets: [e.target] })),
     };
 
     const result = await elk.layout(graph);
-    const positions: [string, { x: number; y: number }][] = [];
-    for (const child of result.children ?? []) {
-      if (child.x !== undefined && child.y !== undefined) {
-        positions.push([child.id, { x: child.x, y: child.y }]);
-      }
-    }
 
-    const response: LayoutResponse = { id, ok: true, positions };
+    const out: ResultNode[] = [];
+    collect(result.children ?? [], null, out);
+
+    const response: LayoutResponse = { id, ok: true, nodes: out };
     self.postMessage(response);
   } catch (err) {
     const response: LayoutResponse = {
@@ -95,5 +115,42 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
       error: err instanceof Error ? err.message : String(err),
     };
     self.postMessage(response);
+  }
+}
+
+/** Translate our LayoutNode tree into ELK's graph node shape. */
+function toElkNode(node: LayoutNode): ElkNode {
+  const hasChildren = node.children !== undefined && node.children.length > 0;
+  const elkNode: ElkNode = { id: node.id };
+
+  if (hasChildren && node.children !== undefined) {
+    const p = node.padding ?? { top: 24, left: 24, bottom: 24, right: 24 };
+    elkNode.layoutOptions = {
+      "elk.padding": `[top=${String(p.top)}, left=${String(p.left)}, bottom=${String(p.bottom)}, right=${String(p.right)}]`,
+    };
+    elkNode.children = node.children.map(toElkNode);
+  } else {
+    // Leaf: fixed size drives the layout.
+    elkNode.width = node.width;
+    elkNode.height = node.height;
+  }
+
+  return elkNode;
+}
+
+/** Flatten ELK's result tree, recording each node's parent and relative pos. */
+function collect(children: readonly ElkNode[], parentId: string | null, out: ResultNode[]): void {
+  for (const child of children) {
+    out.push({
+      id: child.id,
+      x: child.x ?? 0,
+      y: child.y ?? 0,
+      width: child.width ?? 0,
+      height: child.height ?? 0,
+      parentId,
+    });
+    if (child.children !== undefined && child.children.length > 0) {
+      collect(child.children, child.id, out);
+    }
   }
 }

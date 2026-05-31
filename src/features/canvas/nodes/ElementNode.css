@@ -179,3 +179,47 @@
 .element-node-mvp-label {
   line-height: 1;
 }
+
+/* -- Expand / collapse chevron (shared by ElementNode and GroupNode) ------ */
+
+.node-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xs);
+  background: var(--color-bg-3);
+  color: var(--color-fg-muted);
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.node-expand-toggle:hover {
+  color: var(--color-fg-default);
+  background: var(--color-bg-2);
+}
+
+.node-expand-toggle:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 1px;
+}
+
+/* Chevron points down when expanded, right when collapsed. */
+.node-expand-toggle[data-expanded="false"] {
+  transform: rotate(-90deg);
+}
+
+/* A collapsed container hints at hidden depth with a stacked-shadow edge. */
+.element-node[data-collapsed="true"] {
+  box-shadow:
+    var(--elevation-1),
+    4px 4px 0 -1px var(--color-bg-3),
+    5px 5px 0 -1px var(--color-border-subtle);
+}

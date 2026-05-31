@@ -11,7 +11,9 @@ import { resolve as resolvePath } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { resolve } from "@/core/doc/resolve";
-import { parseProjectYaml } from "@/core/schema/parse";
+import { parseProjectJson, parseProjectYaml } from "@/core/schema/parse";
+
+import type { ProjectDocument } from "@/core/schema/schema";
 
 const EXAMPLE_PATH = resolvePath(__dirname, "../../../docs/schema-example.yaml");
 
@@ -143,5 +145,165 @@ describe("resolve", () => {
     const cat = atLatest.elements.find((e) => e.id === "catalog-service");
     // Under the old fallback-to-0 behavior this would be "LEAK".
     expect(cat?.properties["orphanField"]).toBeUndefined();
+  });
+});
+
+// ----------------------------------------------------------------------------
+// Containment (hierarchical view) — issue #1
+// ----------------------------------------------------------------------------
+// A crafted 3-level document (domain → service → data) plus an outside service
+// that connects across boundaries, so we can exercise nesting, the layer +
+// override expansion model, and cross-boundary edge rerouting precisely.
+
+function buildNestedDoc(): ProjectDocument {
+  const raw = {
+    $schemaVersion: "1.0.0",
+    project: { id: "nest", name: "Nesting Fixture" },
+    mvps: [{ id: "mvp1", name: "v1", order: 1, color: "#3366cc" }],
+    layers: [
+      { id: "business", order: 1, label: "Business" },
+      { id: "architecture", order: 2, label: "Architecture" },
+      { id: "engineering", order: 3, label: "Engineering" },
+    ],
+    elements: [
+      {
+        id: "domain",
+        type: "group",
+        name: "Domain",
+        minLayer: "business",
+        aggregateAt: ["business"],
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      },
+      {
+        id: "svc",
+        type: "service",
+        name: "Service",
+        parent: "domain",
+        minLayer: "business",
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      },
+      {
+        id: "db",
+        type: "database",
+        name: "Database",
+        parent: "svc",
+        minLayer: "business",
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      },
+      {
+        id: "client",
+        type: "frontend",
+        name: "Client",
+        minLayer: "business",
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      },
+    ],
+    connections: [
+      {
+        id: "client-to-db",
+        from: "client",
+        to: "db",
+        type: "sync",
+        minLayer: "business",
+        lifecycle: { introducedIn: "mvp1" },
+      },
+      {
+        id: "svc-to-db",
+        from: "svc",
+        to: "db",
+        type: "data",
+        minLayer: "architecture",
+        lifecycle: { introducedIn: "mvp1" },
+      },
+    ],
+  };
+  const result = parseProjectJson(raw);
+  if (!result.ok) throw new Error(result.error);
+  return result.value;
+}
+
+describe("resolve — containment", () => {
+  it("nests three levels (domain → service → data) at the engineering layer", () => {
+    const doc = buildNestedDoc();
+    const atEng = resolve(doc, "engineering", "mvp1");
+
+    const ids = new Set(atEng.elements.map((e) => e.id));
+    expect(ids.has("domain")).toBe(true);
+    expect(ids.has("svc")).toBe(true);
+    expect(ids.has("db")).toBe(true);
+
+    expect(atEng.containment.get("domain")?.parentId).toBeNull();
+    expect(atEng.containment.get("svc")?.parentId).toBe("domain");
+    expect(atEng.containment.get("db")?.parentId).toBe("svc");
+
+    // domain and svc are expanded containers; db is a leaf.
+    expect(atEng.containment.get("domain")?.hasVisibleChildren).toBe(true);
+    expect(atEng.containment.get("svc")?.hasVisibleChildren).toBe(true);
+    expect(atEng.containment.get("db")?.canExpand).toBe(false);
+  });
+
+  it("collapses a group by its aggregateAt default at the business layer", () => {
+    const doc = buildNestedDoc();
+    const atBiz = resolve(doc, "business", "mvp1");
+
+    const ids = new Set(atBiz.elements.map((e) => e.id));
+    expect(ids.has("domain")).toBe(true);
+    expect(ids.has("svc")).toBe(false);
+    expect(ids.has("db")).toBe(false);
+    // The collapsed domain advertises that it can be expanded.
+    expect(atBiz.containment.get("domain")?.canExpand).toBe(true);
+    expect(atBiz.containment.get("domain")?.isExpanded).toBe(false);
+  });
+
+  it("lets a manual override expand a default-collapsed group", () => {
+    const doc = buildNestedDoc();
+    // Override domain → expanded at the business layer, where it would default
+    // to collapsed via aggregateAt. Its children become visible and nested.
+    const atBiz = resolve(doc, "business", "mvp1", { domain: true });
+    expect(atBiz.containment.get("domain")?.isExpanded).toBe(true);
+    expect(atBiz.containment.get("domain")?.hasVisibleChildren).toBe(true);
+    expect(atBiz.elements.find((e) => e.id === "svc")).toBeDefined();
+    expect(atBiz.containment.get("svc")?.parentId).toBe("domain");
+  });
+
+  it("lets a manual override collapse a default-expanded element (any type)", () => {
+    const doc = buildNestedDoc();
+    // Collapse the service (a non-group) at engineering — its db child hides.
+    const collapsed = resolve(doc, "engineering", "mvp1", { svc: false });
+    const ids = new Set(collapsed.elements.map((e) => e.id));
+    expect(ids.has("svc")).toBe(true);
+    expect(ids.has("db")).toBe(false);
+    expect(collapsed.containment.get("svc")?.hasVisibleChildren).toBe(false);
+    expect(collapsed.containment.get("svc")?.canExpand).toBe(true);
+  });
+
+  it("reroutes a cross-boundary edge to the nearest visible ancestor when collapsed", () => {
+    const doc = buildNestedDoc();
+    // Collapse the domain at architecture — db is hidden inside it.
+    const collapsed = resolve(doc, "architecture", "mvp1", { domain: false });
+
+    // The client→db connection reroutes to client→domain (aggregated).
+    const rerouted = collapsed.edges.find((e) => e.from === "client" && e.to === "domain");
+    expect(rerouted).toBeDefined();
+    expect(rerouted?.aggregated).toBe(true);
+
+    // The internal svc→db edge collapses to a self-loop and is dropped.
+    expect(collapsed.edges.find((e) => e.from === e.to)).toBeUndefined();
+
+    // The real connection list (inspector) does NOT contain the hidden edge.
+    expect(collapsed.connections.find((c) => c.id === "client-to-db")).toBeUndefined();
+  });
+
+  it("keeps real edges intact when everything is expanded", () => {
+    const doc = buildNestedDoc();
+    const atArch = resolve(doc, "architecture", "mvp1");
+    // client→db is a real, non-aggregated edge with both endpoints visible.
+    const edge = atArch.edges.find((e) => e.from === "client" && e.to === "db");
+    expect(edge?.aggregated).toBe(false);
+    expect(atArch.connections.find((c) => c.id === "client-to-db")).toBeDefined();
   });
 });

@@ -288,7 +288,7 @@ elements:
         ha: multi-AZ
     lifecycle:
       introducedIn: mvp1
-    parent: banking-domain
+    parent: account-service
   - id: ledger-db
     type: database
     name: Ledger DB
@@ -303,7 +303,7 @@ elements:
         engine: PostgreSQL
     lifecycle:
       introducedIn: mvp1
-    parent: banking-domain
+    parent: ledger-service
     style:
       tone: critical
   - id: payment-service
@@ -352,7 +352,7 @@ elements:
         partitions: 24
     lifecycle:
       introducedIn: mvp2
-    parent: payments-domain
+    parent: payment-service
   - id: payment-db
     type: database
     name: Payment DB
@@ -364,7 +364,7 @@ elements:
         engine: PostgreSQL
     lifecycle:
       introducedIn: mvp2
-    parent: payments-domain
+    parent: payment-service
   - id: card-network
     type: external
     name: Card Networks
@@ -426,7 +426,7 @@ elements:
         engine: PostgreSQL
     lifecycle:
       introducedIn: mvp3
-    parent: lending-domain
+    parent: lending-service
   - id: credit-bureau
     type: external
     name: Credit Bureau
@@ -564,7 +564,7 @@ elements:
         broker: RabbitMQ
     lifecycle:
       introducedIn: mvp1
-    parent: platform-domain
+    parent: notification-service
   - id: audit-db
     type: database
     name: Audit Store
@@ -576,7 +576,7 @@ elements:
         engine: ClickHouse
     lifecycle:
       introducedIn: mvp1
-    parent: platform-domain
+    parent: audit-service
   - id: observability
     type: service
     name: Observability
