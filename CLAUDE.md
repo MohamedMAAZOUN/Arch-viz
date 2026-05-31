@@ -144,11 +144,23 @@ pnpm build        # production build
 - Assert behavior, not implementation details.
 - `Result` helpers and DocStore mutations each need direct tests in `core/`.
 
+## Live data & export
+
+- **Live data** (`src/core/live/`): elements with `dataSources` poll through one
+  boundary — `LiveDataClient` (`http` direct; `grafana`/`jira` via
+  `VITE_LIVE_PROXY_URL`, else offline — secrets never in the bundle). The
+  `useLiveData(element)` hook (backoff + stale/offline states) feeds the node
+  `LiveIndicator` and the inspector's Live status. See `docs/adr/0005-live-data.md`.
+- **Export** (`src/core/export/`): JSON via `serializeProject` (round-trips);
+  PNG/SVG via the Canvas-registered `canvasExporter` (lazy `html-to-image`,
+  captures the visible graph at the current layer + MVP). UI in
+  `inspector/sections/ExportSection`. See `docs/adr/0006-export.md`.
+
 ## Things deferred to v1.5+
 
 - Monaco YAML editor (currently a plain textarea is good enough when needed)
 - Multiplayer (Yjs is wired, just needs a sync server)
-- Video export of MVP transitions
-- Live data hooks (Grafana / Jira fetching)
+- Video export of MVP transitions; PDF export (after PNG)
+- A live-data proxy/backend (the client is ready; the proxy is a deploy concern)
 
 Don't build these without confirming with the user. They're explicitly deferred.

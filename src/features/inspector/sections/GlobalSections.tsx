@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useViewStore } from "@/core/state/viewStore";
+import { ExportSection } from "@/features/inspector/sections/ExportSection";
 import { Section } from "@/features/inspector/sections/Section";
 
 import type { Element, ProjectDocument } from "@/core/schema/schema";
@@ -83,7 +84,7 @@ export default function GlobalSections() {
       </Section>
 
       <Section title="Export">
-        <div className="inspector-empty-row">PNG · SVG · PDF · video · JSON. (Coming soon.)</div>
+        <ExportSection doc={doc} />
       </Section>
     </>
   );

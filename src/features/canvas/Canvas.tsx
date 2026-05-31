@@ -30,6 +30,7 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  getNodesBounds,
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
@@ -39,6 +40,7 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
+import { registerCanvasExporter } from "@/core/export/canvasExporter";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
@@ -51,6 +53,7 @@ import { resolveCameraAction } from "@/features/tour/cameraAction";
 import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 
 import type { ResolvedEdge } from "@/core/doc/resolve";
+import type { ImageFormat } from "@/core/export/canvasExporter";
 import type { ConnectionType, ProjectDocument, Viewpoint } from "@/core/schema/schema";
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { GroupNodeType } from "@/features/canvas/nodes/GroupNode";
@@ -257,6 +260,48 @@ function CanvasInner() {
     };
   }, [activeTourId, tourStepIndex, doc, applyCamera]);
 
+  // -- Image export --------------------------------------------------------
+  // Register an exporter the inspector's Export section can call. We capture
+  // the React Flow viewport layer (nodes + edges, no UI chrome) framed to the
+  // current nodes — i.e. "export what you see" at the current layer + MVP.
+  useEffect(() => {
+    const exporter = async (format: ImageFormat): Promise<string> => {
+      const flow = flowRef.current;
+      if (flow === null) throw new Error("Canvas is not ready.");
+      const rfNodes = flow.getNodes();
+      if (rfNodes.length === 0) throw new Error("Nothing to export at this view.");
+
+      const bounds = getNodesBounds(rfNodes);
+      const PADDING = 48;
+      const width = Math.ceil(bounds.width + PADDING * 2);
+      const height = Math.ceil(bounds.height + PADDING * 2);
+
+      const viewportEl = document.querySelector<HTMLElement>(".react-flow__viewport");
+      if (viewportEl === null) throw new Error("Canvas viewport not found.");
+
+      // Frame the whole graph 1:1 with padding (no UI chrome captured).
+      const options = {
+        backgroundColor: readToken("--color-bg-1"),
+        width,
+        height,
+        style: {
+          width: `${String(width)}px`,
+          height: `${String(height)}px`,
+          transform: `translate(${String(-bounds.x + PADDING)}px, ${String(-bounds.y + PADDING)}px) scale(1)`,
+        },
+      };
+
+      // Lazy-load the image library — only paid for on an actual export.
+      const { toPng, toSvg } = await import("html-to-image");
+      return format === "png" ? toPng(viewportEl, options) : toSvg(viewportEl, options);
+    };
+
+    registerCanvasExporter(exporter);
+    return () => {
+      registerCanvasExporter(null);
+    };
+  }, []);
+
   return (
     <div className="canvas">
       <ReactFlow<CanvasNode, Edge>
@@ -372,6 +417,12 @@ function depthOf(id: string, placements: PlacementMap): number {
 function buildMvpColorMap(doc: ProjectDocument | null): ReadonlyMap<string, string> {
   if (doc === null) return new Map();
   return new Map(doc.mvps.map((m) => [m.id, m.color]));
+}
+
+/** Read a CSS custom property off :root. Used by the image exporter to bake
+ *  the themed background into the capture (event-handler context, not render). */
+function readToken(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#000";
 }
 
 // ---------------------------------------------------------------------------

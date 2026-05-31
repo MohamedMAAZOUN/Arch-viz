@@ -24,6 +24,7 @@ import { duration, ease } from "@/design-system/tokens";
 import {
   ElementTypeBadge,
   ExpandToggle,
+  LiveIndicator,
   MvpLifecycleBadge,
 } from "@/features/canvas/nodes/NodeParts";
 
@@ -74,6 +75,7 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
           {introducedColor !== null ? (
             <MvpLifecycleBadge color={introducedColor} mvpId={introducedIn} />
           ) : null}
+          <LiveIndicator element={element} />
           {canExpand ? <ExpandToggle elementId={element.id} isExpanded={isExpanded} /> : null}
         </div>
 

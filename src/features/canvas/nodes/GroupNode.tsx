@@ -15,6 +15,7 @@ import { Handle, Position } from "@xyflow/react";
 import {
   ElementTypeBadge,
   ExpandToggle,
+  LiveIndicator,
   MvpLifecycleBadge,
 } from "@/features/canvas/nodes/NodeParts";
 
@@ -56,6 +57,7 @@ export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
           {introducedColor !== null ? (
             <MvpLifecycleBadge color={introducedColor} mvpId={introducedIn} />
           ) : null}
+          <LiveIndicator element={element} />
           <ExpandToggle elementId={element.id} isExpanded={isExpanded} />
         </div>
       </div>
