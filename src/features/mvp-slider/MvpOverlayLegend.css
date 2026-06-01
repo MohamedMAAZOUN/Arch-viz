@@ -1,16 +1,25 @@
 /* ============================================================================
  * MvpOverlayLegend.css — floating color → MVP key (overlay mode)
+ * ============================================================================
+ * Sits bottom-center as a horizontal strip: the only canvas zone free of the
+ * other chrome (zoom controls bottom-left, minimap bottom-right, tour launcher
+ * + panel pills top corners, view controls top-center).
  * ============================================================================ */
 
 .mvp-legend {
   position: absolute;
-  right: var(--space-5);
-  top: var(--space-5);
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
   z-index: var(--z-canvas-controls);
-  min-width: 9rem;
-  max-width: 16rem;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: min(90%, 52rem);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
   background: color-mix(in oklch, var(--color-bg-2), transparent 8%);
   border: 1px solid var(--color-border-subtle);
   box-shadow: var(--elevation-2);
@@ -23,13 +32,14 @@
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-fg-faint);
-  margin-bottom: var(--space-2);
 }
 
 .mvp-legend-list {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
 }
 
 .mvp-legend-row {
@@ -57,4 +67,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 12rem;
 }
