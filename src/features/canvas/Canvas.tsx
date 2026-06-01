@@ -51,6 +51,7 @@ import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
 import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
+import { useLockedMoveHint } from "@/features/canvas/useLockedMoveHint";
 import { resolveCameraAction } from "@/features/tour/cameraAction";
 import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 
@@ -85,6 +86,10 @@ function CanvasInner() {
   const cursorMode = useViewStore((s) => s.cursorMode);
   const setCursorMode = useViewStore((s) => s.setCursorMode);
   const placements = useLayoutedGraph(doc, currentLayer);
+
+  // Nudge the user who keeps trying to drag nodes while the layout is locked.
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const lockHint = useLockedMoveHint(canvasRef, cursorMode === "lock");
 
   const select = useSelectionStore((s) => s.select);
 
@@ -325,7 +330,12 @@ function CanvasInner() {
   }, []);
 
   return (
-    <div className="canvas" data-cursor={cursorMode}>
+    <div
+      className="canvas"
+      data-cursor={cursorMode}
+      data-lock-alert={lockHint.visible}
+      ref={canvasRef}
+    >
       <ReactFlow<CanvasNode, Edge>
         onInit={(instance) => {
           flowRef.current = instance;
@@ -389,6 +399,18 @@ function CanvasInner() {
           </ControlButton>
         </Controls>
       </ReactFlow>
+
+      {lockHint.visible ? (
+        <div key={lockHint.nonce} className="lock-move-hint" role="status">
+          <span className="lock-move-hint-icon">
+            <LockIcon />
+          </span>
+          <span>
+            Layout is locked. Switch to the <strong>pan</strong> or <strong>select</strong> tool to
+            move nodes.
+          </span>
+        </div>
+      ) : null}
 
       {doc === null ? <CanvasEmptyState /> : null}
     </div>
