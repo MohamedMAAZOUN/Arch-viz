@@ -1,0 +1,98 @@
+/* ============================================================================
+ * NotificationHost.css
+ * ============================================================================
+ * A bottom-center stack of toasts. Color is driven by the `data-level` of each
+ * toast (error / success / info). Generalized from the old per-feature toast
+ * styles so every surface in the app shares one look.
+ * ============================================================================ */
+
+.notification-host {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(640px, 90vw);
+  pointer-events: none;
+}
+
+.notification-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--elevation-3);
+  animation: notification-toast-in var(--duration-base) var(--ease-out);
+}
+
+.notification-toast[data-level="error"] {
+  border-color: var(--color-tone-critical);
+}
+
+.notification-toast[data-level="success"] {
+  border-color: var(--color-tone-success);
+}
+
+.notification-toast[data-level="info"] {
+  border-color: var(--color-accent-base);
+}
+
+@keyframes notification-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-toast-title {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-base);
+  margin-bottom: var(--space-2);
+}
+
+.notification-toast[data-level="error"] .notification-toast-title {
+  color: var(--color-tone-critical);
+}
+
+.notification-toast-detail {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-muted);
+  line-height: var(--leading-snug);
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow: auto;
+  margin: 0;
+}
+
+.notification-toast-dismiss {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--color-fg-muted);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xs);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.notification-toast-dismiss:hover {
+  color: var(--color-fg-default);
+}

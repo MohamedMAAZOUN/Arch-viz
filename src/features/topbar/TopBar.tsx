@@ -15,6 +15,7 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDirty } from "@/core/doc/useDirty";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useUndoRedoState } from "@/core/doc/useUndoRedoState";
+import { notify } from "@/core/state/notificationStore";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
 import SettingsMenu from "@/features/settings/SettingsMenu";
@@ -24,7 +25,6 @@ import "@/features/topbar/TopBar.css";
 export default function TopBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const doc = useDocSnapshot();
   const { canUndo, canRedo } = useUndoRedoState();
   const dirty = useDirty();
@@ -32,11 +32,10 @@ export default function TopBar() {
   const handleSave = () => {
     if (doc === null || saving) return;
     setSaving(true);
-    setSaveError(null);
     void saveToCurrentFile()
       .then((result) => {
         if (!result.ok && !result.cancelled) {
-          setSaveError(result.error);
+          notify({ level: "error", title: "Save failed", detail: result.error });
         }
       })
       .finally(() => {
@@ -146,22 +145,6 @@ export default function TopBar() {
           </button>
         </div>
       </header>
-
-      {saveError !== null ? (
-        <div className="topbar-save-error" role="alert">
-          <div className="topbar-save-error-title">Save failed</div>
-          <div className="topbar-save-error-text">{saveError}</div>
-          <button
-            type="button"
-            className="topbar-save-error-dismiss"
-            onClick={() => {
-              setSaveError(null);
-            }}
-          >
-            Dismiss
-          </button>
-        </div>
-      ) : null}
 
       {settingsOpen ? (
         <SettingsMenu

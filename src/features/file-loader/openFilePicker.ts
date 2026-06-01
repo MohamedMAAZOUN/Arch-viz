@@ -16,6 +16,7 @@
 
 import { loadProject } from "@/core/doc/loadProject";
 import { parseProjectYaml } from "@/core/schema/parse";
+import { notify } from "@/core/state/notificationStore";
 import { setCurrentFileHandle } from "@/features/file-loader/savePicker";
 
 const ACCEPT = ".yaml,.yml,application/yaml,text/yaml";
@@ -71,16 +72,16 @@ async function openViaFsApi(
     const text = await file.text();
     const result = parseProjectYaml(text);
     if (!result.ok) {
-      console.error("Failed to parse project YAML:\n" + result.error);
+      notify({ level: "error", title: "Failed to load file", detail: result.error });
       return;
     }
 
     setCurrentFileHandle(handle);
     loadProject(result.value);
   } catch (err) {
-    // User cancelled via AbortError — silent. Other errors logged.
+    // User cancelled via AbortError — silent. Other errors surface as a toast.
     if (err instanceof DOMException && err.name === "AbortError") return;
-    console.error("Failed to open file:", err);
+    notify({ level: "error", title: "Failed to open file", detail: errorMessage(err) });
   }
 }
 
@@ -101,13 +102,17 @@ async function loadFileAndApply(file: File): Promise<void> {
     const text = await file.text();
     const result = parseProjectYaml(text);
     if (!result.ok) {
-      console.error("Failed to load project from file:\n" + result.error);
+      notify({ level: "error", title: "Failed to load file", detail: result.error });
       return;
     }
     // No handle available in the input-element path; clear any stale handle.
     setCurrentFileHandle(null);
     loadProject(result.value);
   } catch (err) {
-    console.error("Failed to read file:", err);
+    notify({ level: "error", title: "Failed to read file", detail: errorMessage(err) });
   }
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }

@@ -12,6 +12,7 @@ import Canvas from "@/features/canvas/Canvas";
 import AddElementMenu from "@/features/element-editor/AddElementMenu";
 import FileLoader from "@/features/file-loader/FileLoader";
 import MvpOverlayLegend from "@/features/mvp-slider/MvpOverlayLegend";
+import NotificationHost from "@/features/notifications/NotificationHost";
 import FloatingPanels from "@/features/panels/FloatingPanels";
 import TopBar from "@/features/topbar/TopBar";
 import TourLauncher from "@/features/tour/TourLauncher";
@@ -33,6 +34,7 @@ export default function App() {
           <TourLauncher />
           <TourMount />
         </main>
+        <NotificationHost />
       </div>
     </FileLoader>
   );
