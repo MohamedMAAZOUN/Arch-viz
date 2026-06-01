@@ -9,7 +9,7 @@
   width: 220px;
   background: var(--color-bg-2);
   border: 1px solid var(--color-border-default);
-  border-left: 3px solid var(--color-tone-neutral);
+  border-left: 3px solid var(--color-type-service);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   box-shadow: var(--elevation-1);
@@ -35,21 +35,29 @@
   border-left-color: var(--color-accent-base);
 }
 
-/* Tone variants drive the accent bar on the left edge */
-.element-node[data-tone="neutral"] {
-  border-left-color: var(--color-tone-neutral);
+/* The left accent bar identifies the element TYPE (complements the type badge).
+ * Semantic state (style.tone) is intentionally NOT shown here — it would read as
+ * noise when almost every node is neutral. */
+.element-node[data-type="service"] {
+  border-left-color: var(--color-type-service);
 }
-.element-node[data-tone="critical"] {
-  border-left-color: var(--color-tone-critical);
+.element-node[data-type="database"] {
+  border-left-color: var(--color-type-database);
 }
-.element-node[data-tone="warning"] {
-  border-left-color: var(--color-tone-warning);
+.element-node[data-type="queue"] {
+  border-left-color: var(--color-type-queue);
 }
-.element-node[data-tone="success"] {
-  border-left-color: var(--color-tone-success);
+.element-node[data-type="frontend"] {
+  border-left-color: var(--color-type-frontend);
 }
-.element-node[data-tone="muted"] {
-  border-left-color: var(--color-tone-muted);
+.element-node[data-type="external"] {
+  border-left-color: var(--color-type-external);
+}
+.element-node[data-type="actor"] {
+  border-left-color: var(--color-type-actor);
+}
+.element-node[data-type="group"] {
+  border-left-color: var(--color-type-group);
 }
 
 /* Overlay (diff) mode: the MVP that introduced the element becomes the primary

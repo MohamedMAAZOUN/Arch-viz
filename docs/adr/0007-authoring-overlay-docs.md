@@ -51,9 +51,15 @@ palette and drag-to-connect both consume them.
 
 `viewStore.mvpMode: "single" | "overlay"`. Overlay tints each node by its
 introducing-MVP color (passed as `--overlay-tint` into the node, consumed by
-CSS) and shows `MvpOverlayLegend`, a floating color→MVP key. The element set is
-unchanged — `resolve()` already exposes `introducedIn`; overlay is purely a
-view concern, so it lives in Zustand, not the document.
+CSS) and shows `MvpOverlayLegend`, a floating color→MVP key (top-right, clear of
+the zoom controls and minimap). The element set is unchanged — `resolve()`
+already exposes `introducedIn`; overlay is purely a view concern, so it lives in
+Zustand, not the document.
+
+In **single** mode the node's left-accent bar now encodes the element **type**
+(new `--color-type-*` tokens), not `style.tone`. The tone bar was near-useless
+when almost every node is neutral; type-coloring complements the type badge and
+is always meaningful. Overlay's MVP tint still overrides the bar.
 
 ### Markdown rendering without a dependency (#6)
 

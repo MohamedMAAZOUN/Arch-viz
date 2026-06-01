@@ -4,10 +4,11 @@
 
 .mvp-legend {
   position: absolute;
-  left: var(--space-5);
-  bottom: var(--space-5);
+  right: var(--space-5);
+  top: var(--space-5);
   z-index: var(--z-canvas-controls);
   min-width: 9rem;
+  max-width: 16rem;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: color-mix(in oklch, var(--color-bg-2), transparent 8%);
