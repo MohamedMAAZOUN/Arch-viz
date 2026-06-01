@@ -342,13 +342,14 @@ function CanvasInner() {
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={2.5}
-        nodesDraggable
-        nodesConnectable
+        nodesDraggable={cursorMode !== "lock"}
+        nodesConnectable={cursorMode !== "lock"}
         elementsSelectable
-        // Cursor tool — "pan" drags the viewport; "select" marquee-selects and
-        // moves panning onto the middle/right mouse button.
+        // Cursor tool — "pan"/"lock" drag the viewport; "select" marquee-selects
+        // and moves panning onto the middle/right mouse button. "lock" also
+        // freezes node dragging (browse without disturbing the layout).
         selectionOnDrag={cursorMode === "select"}
-        panOnDrag={cursorMode === "pan" ? true : PAN_MOUSE_BUTTONS}
+        panOnDrag={cursorMode === "select" ? PAN_MOUSE_BUTTONS : true}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} />
         <MiniMap pannable zoomable />
@@ -374,6 +375,17 @@ function CanvasInner() {
             className={cursorMode === "select" ? "cursor-tool-active" : undefined}
           >
             <CursorIcon />
+          </ControlButton>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("lock");
+            }}
+            title="Locked tool — pan and select, but nodes can't be moved"
+            aria-label="Locked tool"
+            aria-pressed={cursorMode === "lock"}
+            className={cursorMode === "lock" ? "cursor-tool-active" : undefined}
+          >
+            <LockIcon />
           </ControlButton>
         </Controls>
       </ReactFlow>
@@ -588,6 +600,25 @@ function CursorIcon() {
       aria-hidden
     >
       <path d="M4 4l7 16 2-6 6-2z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
   );
 }

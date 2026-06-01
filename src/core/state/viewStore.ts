@@ -20,12 +20,14 @@ import type { LayerId, MvpRef } from "@/core/schema/schema";
 export type MvpMode = "single" | "overlay";
 
 /**
- * Canvas pointer tool — how a left-drag on empty canvas behaves:
- *  - "pan"    — drag to pan the viewport (the hand tool; default).
+ * Canvas pointer tool — how a left-drag / node-drag on the canvas behaves:
+ *  - "pan"    — drag empty canvas to pan; nodes are draggable (the hand tool).
  *  - "select" — drag to box-select nodes (the pointer tool); panning then
  *    moves to the middle/right mouse button.
+ *  - "lock"   — pan + click-to-select, but nodes can't be moved by dragging
+ *    (the layout is locked while you browse).
  */
-export type CursorMode = "pan" | "select";
+export type CursorMode = "pan" | "select" | "lock";
 
 export interface ViewState {
   currentLayer: LayerId;

@@ -38,18 +38,25 @@
   color: var(--color-accent-base);
 }
 
-/* Pane cursor reflects the active tool: a grab hand in pan mode, a crosshair
- * for marquee select. React Flow swaps to "grabbing" itself while dragging. */
-.canvas[data-cursor="pan"] .react-flow__pane {
+/* Pane cursor reflects the active tool: a grab hand when panning (pan + lock),
+ * a crosshair for marquee select. React Flow swaps to "grabbing" while dragging. */
+.canvas[data-cursor="pan"] .react-flow__pane,
+.canvas[data-cursor="lock"] .react-flow__pane {
   cursor: grab;
 }
 
-.canvas[data-cursor="pan"] .react-flow__pane.dragging {
+.canvas[data-cursor="pan"] .react-flow__pane.dragging,
+.canvas[data-cursor="lock"] .react-flow__pane.dragging {
   cursor: grabbing;
 }
 
 .canvas[data-cursor="select"] .react-flow__pane {
   cursor: crosshair;
+}
+
+/* In lock mode, hovering a node shows it's selectable but not draggable. */
+.canvas[data-cursor="lock"] .react-flow__node {
+  cursor: pointer;
 }
 
 .canvas .react-flow__minimap {
