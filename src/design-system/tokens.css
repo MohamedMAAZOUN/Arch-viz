@@ -156,6 +156,17 @@
   --color-mvp-7: oklch(74% 0.18 115); /* lime        */
   --color-mvp-8: oklch(70% 0.18 295); /* purple      */
 
+  /* Element-type palette — drives the node's left-accent bar so the type reads
+   * at a glance alongside the type badge. Distinct hues at consistent L/C in
+   * OKLCH; saturated enough to stay legible on both the dark and light surface. */
+  --color-type-service: oklch(70% 0.15 250); /* blue    */
+  --color-type-database: oklch(68% 0.16 150); /* green   */
+  --color-type-queue: oklch(75% 0.14 70); /* amber   */
+  --color-type-frontend: oklch(72% 0.14 200); /* teal    */
+  --color-type-external: oklch(68% 0.17 300); /* violet  */
+  --color-type-actor: oklch(71% 0.16 30); /* coral   */
+  --color-type-group: oklch(60% 0.03 250); /* neutral */
+
   /* --------------------------------------------------------------------------
    * Elevation — shadow ladder. Use color-mix with bg to keep tonal harmony.
    * -------------------------------------------------------------------------- */

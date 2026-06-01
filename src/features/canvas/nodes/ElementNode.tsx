@@ -31,6 +31,7 @@ import {
 import type { Element } from "@/core/schema/schema";
 import type { ContainmentData } from "@/features/canvas/nodes/NodeParts";
 import type { Node, NodeProps } from "@xyflow/react";
+import type { MotionStyle } from "motion/react";
 
 import "@/features/canvas/nodes/ElementNode.css";
 
@@ -44,12 +45,15 @@ export interface ElementNodeData extends Record<string, unknown>, ContainmentDat
   introducedIn: string;
   /** Faded during a tour step that highlights other nodes. */
   dimmed: boolean;
+  /** Overlay mode — tint the node by its introducing MVP color. */
+  overlay: boolean;
 }
 export type ElementNodeType = Node<ElementNodeData, "element">;
 
 export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
-  const { element, introducedColor, introducedIn, canExpand, isExpanded, dimmed } = data;
+  const { element, introducedColor, introducedIn, canExpand, isExpanded, dimmed, overlay } = data;
   const tone = element.style?.tone ?? "neutral";
+  const tinted = overlay && introducedColor !== null;
 
   return (
     <>
@@ -62,6 +66,10 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
         data-selected={selected}
         data-collapsed={canExpand ? true : undefined}
         data-dimmed={dimmed ? true : undefined}
+        data-overlay={tinted ? true : undefined}
+        // Cast: `--overlay-tint` is a CSS custom property, which MotionStyle's
+        // keyed type doesn't model. The value is a plain color string.
+        style={(tinted ? { ["--overlay-tint"]: introducedColor } : {}) as MotionStyle}
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: duration.slow / 1000, ease: ease.out }}

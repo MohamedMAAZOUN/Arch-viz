@@ -26,6 +26,7 @@
 import {
   Background,
   BackgroundVariant,
+  ControlButton,
   Controls,
   MiniMap,
   ReactFlow,
@@ -37,6 +38,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { docStore } from "@/core/doc/DocStore";
+import { buildConnection } from "@/core/doc/authoring";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
@@ -49,6 +51,7 @@ import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
 import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
+import { useLockedMoveHint } from "@/features/canvas/useLockedMoveHint";
 import { resolveCameraAction } from "@/features/tour/cameraAction";
 import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 
@@ -58,7 +61,7 @@ import type { ConnectionType, ProjectDocument, Viewpoint } from "@/core/schema/s
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { GroupNodeType } from "@/features/canvas/nodes/GroupNode";
 import type { PlacementMap } from "@/features/canvas/useLayoutedGraph";
-import type { Edge, ReactFlowInstance } from "@xyflow/react";
+import type { Connection as FlowConnection, Edge, ReactFlowInstance } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 import "@/features/canvas/Canvas.css";
@@ -79,7 +82,14 @@ function CanvasInner() {
   const doc = useDocSnapshot();
   const resolved = useResolvedDoc();
   const currentLayer = useViewStore((s) => s.currentLayer);
+  const mvpMode = useViewStore((s) => s.mvpMode);
+  const cursorMode = useViewStore((s) => s.cursorMode);
+  const setCursorMode = useViewStore((s) => s.setCursorMode);
   const placements = useLayoutedGraph(doc, currentLayer);
+
+  // Nudge the user who keeps trying to drag nodes while the layout is locked.
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const lockHint = useLockedMoveHint(canvasRef, cursorMode === "lock");
 
   const select = useSelectionStore((s) => s.select);
 
@@ -101,8 +111,8 @@ function CanvasInner() {
   // Derive the "next" set of nodes from the doc + layout + containment.
   const derivedNodes = useMemo<CanvasNode[]>(() => {
     if (resolved === null) return [];
-    return buildNodes(resolved, placements, mvpColors, highlightIds);
-  }, [resolved, placements, mvpColors, highlightIds]);
+    return buildNodes(resolved, placements, mvpColors, highlightIds, mvpMode === "overlay");
+  }, [resolved, placements, mvpColors, highlightIds, mvpMode]);
 
   const derivedEdges = useMemo<Edge[]>(() => {
     if (resolved === null) return [];
@@ -137,6 +147,23 @@ function CanvasInner() {
 
   const onPaneClick = () => {
     select(null);
+  };
+
+  // Drag-to-connect: draw a new connection between two node handles. The edge
+  // is introduced at the current MVP and gated to the current layer so it's
+  // visible immediately, and written through DocStore (one undo step).
+  const onConnect = (connection: FlowConnection) => {
+    const current = docStore.get();
+    if (current === null) return;
+    const { source, target } = connection;
+    if (source === target) return; // no self-loops
+    const { currentLayer: layer, currentMvp: mvp } = useViewStore.getState();
+    const introducedIn = mvp ?? [...current.mvps].sort((a, b) => a.order - b.order)[0]?.id;
+    if (introducedIn === undefined) return;
+    const takenIds = new Set(current.connections.map((c) => c.id));
+    docStore.addConnection(
+      buildConnection({ from: source, to: target, takenIds, introducedIn, minLayer: layer }),
+    );
   };
 
   // Persist drag-to-position into the doc as a layer-scoped override. Stored
@@ -303,7 +330,12 @@ function CanvasInner() {
   }, []);
 
   return (
-    <div className="canvas">
+    <div
+      className="canvas"
+      data-cursor={cursorMode}
+      data-lock-alert={lockHint.visible}
+      ref={canvasRef}
+    >
       <ReactFlow<CanvasNode, Edge>
         onInit={(instance) => {
           flowRef.current = instance;
@@ -315,25 +347,79 @@ function CanvasInner() {
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={2.5}
-        nodesDraggable
-        nodesConnectable={false}
+        nodesDraggable={cursorMode !== "lock"}
+        nodesConnectable={cursorMode !== "lock"}
         elementsSelectable
-        selectionOnDrag={false}
-        panOnDrag
+        // Cursor tool — "pan"/"lock" drag the viewport; "select" marquee-selects
+        // and moves panning onto the middle/right mouse button. "lock" also
+        // freezes node dragging (browse without disturbing the layout).
+        selectionOnDrag={cursorMode === "select"}
+        panOnDrag={cursorMode === "select" ? PAN_MOUSE_BUTTONS : true}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} />
         <MiniMap pannable zoomable />
-        <Controls showInteractive={false} />
+        <Controls showInteractive={false}>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("pan");
+            }}
+            title="Pan tool — drag to move the canvas"
+            aria-label="Pan tool"
+            aria-pressed={cursorMode === "pan"}
+            className={cursorMode === "pan" ? "cursor-tool-active" : undefined}
+          >
+            <HandIcon />
+          </ControlButton>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("select");
+            }}
+            title="Select tool — drag to box-select"
+            aria-label="Select tool"
+            aria-pressed={cursorMode === "select"}
+            className={cursorMode === "select" ? "cursor-tool-active" : undefined}
+          >
+            <CursorIcon />
+          </ControlButton>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("lock");
+            }}
+            title="Locked tool — pan and select, but nodes can't be moved"
+            aria-label="Locked tool"
+            aria-pressed={cursorMode === "lock"}
+            className={cursorMode === "lock" ? "cursor-tool-active" : undefined}
+          >
+            <LockIcon />
+          </ControlButton>
+        </Controls>
       </ReactFlow>
+
+      {lockHint.visible ? (
+        <div key={lockHint.nonce} className="lock-move-hint" role="status">
+          <span className="lock-move-hint-icon">
+            <LockIcon />
+          </span>
+          <span>
+            Layout is locked. Switch to the <strong>pan</strong> or <strong>select</strong> tool to
+            move nodes.
+          </span>
+        </div>
+      ) : null}
 
       {doc === null ? <CanvasEmptyState /> : null}
     </div>
   );
 }
+
+// Middle + right mouse buttons keep panning available while the select tool
+// owns the left-drag (React Flow encodes pan buttons as a number[]).
+const PAN_MOUSE_BUTTONS = [1, 2];
 
 // ---------------------------------------------------------------------------
 // Node construction — maps resolved elements + placements to React Flow nodes
@@ -344,6 +430,7 @@ function buildNodes(
   placements: PlacementMap,
   mvpColors: ReadonlyMap<string, string>,
   highlightIds: ReadonlySet<string> | null,
+  overlay: boolean,
 ): CanvasNode[] {
   const visibleIds = new Set(resolved.elements.map((e) => e.id));
 
@@ -372,6 +459,8 @@ function buildNodes(
       isExpanded: containment?.isExpanded ?? true,
       // Dimmed when a tour step highlights a set this node isn't part of.
       dimmed: highlightIds !== null && !highlightIds.has(element.id),
+      // Overlay (diff) mode: tint the node by its introducing MVP color.
+      overlay,
     };
 
     const common = {
@@ -493,6 +582,68 @@ function edgeStroke(type: ConnectionType): string {
 // ---------------------------------------------------------------------------
 // Empty state — shown when no doc is loaded
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Cursor-tool icons (rendered inside the React Flow control bar)
+// ---------------------------------------------------------------------------
+
+function HandIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2" />
+      <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2" />
+      <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8" />
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+    </svg>
+  );
+}
+
+function CursorIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 4l7 16 2-6 6-2z" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
 
 function CanvasEmptyState() {
   return (

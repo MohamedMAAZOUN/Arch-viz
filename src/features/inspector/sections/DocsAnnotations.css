@@ -1,0 +1,133 @@
+/* ============================================================================
+ * DocsAnnotations.css — Documentation + Annotations inspector sections
+ * ============================================================================ */
+
+.docs-view,
+.docs-editor,
+.annotations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.docs-textarea {
+  width: 100%;
+  min-height: 8rem;
+  resize: vertical;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-fg-default);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  line-height: var(--leading-normal);
+}
+
+.docs-textarea--compact {
+  min-height: 4rem;
+}
+
+.docs-textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent-base);
+  box-shadow: 0 0 0 2px var(--color-accent-soft);
+}
+
+.docs-editor-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.docs-btn {
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-3);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-fg-muted);
+  font-size: var(--text-small);
+  align-self: flex-start;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.docs-btn:hover {
+  background: var(--color-bg-4);
+  color: var(--color-fg-default);
+}
+
+.docs-btn--primary {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-base);
+  color: var(--color-fg-default);
+}
+
+.docs-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.docs-btn--danger {
+  color: var(--color-tone-critical);
+  border-color: var(--color-tone-critical);
+}
+
+.docs-btn--danger:hover {
+  background: var(--color-tone-critical);
+  color: var(--color-accent-fg-on);
+}
+
+/* -- Annotations list ------------------------------------------------------- */
+
+.annotations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.annotation {
+  position: relative;
+  padding: var(--space-3);
+  padding-right: var(--space-7);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.annotation-body {
+  font-size: var(--text-base);
+  color: var(--color-fg-default);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.annotation-meta {
+  margin-top: var(--space-1);
+  font-size: var(--text-micro);
+  font-family: var(--font-mono);
+  color: var(--color-fg-faint);
+}
+
+.annotation-remove {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xs);
+  color: var(--color-fg-faint);
+  font-size: var(--text-emphasis);
+  line-height: 1;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.annotation-remove:hover {
+  background: var(--color-tone-critical);
+  color: var(--color-accent-fg-on);
+}

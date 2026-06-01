@@ -23,7 +23,13 @@
 
 import * as Y from "yjs";
 
-import type { Connection, Element, LayerId, ProjectDocument } from "@/core/schema/schema";
+import type {
+  Annotation,
+  Connection,
+  Element,
+  LayerId,
+  ProjectDocument,
+} from "@/core/schema/schema";
 
 const DOC_KEY = "document";
 
@@ -66,8 +72,34 @@ export interface DocStore {
   /** Update an element's name. */
   updateElementName(elementId: string, name: string): void;
 
+  /** Replace an element's markdown documentation. Pass null to clear it. */
+  updateElementDocumentation(elementId: string, markdown: string | null): void;
+
+  /** Append a freeform note to an element. The caller builds the full
+   *  {@link Annotation} (id + timestamp) so this stays a pure structural edit. */
+  addAnnotation(elementId: string, annotation: Annotation): void;
+
+  /** Remove a single annotation from an element by its id. */
+  removeAnnotation(elementId: string, annotationId: string): void;
+
   /** Update a single property on a connection. */
   updateConnectionProperty(connectionId: string, key: string, value: unknown): void;
+
+  // -- Structural mutations (add / remove elements and connections) ------
+  /** Append a new, fully-formed element. The caller is responsible for a
+   *  unique id and a valid lifecycle (use the element-editor helpers). */
+  addElement(element: Element): void;
+
+  /** Remove an element and everything that depends on it: its entire descendant
+   *  subtree, every connection touching any removed element, and all per-layer
+   *  layout overrides for the removed ids. One atomic step (one undo). */
+  removeElement(elementId: string): void;
+
+  /** Append a new connection between two existing elements. */
+  addConnection(connection: Connection): void;
+
+  /** Remove a connection by id. */
+  removeConnection(connectionId: string): void;
 
   // -- Diagnostics -------------------------------------------------------
   __internal: {
@@ -244,6 +276,46 @@ export function createDocStore(): DocStore {
       });
     },
 
+    updateElementDocumentation(elementId, markdown) {
+      mutate((doc) => {
+        const elements = doc.elements.map((el): Element => {
+          if (el.id !== elementId) return el;
+          if (markdown === null) {
+            const { documentation: _omit, ...rest } = el;
+            return rest;
+          }
+          return { ...el, documentation: markdown };
+        });
+        return { ...doc, elements };
+      });
+    },
+
+    addAnnotation(elementId, annotation) {
+      mutate((doc) => {
+        const elements = doc.elements.map((el): Element => {
+          if (el.id !== elementId) return el;
+          return { ...el, annotations: [...(el.annotations ?? []), annotation] };
+        });
+        return { ...doc, elements };
+      });
+    },
+
+    removeAnnotation(elementId, annotationId) {
+      mutate((doc) => {
+        const elements = doc.elements.map((el): Element => {
+          if (el.id !== elementId || el.annotations === undefined) return el;
+          const remaining = el.annotations.filter((a) => a.id !== annotationId);
+          if (remaining.length === el.annotations.length) return el; // not found
+          if (remaining.length === 0) {
+            const { annotations: _omit, ...rest } = el;
+            return rest;
+          }
+          return { ...el, annotations: remaining };
+        });
+        return { ...doc, elements };
+      });
+    },
+
     updateConnectionProperty(connectionId, key, value) {
       mutate((doc) => {
         const connections = doc.connections.map((c): Connection => {
@@ -253,6 +325,51 @@ export function createDocStore(): DocStore {
           // mostly for `protocol` and `type` in v1.
           return { ...c, [key]: value };
         });
+        return { ...doc, connections };
+      });
+    },
+
+    addElement(element) {
+      mutate((doc) => {
+        if (doc.elements.some((e) => e.id === element.id)) {
+          // Invariant: ids are unique. The element-editor builds a fresh id; a
+          // collision here is a programming error, so fail loudly per the guide.
+          throw new Error(`addElement: duplicate element id ${element.id}`);
+        }
+        return { ...doc, elements: [...doc.elements, element] };
+      });
+    },
+
+    removeElement(elementId) {
+      mutate((doc) => {
+        const removed = collectSubtree(elementId, doc.elements);
+        if (removed.size === 0) return doc; // unknown id — no-op
+
+        const elements = doc.elements.filter((e) => !removed.has(e.id));
+        // Drop any connection touching a removed element.
+        const connections = doc.connections.filter(
+          (c) => !removed.has(c.from) && !removed.has(c.to),
+        );
+        // Drop layout overrides for removed elements across every layer.
+        const layout = pruneLayoutForIds(doc.layout, removed);
+        const base = { ...doc, elements, connections };
+        return layout === undefined ? omitKey(base, "layout") : { ...base, layout };
+      });
+    },
+
+    addConnection(connection) {
+      mutate((doc) => {
+        if (doc.connections.some((c) => c.id === connection.id)) {
+          throw new Error(`addConnection: duplicate connection id ${connection.id}`);
+        }
+        return { ...doc, connections: [...doc.connections, connection] };
+      });
+    },
+
+    removeConnection(connectionId) {
+      mutate((doc) => {
+        const connections = doc.connections.filter((c) => c.id !== connectionId);
+        if (connections.length === doc.connections.length) return doc; // not found
         return { ...doc, connections };
       });
     },
@@ -283,6 +400,64 @@ function stableStringify(value: unknown): string {
     }
     return val;
   });
+}
+
+/**
+ * Collect an element and every descendant beneath it (any depth), so removing
+ * a container also removes the children it would otherwise orphan (which would
+ * make the document fail schema validation on its next parse). Returns an empty
+ * set when the id is unknown.
+ */
+function collectSubtree(rootId: string, elements: readonly Element[]): ReadonlySet<string> {
+  if (!elements.some((e) => e.id === rootId)) return new Set();
+
+  // Build a parent → children adjacency map once, then BFS from the root.
+  const childrenOf = new Map<string, string[]>();
+  for (const el of elements) {
+    if (el.parent === undefined) continue;
+    const siblings = childrenOf.get(el.parent) ?? [];
+    siblings.push(el.id);
+    childrenOf.set(el.parent, siblings);
+  }
+
+  const removed = new Set<string>([rootId]);
+  const queue = [rootId];
+  while (queue.length > 0) {
+    const next = queue.shift();
+    if (next === undefined) break;
+    for (const child of childrenOf.get(next) ?? []) {
+      if (!removed.has(child)) {
+        removed.add(child);
+        queue.push(child);
+      }
+    }
+  }
+  return removed;
+}
+
+/**
+ * Return a new per-layer layout with every entry for a removed element id
+ * stripped, pruning emptied layers. Returns undefined when nothing remains (so
+ * the caller can drop the `layout` key entirely and keep the doc minimal).
+ */
+function pruneLayoutForIds(
+  layout: ProjectDocument["layout"],
+  removed: ReadonlySet<string>,
+): ProjectDocument["layout"] {
+  if (layout === undefined) return undefined;
+
+  const next: Record<string, Record<string, unknown>> = {};
+  for (const [layer, perLayer] of Object.entries(layout)) {
+    if (perLayer === undefined) continue;
+    const kept: Record<string, unknown> = {};
+    for (const [id, entry] of Object.entries(perLayer)) {
+      if (!removed.has(id)) kept[id] = entry;
+    }
+    if (Object.keys(kept).length > 0) next[layer] = kept;
+  }
+
+  // Cast: we rebuilt the same shape the schema defines, minus removed ids.
+  return Object.keys(next).length === 0 ? undefined : (next as ProjectDocument["layout"]);
 }
 
 /** Return a shallow copy of `obj` without the given key. Functional alternative

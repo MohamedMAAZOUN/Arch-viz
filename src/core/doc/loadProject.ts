@@ -37,6 +37,9 @@ export function loadProject(project: ProjectDocument): void {
   // when the new project only defines business-layer elements.
   viewStore.setLayer("business");
 
+  // A fresh project starts in single-MVP mode (overlay is an explicit choice).
+  viewStore.setMvpMode("single");
+
   // Expand/collapse overrides belong to the previous project — drop them so the
   // new project starts from its layer-driven containment defaults.
   viewStore.clearGroupExpansion();

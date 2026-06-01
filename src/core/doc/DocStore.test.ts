@@ -117,3 +117,134 @@ describe("DocStore — mutations", () => {
     expect(store.get()?.layout?.architecture).toBeUndefined();
   });
 });
+
+describe("DocStore — documentation & annotations", () => {
+  it("sets and clears element documentation", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.updateElementDocumentation("svc-a", "# Hello");
+    expect(store.get()?.elements[0]?.documentation).toBe("# Hello");
+    store.updateElementDocumentation("svc-a", null);
+    expect(store.get()?.elements[0]?.documentation).toBeUndefined();
+  });
+
+  it("adds and removes annotations, dropping the empty array", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.addAnnotation("svc-a", {
+      id: "note-1",
+      body: "First",
+      createdAt: "2026-01-01T00:00:00Z",
+    });
+    store.addAnnotation("svc-a", {
+      id: "note-2",
+      body: "Second",
+      createdAt: "2026-01-02T00:00:00Z",
+    });
+    expect(store.get()?.elements[0]?.annotations).toHaveLength(2);
+
+    store.removeAnnotation("svc-a", "note-1");
+    expect(store.get()?.elements[0]?.annotations).toHaveLength(1);
+    expect(store.get()?.elements[0]?.annotations?.[0]?.id).toBe("note-2");
+
+    store.removeAnnotation("svc-a", "note-2");
+    expect(store.get()?.elements[0]?.annotations).toBeUndefined();
+  });
+});
+
+describe("DocStore — structural mutations", () => {
+  it("adds and removes an element", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.addElement({
+      id: "svc-b",
+      type: "service",
+      name: "Svc B",
+      minLayer: "architecture",
+      properties: {},
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    expect(store.get()?.elements).toHaveLength(2);
+    store.removeElement("svc-b");
+    expect(store.get()?.elements).toHaveLength(1);
+  });
+
+  it("throws on a duplicate element id", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    expect(() => {
+      store.addElement({
+        id: "svc-a",
+        type: "service",
+        name: "Dup",
+        minLayer: "architecture",
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      });
+    }).toThrow(/duplicate element id/);
+  });
+
+  it("removing an element cascades to its subtree, connections, and overrides", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    // Build a group with a child and a connection to svc-a, plus a layout override.
+    store.addElement({
+      id: "grp",
+      type: "group",
+      name: "Group",
+      aggregateAt: [],
+      minLayer: "business",
+      properties: {},
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    store.addElement({
+      id: "child",
+      type: "service",
+      name: "Child",
+      parent: "grp",
+      minLayer: "architecture",
+      properties: {},
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    store.addConnection({
+      id: "conn-1",
+      from: "child",
+      to: "svc-a",
+      type: "sync",
+      minLayer: "architecture",
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    store.setElementLayoutOverride("architecture", "child", { x: 5, y: 5 });
+
+    store.removeElement("grp");
+
+    const doc = store.get();
+    expect(doc?.elements.map((e) => e.id)).toEqual(["svc-a"]);
+    expect(doc?.connections).toHaveLength(0);
+    expect(doc?.layout?.architecture).toBeUndefined();
+  });
+
+  it("adds and removes a connection", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.addElement({
+      id: "svc-b",
+      type: "service",
+      name: "Svc B",
+      minLayer: "architecture",
+      properties: {},
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    store.addConnection({
+      id: "conn-1",
+      from: "svc-a",
+      to: "svc-b",
+      type: "sync",
+      minLayer: "architecture",
+      lifecycle: { introducedIn: "mvp1" },
+    });
+    expect(store.get()?.connections).toHaveLength(1);
+    store.removeConnection("conn-1");
+    expect(store.get()?.connections).toHaveLength(0);
+  });
+});

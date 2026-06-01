@@ -11,9 +11,29 @@ import { create } from "zustand";
 
 import type { LayerId, MvpRef } from "@/core/schema/schema";
 
+/**
+ * How the MVP timeline is visualized:
+ *  - "single"  — scrub to one point in time (the historical default).
+ *  - "overlay" — show the same elements but tinted by the MVP that introduced
+ *    each, so multiple MVPs read at once (color-coded with a legend).
+ */
+export type MvpMode = "single" | "overlay";
+
+/**
+ * Canvas pointer tool — how a left-drag / node-drag on the canvas behaves:
+ *  - "pan"    — drag empty canvas to pan; nodes are draggable (the hand tool).
+ *  - "select" — drag to box-select nodes (the pointer tool); panning then
+ *    moves to the middle/right mouse button.
+ *  - "lock"   — pan + click-to-select, but nodes can't be moved by dragging
+ *    (the layout is locked while you browse).
+ */
+export type CursorMode = "pan" | "select" | "lock";
+
 export interface ViewState {
   currentLayer: LayerId;
   currentMvp: MvpRef | null;
+  mvpMode: MvpMode;
+  cursorMode: CursorMode;
   viewport: { x: number; y: number; zoom: number };
 
   /**
@@ -31,6 +51,8 @@ export interface ViewState {
 
   setLayer: (layer: LayerId) => void;
   setMvp: (mvp: MvpRef) => void;
+  setMvpMode: (mode: MvpMode) => void;
+  setCursorMode: (mode: CursorMode) => void;
   setViewport: (vp: { x: number; y: number; zoom: number }) => void;
   setGroupExpansion: (elementId: string, expanded: boolean) => void;
   clearGroupExpansion: () => void;
@@ -39,6 +61,8 @@ export interface ViewState {
 export const useViewStore = create<ViewState>((set) => ({
   currentLayer: "architecture",
   currentMvp: null,
+  mvpMode: "single",
+  cursorMode: "pan",
   viewport: { x: 0, y: 0, zoom: 1 },
   groupExpansion: {},
 
@@ -47,6 +71,12 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   setMvp: (currentMvp) => {
     set({ currentMvp });
+  },
+  setMvpMode: (mvpMode) => {
+    set({ mvpMode });
+  },
+  setCursorMode: (cursorMode) => {
+    set({ cursorMode });
   },
   setViewport: (viewport) => {
     set({ viewport });

@@ -33,8 +33,8 @@ export const NODE_DIMENSIONS = {
 
 /**
  * Inner padding ELK reserves inside an expanded container. `top` clears the
- * container header (name + chevron) AND leaves a gap below it; the rest frames
- * the nested children. Kept in sync with `--group-header-height` in
- * GroupNode.css (header 44 + ~16 gap).
+ * container header (name + chevron) AND leaves a comfortable gap below it; the
+ * rest frames the nested children. Kept in sync with `--group-header-height` in
+ * GroupNode.css (header 44 + ~36 gap so the first child row isn't crowded).
  */
-export const CONTAINER_PADDING = { top: 60, left: 28, bottom: 28, right: 28 } as const;
+export const CONTAINER_PADDING = { top: 80, left: 28, bottom: 28, right: 28 } as const;

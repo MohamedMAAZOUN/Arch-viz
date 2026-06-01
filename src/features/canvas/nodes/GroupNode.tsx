@@ -31,12 +31,15 @@ export interface GroupNodeData extends Record<string, unknown>, ContainmentData 
   introducedIn: string;
   /** Faded during a tour step that highlights other nodes. */
   dimmed: boolean;
+  /** Overlay mode — tint the container by its introducing MVP color. */
+  overlay: boolean;
 }
 export type GroupNodeType = Node<GroupNodeData, "group">;
 
 export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
-  const { element, introducedColor, introducedIn, isExpanded, dimmed } = data;
+  const { element, introducedColor, introducedIn, isExpanded, dimmed, overlay } = data;
   const tone = element.style?.tone ?? "neutral";
+  const tinted = overlay && introducedColor !== null;
 
   return (
     <>
@@ -48,6 +51,12 @@ export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
         data-type={element.type}
         data-selected={selected}
         data-dimmed={dimmed ? true : undefined}
+        data-overlay={tinted ? true : undefined}
+        style={
+          tinted
+            ? ({ ["--overlay-tint" as string]: introducedColor } as React.CSSProperties)
+            : undefined
+        }
       >
         <div className="group-node-header">
           <ElementTypeBadge type={element.type} />

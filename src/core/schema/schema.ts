@@ -109,6 +109,25 @@ export const DataSource = z.discriminatedUnion("kind", [GrafanaSource, JiraSourc
 export type DataSource = z.infer<typeof DataSource>;
 
 // ----------------------------------------------------------------------------
+// Annotations (freeform notes on an element)
+// ----------------------------------------------------------------------------
+// A single-user notes list in v1. The collaborative, shared-comments version
+// is deferred to the multiplayer epic — this shape is intentionally a superset
+// of what that will need (an id + author + timestamp per note) so the upgrade
+// is additive rather than a migration.
+
+export const Annotation = z.object({
+  id: Id,
+  /** The note text. Plain text in v1 (the Documentation field is the markdown one). */
+  body: z.string().min(1),
+  /** Optional author label. Free text until there is a real identity system. */
+  author: z.string().optional(),
+  /** ISO-8601 timestamp of when the note was created. */
+  createdAt: z.string().min(1),
+});
+export type Annotation = z.infer<typeof Annotation>;
+
+// ----------------------------------------------------------------------------
 // Element properties
 // ----------------------------------------------------------------------------
 // `_layerVisibility` maps a property *key* → minimum layer to show it at.
@@ -149,6 +168,11 @@ const elementCommonShape = {
   lifecycle: Lifecycle,
   dataSources: z.array(DataSource).optional(),
   style: z.object({ tone: Tone.default("neutral") }).optional(),
+  /** Long-form markdown documentation shown in the inspector's Documentation
+   *  section. Authored in YAML or edited in-app; rendered as formatted text. */
+  documentation: z.string().optional(),
+  /** Freeform notes attached to the element (inspector's Annotations section). */
+  annotations: z.array(Annotation).optional(),
 };
 
 export const Element = z.discriminatedUnion("type", [

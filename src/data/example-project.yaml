@@ -105,6 +105,22 @@ elements:
         runtime: "k8s"
       _layerVisibility:
         tech: engineering
+    # Markdown documentation (rendered in the inspector's Documentation section)
+    documentation: |
+      ## Catalog Service
+
+      Owns the **product catalog** read path: browse, search, and (from `mvp3`)
+      ML-driven recommendations.
+
+      - Backed by a read-optimized projection of the orders DB
+      - Search served from an inverted index
+      - See the [runbook](https://example.com/runbooks/catalog)
+    # Freeform notes (Annotations section)
+    annotations:
+      - id: note-catalog-1
+        body: "Latency spikes correlate with the nightly reindex job."
+        author: "team-catalog"
+        createdAt: "2026-02-14T09:30:00Z"
     lifecycle:
       introducedIn: mvp1
       modifiedIn: # only diffs stored, base + diffs resolved at runtime
