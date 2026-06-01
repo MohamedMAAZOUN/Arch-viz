@@ -65,9 +65,15 @@ The DocStore API surface (use these, don't reach into the Y.Doc):
 - `docStore.updateElementName(id, name)`
 - `docStore.updateElementProperty(id, key, value)` — pass `null` to remove the key
 - `docStore.updateElementPropertyPath(id, path, value)`
+- `docStore.updateElementDocumentation(id, markdown)` — pass `null` to clear
+- `docStore.addAnnotation(id, annotation)` / `docStore.removeAnnotation(id, annotationId)`
 - `docStore.updateConnectionProperty(id, key, value)`
+- `docStore.addElement(element)` / `docStore.removeElement(id)` — remove cascades to the subtree, touching connections, and layout overrides
+- `docStore.addConnection(connection)` / `docStore.removeConnection(id)`
 - `docStore.setElementLayoutOverride(layer, elementId, position)` — pass `null` to clear
 - `docStore.clearLayerOverrides(layer)`
+
+New, fully-formed elements/connections are built by the pure factories in `@/core/doc/authoring` (`buildElement` / `buildConnection`) using `@/lib/id`. The "add element" palette (`features/element-editor`) and drag-to-connect on the canvas both go through them. Delete is available via the inspector Danger zone and the `Delete`/`Backspace` shortcut (`useDeleteSelectedShortcut`). The MVP slider has a single/overlay mode toggle (`viewStore.mvpMode`); overlay tints nodes by their introducing MVP and shows a legend.
 
 **Loading a project**: always call `loadProject(project)` from `@/core/doc/loadProject` — it loads the doc AND resets the view (MVP, layer) so the canvas is never blank after load. Don't call `docStore.load()` directly from feature code.
 

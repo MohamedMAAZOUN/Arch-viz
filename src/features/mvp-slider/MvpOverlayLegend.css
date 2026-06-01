@@ -1,0 +1,59 @@
+/* ============================================================================
+ * MvpOverlayLegend.css — floating color → MVP key (overlay mode)
+ * ============================================================================ */
+
+.mvp-legend {
+  position: absolute;
+  left: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-canvas-controls);
+  min-width: 9rem;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklch, var(--color-bg-2), transparent 8%);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--elevation-2);
+  backdrop-filter: blur(var(--blur-soft));
+}
+
+.mvp-legend-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-fg-faint);
+  margin-bottom: var(--space-2);
+}
+
+.mvp-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mvp-legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+}
+
+.mvp-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mvp-legend-id {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-muted);
+}
+
+.mvp-legend-name {
+  color: var(--color-fg-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

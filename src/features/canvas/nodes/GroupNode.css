@@ -43,6 +43,16 @@
   border-color: color-mix(in oklch, var(--color-tone-success) 55%, var(--color-border-default));
 }
 
+/* Overlay (diff) mode: tint the container frame + header by its introducing
+ * MVP color (set inline as `--overlay-tint`). */
+.group-node[data-overlay="true"] {
+  border-color: color-mix(in oklch, var(--overlay-tint) 55%, var(--color-border-default));
+}
+
+.group-node[data-overlay="true"] .group-node-header {
+  background: color-mix(in oklch, var(--overlay-tint) 16%, var(--color-bg-2));
+}
+
 /* -- Header -------------------------------------------------------------- */
 
 .group-node-header {

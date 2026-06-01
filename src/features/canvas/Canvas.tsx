@@ -37,6 +37,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { docStore } from "@/core/doc/DocStore";
+import { buildConnection } from "@/core/doc/authoring";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
@@ -58,7 +59,7 @@ import type { ConnectionType, ProjectDocument, Viewpoint } from "@/core/schema/s
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { GroupNodeType } from "@/features/canvas/nodes/GroupNode";
 import type { PlacementMap } from "@/features/canvas/useLayoutedGraph";
-import type { Edge, ReactFlowInstance } from "@xyflow/react";
+import type { Connection as FlowConnection, Edge, ReactFlowInstance } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 import "@/features/canvas/Canvas.css";
@@ -79,6 +80,7 @@ function CanvasInner() {
   const doc = useDocSnapshot();
   const resolved = useResolvedDoc();
   const currentLayer = useViewStore((s) => s.currentLayer);
+  const mvpMode = useViewStore((s) => s.mvpMode);
   const placements = useLayoutedGraph(doc, currentLayer);
 
   const select = useSelectionStore((s) => s.select);
@@ -101,8 +103,8 @@ function CanvasInner() {
   // Derive the "next" set of nodes from the doc + layout + containment.
   const derivedNodes = useMemo<CanvasNode[]>(() => {
     if (resolved === null) return [];
-    return buildNodes(resolved, placements, mvpColors, highlightIds);
-  }, [resolved, placements, mvpColors, highlightIds]);
+    return buildNodes(resolved, placements, mvpColors, highlightIds, mvpMode === "overlay");
+  }, [resolved, placements, mvpColors, highlightIds, mvpMode]);
 
   const derivedEdges = useMemo<Edge[]>(() => {
     if (resolved === null) return [];
@@ -137,6 +139,23 @@ function CanvasInner() {
 
   const onPaneClick = () => {
     select(null);
+  };
+
+  // Drag-to-connect: draw a new connection between two node handles. The edge
+  // is introduced at the current MVP and gated to the current layer so it's
+  // visible immediately, and written through DocStore (one undo step).
+  const onConnect = (connection: FlowConnection) => {
+    const current = docStore.get();
+    if (current === null) return;
+    const { source, target } = connection;
+    if (source === target) return; // no self-loops
+    const { currentLayer: layer, currentMvp: mvp } = useViewStore.getState();
+    const introducedIn = mvp ?? [...current.mvps].sort((a, b) => a.order - b.order)[0]?.id;
+    if (introducedIn === undefined) return;
+    const takenIds = new Set(current.connections.map((c) => c.id));
+    docStore.addConnection(
+      buildConnection({ from: source, to: target, takenIds, introducedIn, minLayer: layer }),
+    );
   };
 
   // Persist drag-to-position into the doc as a layer-scoped override. Stored
@@ -315,12 +334,13 @@ function CanvasInner() {
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={2.5}
         nodesDraggable
-        nodesConnectable={false}
+        nodesConnectable
         elementsSelectable
         selectionOnDrag={false}
         panOnDrag
@@ -344,6 +364,7 @@ function buildNodes(
   placements: PlacementMap,
   mvpColors: ReadonlyMap<string, string>,
   highlightIds: ReadonlySet<string> | null,
+  overlay: boolean,
 ): CanvasNode[] {
   const visibleIds = new Set(resolved.elements.map((e) => e.id));
 
@@ -372,6 +393,8 @@ function buildNodes(
       isExpanded: containment?.isExpanded ?? true,
       // Dimmed when a tour step highlights a set this node isn't part of.
       dimmed: highlightIds !== null && !highlightIds.has(element.id),
+      // Overlay (diff) mode: tint the node by its introducing MVP color.
+      overlay,
     };
 
     const common = {

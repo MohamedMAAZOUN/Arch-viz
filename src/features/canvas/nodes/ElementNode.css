@@ -52,6 +52,15 @@
   border-left-color: var(--color-tone-muted);
 }
 
+/* Overlay (diff) mode: the MVP that introduced the element becomes the primary
+ * signal. The left bar and a faint wash both take the MVP color (set inline as
+ * `--overlay-tint`). Placed after the tone variants so it wins over them. */
+.element-node[data-overlay="true"] {
+  border-left-width: 4px;
+  border-left-color: var(--overlay-tint);
+  background: color-mix(in oklch, var(--overlay-tint) 12%, var(--color-bg-2));
+}
+
 /* External elements get a dashed border to read as "outside the system" */
 .element-node[data-type="external"] {
   border-style: dashed;

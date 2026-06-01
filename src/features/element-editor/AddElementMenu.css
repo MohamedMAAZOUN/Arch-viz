@@ -1,0 +1,69 @@
+/* ============================================================================
+ * AddElementMenu.css — floating "add element" control
+ * ============================================================================ */
+
+.add-element {
+  position: absolute;
+  top: var(--space-5);
+  left: var(--space-5);
+  z-index: var(--z-canvas-controls);
+}
+
+.add-element-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: color-mix(in oklch, var(--color-bg-2), transparent 8%);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--elevation-1);
+  color: var(--color-fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  backdrop-filter: blur(var(--blur-soft));
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.add-element-trigger:hover,
+.add-element-trigger[aria-expanded="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-fg-default);
+  border-color: var(--color-accent-base);
+}
+
+.add-element-menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 9rem;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--elevation-3);
+}
+
+.add-element-item {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: var(--color-fg-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  text-transform: capitalize;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.add-element-item:hover {
+  background: var(--color-bg-3);
+  color: var(--color-fg-default);
+}

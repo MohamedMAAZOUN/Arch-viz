@@ -1,0 +1,87 @@
+/* ============================================================================
+ * Markdown.css — formatted documentation rendering inside the inspector
+ * ============================================================================ */
+
+.md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-fg-default);
+  word-break: break-word;
+}
+
+.md-heading {
+  font-weight: var(--weight-semibold);
+  color: var(--color-fg-default);
+  line-height: var(--leading-snug);
+}
+
+.md-heading[data-level="1"] {
+  font-size: var(--text-title);
+}
+.md-heading[data-level="2"] {
+  font-size: var(--text-emphasis);
+}
+.md-heading[data-level="3"],
+.md-heading[data-level="4"],
+.md-heading[data-level="5"],
+.md-heading[data-level="6"] {
+  font-size: var(--text-base);
+  color: var(--color-fg-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.md-paragraph {
+  color: var(--color-fg-muted);
+}
+
+.md-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-left: var(--space-5);
+  color: var(--color-fg-muted);
+}
+
+.md-list li {
+  list-style: revert;
+}
+
+.md-quote {
+  padding: var(--space-2) var(--space-4);
+  border-left: 2px solid var(--color-border-strong);
+  color: var(--color-fg-muted);
+  font-style: italic;
+}
+
+.md-code {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-1);
+  border: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-small);
+  color: var(--color-fg-default);
+}
+
+.md-inline-code {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--color-bg-1);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.md-link {
+  color: var(--color-accent-base);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.md-link:hover {
+  color: var(--color-fg-default);
+}

@@ -15,6 +15,9 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { useLiveData } from "@/core/live/useLiveData";
+import { AnnotationsSection } from "@/features/inspector/sections/AnnotationsSection";
+import { DeleteElementButton } from "@/features/inspector/sections/DeleteElementButton";
+import { DocumentationSection } from "@/features/inspector/sections/DocumentationSection";
 import { EditableField } from "@/features/inspector/sections/EditableField";
 import { Section } from "@/features/inspector/sections/Section";
 
@@ -152,13 +155,15 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
       </Section>
 
       <Section title="Documentation">
-        <div className="inspector-empty-row">
-          Markdown notes, links, attachments. (Coming soon.)
-        </div>
+        <DocumentationSection elementId={elementId} documentation={element.documentation} />
       </Section>
 
       <Section title="Annotations">
-        <div className="inspector-empty-row">Comments. (Coming soon.)</div>
+        <AnnotationsSection elementId={elementId} annotations={element.annotations} />
+      </Section>
+
+      <Section title="Danger zone">
+        <DeleteElementButton elementId={elementId} />
       </Section>
     </>
   );
@@ -367,6 +372,17 @@ function ConnectionList({
                 {c.type}
                 {c.protocol !== undefined ? ` · ${c.protocol}` : ""}
               </span>
+              <button
+                type="button"
+                className="inspector-conn-remove"
+                aria-label={`Remove connection to ${other}`}
+                title="Remove connection"
+                onClick={() => {
+                  docStore.removeConnection(c.id);
+                }}
+              >
+                ×
+              </button>
             </li>
           );
         })}

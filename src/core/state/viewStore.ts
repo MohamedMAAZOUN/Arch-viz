@@ -11,9 +11,18 @@ import { create } from "zustand";
 
 import type { LayerId, MvpRef } from "@/core/schema/schema";
 
+/**
+ * How the MVP timeline is visualized:
+ *  - "single"  — scrub to one point in time (the historical default).
+ *  - "overlay" — show the same elements but tinted by the MVP that introduced
+ *    each, so multiple MVPs read at once (color-coded with a legend).
+ */
+export type MvpMode = "single" | "overlay";
+
 export interface ViewState {
   currentLayer: LayerId;
   currentMvp: MvpRef | null;
+  mvpMode: MvpMode;
   viewport: { x: number; y: number; zoom: number };
 
   /**
@@ -31,6 +40,7 @@ export interface ViewState {
 
   setLayer: (layer: LayerId) => void;
   setMvp: (mvp: MvpRef) => void;
+  setMvpMode: (mode: MvpMode) => void;
   setViewport: (vp: { x: number; y: number; zoom: number }) => void;
   setGroupExpansion: (elementId: string, expanded: boolean) => void;
   clearGroupExpansion: () => void;
@@ -39,6 +49,7 @@ export interface ViewState {
 export const useViewStore = create<ViewState>((set) => ({
   currentLayer: "architecture",
   currentMvp: null,
+  mvpMode: "single",
   viewport: { x: 0, y: 0, zoom: 1 },
   groupExpansion: {},
 
@@ -47,6 +58,9 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   setMvp: (currentMvp) => {
     set({ currentMvp });
+  },
+  setMvpMode: (mvpMode) => {
+    set({ mvpMode });
   },
   setViewport: (viewport) => {
     set({ viewport });
