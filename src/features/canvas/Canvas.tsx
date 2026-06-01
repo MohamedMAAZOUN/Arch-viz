@@ -26,6 +26,7 @@
 import {
   Background,
   BackgroundVariant,
+  ControlButton,
   Controls,
   MiniMap,
   ReactFlow,
@@ -81,6 +82,8 @@ function CanvasInner() {
   const resolved = useResolvedDoc();
   const currentLayer = useViewStore((s) => s.currentLayer);
   const mvpMode = useViewStore((s) => s.mvpMode);
+  const cursorMode = useViewStore((s) => s.cursorMode);
+  const setCursorMode = useViewStore((s) => s.setCursorMode);
   const placements = useLayoutedGraph(doc, currentLayer);
 
   const select = useSelectionStore((s) => s.select);
@@ -322,7 +325,7 @@ function CanvasInner() {
   }, []);
 
   return (
-    <div className="canvas">
+    <div className="canvas" data-cursor={cursorMode}>
       <ReactFlow<CanvasNode, Edge>
         onInit={(instance) => {
           flowRef.current = instance;
@@ -342,18 +345,47 @@ function CanvasInner() {
         nodesDraggable
         nodesConnectable
         elementsSelectable
-        selectionOnDrag={false}
-        panOnDrag
+        // Cursor tool — "pan" drags the viewport; "select" marquee-selects and
+        // moves panning onto the middle/right mouse button.
+        selectionOnDrag={cursorMode === "select"}
+        panOnDrag={cursorMode === "pan" ? true : PAN_MOUSE_BUTTONS}
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} />
         <MiniMap pannable zoomable />
-        <Controls showInteractive={false} />
+        <Controls showInteractive={false}>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("pan");
+            }}
+            title="Pan tool — drag to move the canvas"
+            aria-label="Pan tool"
+            aria-pressed={cursorMode === "pan"}
+            className={cursorMode === "pan" ? "cursor-tool-active" : undefined}
+          >
+            <HandIcon />
+          </ControlButton>
+          <ControlButton
+            onClick={() => {
+              setCursorMode("select");
+            }}
+            title="Select tool — drag to box-select"
+            aria-label="Select tool"
+            aria-pressed={cursorMode === "select"}
+            className={cursorMode === "select" ? "cursor-tool-active" : undefined}
+          >
+            <CursorIcon />
+          </ControlButton>
+        </Controls>
       </ReactFlow>
 
       {doc === null ? <CanvasEmptyState /> : null}
     </div>
   );
 }
+
+// Middle + right mouse buttons keep panning available while the select tool
+// owns the left-drag (React Flow encodes pan buttons as a number[]).
+const PAN_MOUSE_BUTTONS = [1, 2];
 
 // ---------------------------------------------------------------------------
 // Node construction — maps resolved elements + placements to React Flow nodes
@@ -516,6 +548,49 @@ function edgeStroke(type: ConnectionType): string {
 // ---------------------------------------------------------------------------
 // Empty state — shown when no doc is loaded
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Cursor-tool icons (rendered inside the React Flow control bar)
+// ---------------------------------------------------------------------------
+
+function HandIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2" />
+      <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2" />
+      <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8" />
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+    </svg>
+  );
+}
+
+function CursorIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M4 4l7 16 2-6 6-2z" />
+    </svg>
+  );
+}
 
 function CanvasEmptyState() {
   return (

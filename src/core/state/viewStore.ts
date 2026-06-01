@@ -19,10 +19,19 @@ import type { LayerId, MvpRef } from "@/core/schema/schema";
  */
 export type MvpMode = "single" | "overlay";
 
+/**
+ * Canvas pointer tool — how a left-drag on empty canvas behaves:
+ *  - "pan"    — drag to pan the viewport (the hand tool; default).
+ *  - "select" — drag to box-select nodes (the pointer tool); panning then
+ *    moves to the middle/right mouse button.
+ */
+export type CursorMode = "pan" | "select";
+
 export interface ViewState {
   currentLayer: LayerId;
   currentMvp: MvpRef | null;
   mvpMode: MvpMode;
+  cursorMode: CursorMode;
   viewport: { x: number; y: number; zoom: number };
 
   /**
@@ -41,6 +50,7 @@ export interface ViewState {
   setLayer: (layer: LayerId) => void;
   setMvp: (mvp: MvpRef) => void;
   setMvpMode: (mode: MvpMode) => void;
+  setCursorMode: (mode: CursorMode) => void;
   setViewport: (vp: { x: number; y: number; zoom: number }) => void;
   setGroupExpansion: (elementId: string, expanded: boolean) => void;
   clearGroupExpansion: () => void;
@@ -50,6 +60,7 @@ export const useViewStore = create<ViewState>((set) => ({
   currentLayer: "architecture",
   currentMvp: null,
   mvpMode: "single",
+  cursorMode: "pan",
   viewport: { x: 0, y: 0, zoom: 1 },
   groupExpansion: {},
 
@@ -61,6 +72,9 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   setMvpMode: (mvpMode) => {
     set({ mvpMode });
+  },
+  setCursorMode: (cursorMode) => {
+    set({ cursorMode });
   },
   setViewport: (viewport) => {
     set({ viewport });

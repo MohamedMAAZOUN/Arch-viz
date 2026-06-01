@@ -26,7 +26,7 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## State tiers — getting this wrong is the #1 bug source
 
 - **Document state** → `Y.Doc` via `docStore` operations. Touch `yjs` only in `src/core/doc/DocStore.ts`.
-- **View state** (layer, MVP, selection, viewport, **group expand/collapse**, **tour playback**) → Zustand stores in `src/core/state/`.
+- **View state** (layer, MVP, MVP mode, **cursor/pan-vs-select tool**, selection, viewport, **group expand/collapse**, **tour playback**) → Zustand stores in `src/core/state/`.
 - **Component-local state** → `useState`.
 
 ### Guided tours (playback)

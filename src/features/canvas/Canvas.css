@@ -32,6 +32,26 @@
   box-shadow: var(--elevation-2);
 }
 
+/* Active cursor-tool button in the control bar. */
+.canvas .react-flow__controls-button.cursor-tool-active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-base);
+}
+
+/* Pane cursor reflects the active tool: a grab hand in pan mode, a crosshair
+ * for marquee select. React Flow swaps to "grabbing" itself while dragging. */
+.canvas[data-cursor="pan"] .react-flow__pane {
+  cursor: grab;
+}
+
+.canvas[data-cursor="pan"] .react-flow__pane.dragging {
+  cursor: grabbing;
+}
+
+.canvas[data-cursor="select"] .react-flow__pane {
+  cursor: crosshair;
+}
+
 .canvas .react-flow__minimap {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border-subtle);
