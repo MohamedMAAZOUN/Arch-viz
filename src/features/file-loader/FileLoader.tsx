@@ -10,14 +10,16 @@
 // sibling module — kept separate so this file exports only React components.
 //
 // Files go through the same trust boundary as everything else: read text →
-// parse via Zod → loadProject. Failures show as toast-style errors below
-// the dropzone overlay.
+// parse via Zod → loadProject. Failures publish to the shared notification
+// sink, so they surface through the same toast host as the programmatic file
+// picker and the save flow.
 // ============================================================================
 
 import { useEffect, useRef, useState } from "react";
 
 import { loadProject } from "@/core/doc/loadProject";
 import { parseProjectYaml } from "@/core/schema/parse";
+import { notify } from "@/core/state/notificationStore";
 
 import "@/features/file-loader/FileLoader.css";
 
@@ -41,7 +43,6 @@ interface FileLoaderProps {
 
 export default function FileLoader({ children }: FileLoaderProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   // Counter required to handle nested dragenter/leave correctly.
   const dragDepthRef = useRef(0);
 
@@ -75,8 +76,9 @@ export default function FileLoader({ children }: FileLoaderProps) {
       if (file === undefined) return;
 
       void loadFile(file).then((result) => {
-        if (!result.ok) setError(result.error);
-        else setError(null);
+        if (!result.ok) {
+          notify({ level: "error", title: "Failed to load file", detail: result.error });
+        }
       });
     };
 
@@ -103,21 +105,6 @@ export default function FileLoader({ children }: FileLoaderProps) {
             <div className="file-loader-title">Drop a project file</div>
             <div className="file-loader-text">.yaml or .yml</div>
           </div>
-        </div>
-      ) : null}
-      {error !== null ? (
-        <div className="file-loader-error" role="alert">
-          <div className="file-loader-error-title">Failed to load file</div>
-          <pre className="file-loader-error-detail">{error}</pre>
-          <button
-            type="button"
-            className="file-loader-error-dismiss"
-            onClick={() => {
-              setError(null);
-            }}
-          >
-            Dismiss
-          </button>
         </div>
       ) : null}
     </>

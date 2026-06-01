@@ -71,3 +71,22 @@
   font-family: inherit;
   line-height: var(--leading-snug);
 }
+
+/* -- Invalid state ----------------------------------------------------- */
+
+.editable-field-edit {
+  display: block;
+}
+
+.editable-field-input[data-invalid="true"] {
+  border-color: var(--color-tone-critical);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-tone-critical) 25%, transparent);
+}
+
+.editable-field-error {
+  display: block;
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-tone-critical);
+}

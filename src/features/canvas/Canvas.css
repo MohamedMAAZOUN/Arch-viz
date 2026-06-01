@@ -258,10 +258,14 @@
   box-shadow: var(--elevation-1);
 }
 
-/* -- Animated reflow on expand / collapse ------------------------------- */
+/* -- Animated reflow on position change --------------------------------- */
 /* React Flow positions nodes by writing `transform` inline. A transition on
- * that transform animates layout changes (expand/collapse re-runs ELK and
- * nodes glide to their new spots). Disabled mid-drag so dragging stays 1:1. */
+ * that transform animates ANY position change on a mounted node — both
+ * expand/collapse (ELK re-runs) and clearing layer overrides ("Reorganize",
+ * which snaps nodes back to their auto-layout spots). Both paths just update
+ * node.position on existing nodes, so this single rule covers them. Honors
+ * reduced-motion: --duration-slow zeroes out under the tokens' media query.
+ * Disabled mid-drag so dragging stays 1:1. */
 
 .canvas .react-flow__node {
   transition: transform var(--duration-slow) var(--ease-out);

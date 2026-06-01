@@ -2,7 +2,7 @@
  * FileLoader.css
  * ============================================================================
  * Full-screen dropzone overlay that appears while a file is being dragged.
- * A toast-style error card surfaces parse failures.
+ * Parse failures surface through the shared NotificationHost, not here.
  * ============================================================================ */
 
 .file-loader-overlay {
@@ -54,65 +54,4 @@
   color: var(--color-fg-muted);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-}
-
-/* -- Error toast ------------------------------------------------------- */
-
-.file-loader-error {
-  position: fixed;
-  bottom: var(--space-6);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-toast);
-  max-width: min(640px, 90vw);
-  background: var(--color-bg-2);
-  border: 1px solid var(--color-tone-critical);
-  border-left-width: 3px;
-  border-radius: var(--radius-md);
-  padding: var(--space-4) var(--space-5);
-  box-shadow: var(--elevation-3);
-  animation: file-loader-toast-in var(--duration-base) var(--ease-out);
-}
-
-@keyframes file-loader-toast-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 12px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.file-loader-error-title {
-  color: var(--color-tone-critical);
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-base);
-  margin-bottom: var(--space-2);
-}
-
-.file-loader-error-detail {
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  color: var(--color-fg-muted);
-  line-height: var(--leading-snug);
-  white-space: pre-wrap;
-  max-height: 120px;
-  overflow: auto;
-  margin-bottom: var(--space-3);
-}
-
-.file-loader-error-dismiss {
-  font-family: var(--font-mono);
-  font-size: var(--text-small);
-  color: var(--color-fg-muted);
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-xs);
-  transition: color var(--duration-fast) var(--ease-out);
-}
-
-.file-loader-error-dismiss:hover {
-  color: var(--color-fg-default);
 }

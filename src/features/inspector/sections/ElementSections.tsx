@@ -296,16 +296,20 @@ function renderValueField(
     );
   }
 
-  // Numbers stay strings in the input; we parse on commit.
+  // Numbers stay strings in the input; we parse on commit. `validate` rejects
+  // non-numeric input with visible feedback instead of a silent revert.
   if (typeof value === "number") {
     return (
       <EditableField
         value={String(value)}
         ariaLabel={path.join(".")}
+        validate={(draft) => {
+          const trimmed = draft.trim();
+          if (trimmed === "") return "Enter a number";
+          return Number.isFinite(Number(trimmed)) ? null : "Must be a number";
+        }}
         onChange={(next) => {
-          const parsed = Number(next);
-          if (!Number.isFinite(parsed)) return; // ignore invalid; field reverts
-          docStore.updateElementPropertyPath(elementId, path, parsed);
+          docStore.updateElementPropertyPath(elementId, path, Number(next));
         }}
       />
     );
