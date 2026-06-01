@@ -34,6 +34,7 @@ import {
   getNodesBounds,
   useEdgesState,
   useNodesState,
+  useStore,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -43,11 +44,13 @@ import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
 import { registerCanvasExporter } from "@/core/export/canvasExporter";
+import { useCanvasPrefsStore } from "@/core/state/canvasPrefsStore";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
 import { duration } from "@/design-system/tokens";
 import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
+import { RoutedEdge } from "@/features/canvas/edges/RoutedEdge";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
 import { useLayoutedGraph } from "@/features/canvas/useLayoutedGraph";
@@ -58,17 +61,27 @@ import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 import type { ResolvedEdge } from "@/core/doc/resolve";
 import type { ImageFormat } from "@/core/export/canvasExporter";
 import type { ConnectionType, ProjectDocument, Viewpoint } from "@/core/schema/schema";
+import type { EdgeLabelMode } from "@/core/state/canvasPrefsStore";
+import type { RoutedEdgeType } from "@/features/canvas/edges/RoutedEdge";
 import type { ElementNodeType } from "@/features/canvas/nodes/ElementNode";
 import type { GroupNodeType } from "@/features/canvas/nodes/GroupNode";
 import type { PlacementMap } from "@/features/canvas/useLayoutedGraph";
-import type { Connection as FlowConnection, Edge, ReactFlowInstance } from "@xyflow/react";
+import type { Connection as FlowConnection, ReactFlowInstance } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
 import "@/features/canvas/Canvas.css";
 
 type CanvasNode = ElementNodeType | GroupNodeType;
+type CanvasEdge = RoutedEdgeType;
 
 const nodeTypes = { element: ElementNode, group: GroupNode };
+const edgeTypes = { routed: RoutedEdge };
+
+// Below this zoom the cards drop their detail (description / tags / labels) so
+// a zoomed-out overview reads as a clean block diagram — see Canvas.css LOD
+// rules. Computed off React Flow's transform, bucketed so it only flips state
+// when the threshold is actually crossed (no re-render per zoom tick).
+const LOD_FAR_ZOOM = 0.55;
 
 export default function Canvas() {
   return (
@@ -85,25 +98,61 @@ function CanvasInner() {
   const mvpMode = useViewStore((s) => s.mvpMode);
   const cursorMode = useViewStore((s) => s.cursorMode);
   const setCursorMode = useViewStore((s) => s.setCursorMode);
-  const placements = useLayoutedGraph(doc, currentLayer);
+  const { placements, edgeRoutes } = useLayoutedGraph(doc, currentLayer);
+
+  // Readability prefs (persisted): card density, edge-label visibility, and
+  // whether selecting a node spotlights its neighborhood.
+  const density = useCanvasPrefsStore((s) => s.density);
+  const edgeLabels = useCanvasPrefsStore((s) => s.edgeLabels);
+  const focusOnSelect = useCanvasPrefsStore((s) => s.focusOnSelect);
+
+  // Semantic-zoom level-of-detail, bucketed off the live zoom.
+  const lod = useStore((s) => (s.transform[2] < LOD_FAR_ZOOM ? "far" : "near"));
 
   // Nudge the user who keeps trying to drag nodes while the layout is locked.
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const lockHint = useLockedMoveHint(canvasRef, cursorMode === "lock");
 
   const select = useSelectionStore((s) => s.select);
+  const selectedId = useSelectionStore((s) => s.selectedId);
 
   // Tour playback — the Canvas owns the camera + node dimming. The step's
   // highlight set (when present) dims everything else; an inactive tour or a
   // step with no highlight leaves all nodes at full opacity.
   const activeTourId = useTourStore((s) => s.activeTourId);
   const tourStepIndex = useTourStore((s) => s.stepIndex);
-  const highlightIds = useMemo<ReadonlySet<string> | null>(() => {
+  const tourHighlight = useMemo<ReadonlySet<string> | null>(() => {
     if (activeTourId === null) return null;
     const step = doc?.tours?.find((t) => t.id === activeTourId)?.steps[tourStepIndex];
     if (step?.highlight === undefined || step.highlight.length === 0) return null;
     return new Set(step.highlight);
   }, [doc, activeTourId, tourStepIndex]);
+
+  // Focus-on-select: the selected node plus its direct neighbors. A tour, when
+  // active, owns dimming exclusively, so selection focus stands down.
+  const focusIds = useMemo<ReadonlySet<string> | null>(() => {
+    if (activeTourId !== null || !focusOnSelect || selectedId === null || resolved === null) {
+      return null;
+    }
+    const set = new Set<string>([selectedId]);
+    for (const e of resolved.edges) {
+      if (e.from === selectedId) set.add(e.to);
+      if (e.to === selectedId) set.add(e.from);
+    }
+    return set;
+  }, [activeTourId, focusOnSelect, selectedId, resolved]);
+
+  // One highlight set drives both node dimming and edge emphasis. Tour wins;
+  // otherwise selection focus; otherwise null (everything reads at rest).
+  const highlightIds = tourHighlight ?? focusIds;
+
+  // ELK's computed routes are only trustworthy while the layer is in its
+  // auto-laid-out state — a manual drag moves a node out from under its stored
+  // bends. When overrides exist we fall back to synthesized smoothstep paths.
+  const layerHasOverrides = useMemo(() => {
+    const overrides = doc?.layout?.[currentLayer];
+    return overrides !== undefined && Object.keys(overrides).length > 0;
+  }, [doc, currentLayer]);
 
   // Build a fast lookup of MVP id → signature color (passed into every node)
   const mvpColors = useMemo(() => buildMvpColorMap(doc), [doc]);
@@ -114,15 +163,18 @@ function CanvasInner() {
     return buildNodes(resolved, placements, mvpColors, highlightIds, mvpMode === "overlay");
   }, [resolved, placements, mvpColors, highlightIds, mvpMode]);
 
-  const derivedEdges = useMemo<Edge[]>(() => {
+  const derivedEdges = useMemo<CanvasEdge[]>(() => {
     if (resolved === null) return [];
-    return resolved.edges.map((e): Edge => edgeFromResolved(e, isEdgeDimmed(e, highlightIds)));
-  }, [resolved, highlightIds]);
+    const routes = layerHasOverrides ? null : edgeRoutes;
+    return resolved.edges.map(
+      (e): CanvasEdge => edgeFromResolved(e, highlightIds, routes?.get(e.id), edgeLabels),
+    );
+  }, [resolved, highlightIds, edgeRoutes, layerHasOverrides, edgeLabels]);
 
   // React Flow state — owns selection internally. Without these handlers,
   // single-click selection silently fails (the change event is dropped).
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(derivedNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(derivedEdges);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>(derivedEdges);
 
   // Sync FROM doc → React Flow state, preserving selection across re-derives.
   useEffect(() => {
@@ -191,7 +243,7 @@ function CanvasInner() {
   // Fit view once when the first batch of positions lands for a project.
   // Re-arm only when the project ID changes (a different project was loaded),
   // NOT on every doc mutation — otherwise any rename/edit resets the viewport.
-  const flowRef = useRef<ReactFlowInstance<CanvasNode> | null>(null);
+  const flowRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(null);
   const fitOnFirstLayout = useRef(true);
   const projectId = doc?.project.id ?? null;
 
@@ -334,9 +386,11 @@ function CanvasInner() {
       className="canvas"
       data-cursor={cursorMode}
       data-lock-alert={lockHint.visible}
+      data-density={density}
+      data-lod={lod}
       ref={canvasRef}
     >
-      <ReactFlow<CanvasNode, Edge>
+      <ReactFlow<CanvasNode, CanvasEdge>
         onInit={(instance) => {
           flowRef.current = instance;
         }}
@@ -349,6 +403,7 @@ function CanvasInner() {
         onNodeDragStop={onNodeDragStop}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={2.5}
@@ -519,34 +574,48 @@ function readToken(name: string): string {
 // causes a compile error rather than a silent styling gap.
 // ---------------------------------------------------------------------------
 
-function edgeFromResolved(e: ResolvedEdge, dimmed: boolean): Edge {
+function edgeFromResolved(
+  e: ResolvedEdge,
+  highlightIds: ReadonlySet<string> | null,
+  points: readonly { x: number; y: number }[] | undefined,
+  labelMode: EdgeLabelMode,
+): CanvasEdge {
   // Aggregated edges (standing in for ≥2 rerouted connections) show a count;
   // 1:1 edges show their protocol if any.
-  const label = e.aggregated && e.count > 1 ? `×${String(e.count)}` : e.protocol;
+  const labelText = e.aggregated && e.count > 1 ? `×${String(e.count)}` : e.protocol;
+
+  // Emphasis state relative to the current focus (tour step or selection):
+  //   - no focus active  → every edge sits at a calm resting weight
+  //   - focus active     → edges touching it brighten; the rest fade right back
+  const touchesFocus = highlightIds !== null && (highlightIds.has(e.from) || highlightIds.has(e.to));
+  const dimmed = highlightIds !== null && !touchesFocus;
+  const emphasized = touchesFocus;
+  const idle = highlightIds === null;
+
+  const opacity = dimmed ? 0.08 : emphasized ? 1 : idle ? 0.55 : 1;
+  const baseWidth = e.aggregated ? 2.25 : 1.5;
+
   return {
     id: e.id,
     source: e.from,
     target: e.to,
-    type: "smoothstep",
+    type: "routed",
     animated: !dimmed && isAnimatedEdge(e.type),
-    label,
-    labelBgPadding: [6, 4],
-    labelBgBorderRadius: 4,
+    data: {
+      ...(points !== undefined ? { points } : {}),
+      ...(labelText !== undefined ? { labelText } : {}),
+      labelMode,
+      emphasized,
+      dimmed,
+    },
     style: {
       stroke: edgeStroke(e.type),
-      strokeWidth: e.aggregated ? 2.25 : 1.5,
+      strokeWidth: emphasized ? baseWidth + 0.5 : baseWidth,
       ...(e.aggregated ? { strokeDasharray: "6 3" } : {}),
-      // Tour dimming: fade edges that don't touch a highlighted node.
-      opacity: dimmed ? 0.12 : 1,
+      opacity,
       transition: "opacity var(--duration-base) var(--ease-out)",
     },
   };
-}
-
-/** An edge is dimmed during a tour step unless one of its endpoints is highlighted. */
-function isEdgeDimmed(e: ResolvedEdge, highlightIds: ReadonlySet<string> | null): boolean {
-  if (highlightIds === null) return false;
-  return !highlightIds.has(e.from) && !highlightIds.has(e.to);
 }
 
 function isAnimatedEdge(type: ConnectionType): boolean {
@@ -564,14 +633,17 @@ function isAnimatedEdge(type: ConnectionType): boolean {
   }
 }
 
+// A little hue per connection type so kinds of traffic read apart at a glance
+// without shouting. Sync stays neutral (the common case); async/event/data each
+// pick up a restrained tint.
 function edgeStroke(type: ConnectionType): string {
   switch (type) {
     case "sync":
       return "var(--color-fg-faint)";
     case "async":
-      return "var(--color-fg-faint)";
+      return "var(--color-fg-muted)";
     case "event":
-      return "var(--color-fg-faint)";
+      return "var(--color-accent-base)";
     case "data":
       return "var(--color-tone-success)";
     default:

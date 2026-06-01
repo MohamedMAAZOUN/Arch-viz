@@ -28,12 +28,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { resolve } from "@/core/doc/resolve";
 import { elkLayoutEngine } from "@/core/layout/ElkLayoutEngine";
+import { useCanvasPrefsStore } from "@/core/state/canvasPrefsStore";
 import { useViewStore } from "@/core/state/viewStore";
 import { buildLayoutTree } from "@/features/canvas/buildLayoutTree";
+import {
+  COMPACT_CONTAINER_PADDING,
+  COMPACT_NODE_DIMENSIONS,
+  CONTAINER_PADDING,
+  NODE_DIMENSIONS,
+} from "@/features/canvas/types";
 
 import type { GroupExpansion } from "@/core/doc/resolve";
-import type { LayoutResultNode } from "@/core/layout/LayoutEngine";
+import type { LayoutPoint, LayoutResultNode } from "@/core/layout/LayoutEngine";
 import type { LayerId, ProjectDocument } from "@/core/schema/schema";
+import type { NodeDensity } from "@/core/state/canvasPrefsStore";
+import type { LayoutSizing } from "@/features/canvas/buildLayoutTree";
 
 export interface Placement {
   /** Parent-relative position (what React Flow wants for a nested node). */
@@ -50,25 +59,47 @@ export interface Placement {
 
 export type PlacementMap = ReadonlyMap<string, Placement>;
 
-export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): PlacementMap {
+/** Per-edge bend points in absolute coordinates, keyed by resolved-edge id. */
+export type EdgeRouteMap = ReadonlyMap<string, readonly LayoutPoint[]>;
+
+export interface LayoutedGraph {
+  placements: PlacementMap;
+  /** ELK's computed orthogonal routes. Only valid while the layer carries no
+   *  manual overrides (a dragged node makes the stored route stale); the
+   *  Canvas falls back to a synthesized path in that case. */
+  edgeRoutes: EdgeRouteMap;
+}
+
+const SIZING_BY_DENSITY: Record<NodeDensity, LayoutSizing> = {
+  comfortable: { dimensions: NODE_DIMENSIONS, containerPadding: CONTAINER_PADDING },
+  compact: { dimensions: COMPACT_NODE_DIMENSIONS, containerPadding: COMPACT_CONTAINER_PADDING },
+};
+
+const EMPTY_ROUTES: EdgeRouteMap = new Map();
+
+export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): LayoutedGraph {
   const groupExpansion = useViewStore((s) => s.groupExpansion);
+  const density = useCanvasPrefsStore((s) => s.density);
   const [autoNodes, setAutoNodes] = useState<ReadonlyMap<string, LayoutResultNode>>(
     () => new Map(),
   );
+  const [autoEdges, setAutoEdges] = useState<EdgeRouteMap>(() => EMPTY_ROUTES);
 
   // Hash the topology so we re-run ELK only when the graph shape actually
   // changes (elements added/removed, connections added/removed, parent
-  // relationships moved, aggregation config changed, or expand/collapse
-  // toggled). Position overrides and property edits do NOT contribute.
+  // relationships moved, aggregation config changed, expand/collapse toggled,
+  // or the density that drives node footprints). Position overrides and
+  // property edits do NOT contribute.
   const topologyKey = useMemo(
-    () => computeTopologyKey(doc, layer, groupExpansion),
-    [doc, layer, groupExpansion],
+    () => computeTopologyKey(doc, layer, groupExpansion, density),
+    [doc, layer, groupExpansion, density],
   );
   const lastTopologyKey = useRef<string | null>(null);
 
   useEffect(() => {
     if (doc === null) {
       setAutoNodes(new Map());
+      setAutoEdges(EMPTY_ROUTES);
       lastTopologyKey.current = null;
       return;
     }
@@ -79,11 +110,12 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
     const latestMvp = [...doc.mvps].sort((a, b) => b.order - a.order)[0];
     if (latestMvp === undefined) {
       setAutoNodes(new Map());
+      setAutoEdges(EMPTY_ROUTES);
       return;
     }
 
     const maximal = resolve(doc, layer, latestMvp.id, groupExpansion);
-    const tree = buildLayoutTree(maximal.elements, maximal.containment);
+    const tree = buildLayoutTree(maximal.elements, maximal.containment, SIZING_BY_DENSITY[density]);
     const layoutEdges = maximal.edges.map((e) => ({ id: e.id, source: e.from, target: e.to }));
 
     let cancelled = false;
@@ -93,6 +125,7 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
       .then((result) => {
         if (cancelled) return;
         setAutoNodes(result.nodes);
+        setAutoEdges(result.edges);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -102,10 +135,15 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
     return () => {
       cancelled = true;
     };
-  }, [doc, layer, topologyKey, groupExpansion]);
+  }, [doc, layer, topologyKey, groupExpansion, density]);
 
   // Override merge + absolute-coordinate resolution — runs every render. Cheap.
-  return useMemo(() => mergePlacements(autoNodes, doc?.layout?.[layer]), [autoNodes, doc, layer]);
+  const placements = useMemo(
+    () => mergePlacements(autoNodes, doc?.layout?.[layer]),
+    [autoNodes, doc, layer],
+  );
+
+  return useMemo(() => ({ placements, edgeRoutes: autoEdges }), [placements, autoEdges]);
 }
 
 /**
@@ -173,6 +211,7 @@ function computeTopologyKey(
   doc: ProjectDocument | null,
   layer: LayerId,
   expansion: GroupExpansion,
+  density: NodeDensity,
 ): string {
   if (doc === null) return "empty";
   const elementSig = doc.elements
@@ -186,5 +225,5 @@ function computeTopologyKey(
     .sort()
     .map((id) => `${id}=${expansion[id] === true ? "1" : "0"}`)
     .join(",");
-  return `${layer}\n${elementSig}\n${connSig}\n${expansionSig}`;
+  return `${density}\n${layer}\n${elementSig}\n${connSig}\n${expansionSig}`;
 }

@@ -79,3 +79,21 @@
   min-width: 0;
   flex: 1;
 }
+
+/* -- Compact density + far-zoom level-of-detail -------------------------- */
+/* Mirrors the leaf-card treatment: a shorter header in compact mode (kept in
+ * sync with COMPACT_CONTAINER_PADDING.top so ELK reserves the right room), and
+ * dropped word labels at far zoom. */
+
+.canvas[data-density="compact"] .group-node {
+  --group-header-height: 34px;
+}
+
+.canvas[data-density="compact"] .group-node-header {
+  padding: var(--space-1) var(--space-3);
+}
+
+.canvas[data-lod="far"] .group-node-header .element-node-type-label,
+.canvas[data-lod="far"] .group-node-header .element-node-mvp-label {
+  display: none;
+}

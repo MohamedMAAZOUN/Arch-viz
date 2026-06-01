@@ -48,9 +48,30 @@ export interface LayoutResultNode {
   parentId: string | null;
 }
 
+/** A point in absolute layout coordinates. */
+export interface LayoutPoint {
+  x: number;
+  y: number;
+}
+
+/**
+ * The engine's computed route for one edge: its interior bend points in
+ * ABSOLUTE coordinates (the same space as a node's accumulated absolute
+ * position). Endpoints are intentionally omitted — the renderer pins the path
+ * to the actual source/target handles and threads it through these bends, so a
+ * small handle offset never leaves a gap.
+ */
+export interface LayoutResultEdge {
+  id: string;
+  points: readonly LayoutPoint[];
+}
+
 export interface LayoutResult {
   /** Every laid-out node, keyed by id. Flat map; nesting lives in `parentId`. */
   nodes: ReadonlyMap<string, LayoutResultNode>;
+  /** Per-edge bend points, keyed by edge id. Empty when the engine routed an
+   *  edge with no bends (a straight segment). */
+  edges: ReadonlyMap<string, readonly LayoutPoint[]>;
 }
 
 export interface LayoutEngine {

@@ -5,7 +5,12 @@
 import { describe, expect, it } from "vitest";
 
 import { buildLayoutTree } from "@/features/canvas/buildLayoutTree";
-import { CONTAINER_PADDING, NODE_DIMENSIONS } from "@/features/canvas/types";
+import {
+  COMPACT_CONTAINER_PADDING,
+  COMPACT_NODE_DIMENSIONS,
+  CONTAINER_PADDING,
+  NODE_DIMENSIONS,
+} from "@/features/canvas/types";
 
 import type { Containment } from "@/core/doc/resolve";
 import type { Element } from "@/core/schema/schema";
@@ -68,6 +73,23 @@ describe("buildLayoutTree", () => {
     expect(svc?.id).toBe("svc");
     expect(svc?.children?.[0]?.id).toBe("db");
     expect(svc?.children?.[0]?.children).toBeUndefined();
+  });
+
+  it("reserves the compact footprint when given compact sizing", () => {
+    const elements = [el("domain", "group"), el("svc")];
+    const tree = buildLayoutTree(
+      elements,
+      containment({
+        domain: { hasVisibleChildren: true },
+        svc: { parentId: "domain" },
+      }),
+      { dimensions: COMPACT_NODE_DIMENSIONS, containerPadding: COMPACT_CONTAINER_PADDING },
+    );
+
+    const domain = tree[0];
+    expect(domain?.padding).toEqual(COMPACT_CONTAINER_PADDING);
+    expect(domain?.children?.[0]?.width).toBe(COMPACT_NODE_DIMENSIONS.default.width);
+    expect(domain?.children?.[0]?.height).toBe(COMPACT_NODE_DIMENSIONS.default.height);
   });
 
   it("treats a collapsed parent as a leaf (no children emitted)", () => {

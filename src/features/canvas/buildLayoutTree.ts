@@ -15,6 +15,18 @@ import { CONTAINER_PADDING, NODE_DIMENSIONS } from "@/features/canvas/types";
 import type { Containment } from "@/core/doc/resolve";
 import type { LayoutNode } from "@/core/layout/LayoutEngine";
 import type { Element } from "@/core/schema/schema";
+import type { NodeDimensions } from "@/features/canvas/types";
+
+/** Sizing the layout reserves per node, swappable for compact density. */
+export interface LayoutSizing {
+  dimensions: NodeDimensions;
+  containerPadding: { top: number; left: number; bottom: number; right: number };
+}
+
+const COMFORTABLE_SIZING: LayoutSizing = {
+  dimensions: NODE_DIMENSIONS,
+  containerPadding: CONTAINER_PADDING,
+};
 
 /**
  * Build the forest of {@link LayoutNode}s for the given visible elements.
@@ -22,10 +34,14 @@ import type { Element } from "@/core/schema/schema";
  * `parentId` in the containment map defines the tree; elements whose
  * `parentId` is null (or absent) become roots. An element is rendered as a
  * container when its containment marks `hasVisibleChildren`.
+ *
+ * `sizing` controls the per-node footprint ELK reserves; pass the compact
+ * sizing to pack a dense diagram tighter. Defaults to comfortable.
  */
 export function buildLayoutTree(
   elements: readonly Element[],
   containment: ReadonlyMap<string, Containment>,
+  sizing: LayoutSizing = COMFORTABLE_SIZING,
 ): readonly LayoutNode[] {
   const childrenByParent = new Map<string, Element[]>();
   const roots: Element[] = [];
@@ -50,14 +66,14 @@ export function buildLayoutTree(
         id: el.id,
         // Width/height are computed by ELK for containers; the values here are
         // only a floor and are ignored once children drive the size.
-        width: NODE_DIMENSIONS.group.width,
-        height: NODE_DIMENSIONS.group.height,
-        padding: { ...CONTAINER_PADDING },
+        width: sizing.dimensions.group.width,
+        height: sizing.dimensions.group.height,
+        padding: { ...sizing.containerPadding },
         children: kids.map(build),
       };
     }
 
-    const dim = el.type === "group" ? NODE_DIMENSIONS.group : NODE_DIMENSIONS.default;
+    const dim = el.type === "group" ? sizing.dimensions.group : sizing.dimensions.default;
     return { id: el.id, width: dim.width, height: dim.height };
   };
 
