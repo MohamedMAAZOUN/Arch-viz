@@ -39,7 +39,7 @@ import {
 } from "@/features/canvas/types";
 
 import type { GroupExpansion } from "@/core/doc/resolve";
-import type { LayoutPoint, LayoutResultNode } from "@/core/layout/LayoutEngine";
+import type { LayoutResultNode } from "@/core/layout/LayoutEngine";
 import type { LayerId, ProjectDocument } from "@/core/schema/schema";
 import type { NodeDensity } from "@/core/state/canvasPrefsStore";
 import type { LayoutSizing } from "@/features/canvas/buildLayoutTree";
@@ -59,31 +59,17 @@ export interface Placement {
 
 export type PlacementMap = ReadonlyMap<string, Placement>;
 
-/** Per-edge bend points in absolute coordinates, keyed by resolved-edge id. */
-export type EdgeRouteMap = ReadonlyMap<string, readonly LayoutPoint[]>;
-
-export interface LayoutedGraph {
-  placements: PlacementMap;
-  /** ELK's computed orthogonal routes. Only valid while the layer carries no
-   *  manual overrides (a dragged node makes the stored route stale); the
-   *  Canvas falls back to a synthesized path in that case. */
-  edgeRoutes: EdgeRouteMap;
-}
-
 const SIZING_BY_DENSITY: Record<NodeDensity, LayoutSizing> = {
   comfortable: { dimensions: NODE_DIMENSIONS, containerPadding: CONTAINER_PADDING },
   compact: { dimensions: COMPACT_NODE_DIMENSIONS, containerPadding: COMPACT_CONTAINER_PADDING },
 };
 
-const EMPTY_ROUTES: EdgeRouteMap = new Map();
-
-export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): LayoutedGraph {
+export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): PlacementMap {
   const groupExpansion = useViewStore((s) => s.groupExpansion);
   const density = useCanvasPrefsStore((s) => s.density);
   const [autoNodes, setAutoNodes] = useState<ReadonlyMap<string, LayoutResultNode>>(
     () => new Map(),
   );
-  const [autoEdges, setAutoEdges] = useState<EdgeRouteMap>(() => EMPTY_ROUTES);
 
   // Hash the topology so we re-run ELK only when the graph shape actually
   // changes (elements added/removed, connections added/removed, parent
@@ -99,7 +85,6 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
   useEffect(() => {
     if (doc === null) {
       setAutoNodes(new Map());
-      setAutoEdges(EMPTY_ROUTES);
       lastTopologyKey.current = null;
       return;
     }
@@ -110,7 +95,6 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
     const latestMvp = [...doc.mvps].sort((a, b) => b.order - a.order)[0];
     if (latestMvp === undefined) {
       setAutoNodes(new Map());
-      setAutoEdges(EMPTY_ROUTES);
       return;
     }
 
@@ -125,7 +109,6 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
       .then((result) => {
         if (cancelled) return;
         setAutoNodes(result.nodes);
-        setAutoEdges(result.edges);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -138,12 +121,7 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
   }, [doc, layer, topologyKey, groupExpansion, density]);
 
   // Override merge + absolute-coordinate resolution — runs every render. Cheap.
-  const placements = useMemo(
-    () => mergePlacements(autoNodes, doc?.layout?.[layer]),
-    [autoNodes, doc, layer],
-  );
-
-  return useMemo(() => ({ placements, edgeRoutes: autoEdges }), [placements, autoEdges]);
+  return useMemo(() => mergePlacements(autoNodes, doc?.layout?.[layer]), [autoNodes, doc, layer]);
 }
 
 /**

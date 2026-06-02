@@ -50,22 +50,13 @@ interface ResultNode {
   parentId: string | null;
 }
 
-interface ResultEdge {
-  id: string;
-  points: { x: number; y: number }[];
-}
-
 type LayoutResponse =
-  | { id: number; ok: true; nodes: ResultNode[]; edges: ResultEdge[] }
+  | { id: number; ok: true; nodes: ResultNode[] }
   | { id: number; ok: false; error: string };
 
-interface ElkPoint {
-  x: number;
-  y: number;
-}
-
 // Minimal shape of an ELK graph node we BUILD as input — recursive. Edges are
-// declared with just endpoints; ELK fills in routing sections on the result.
+// declared with just endpoints; ELK uses them to place nodes (we draw the lines
+// ourselves with React Flow, so we never read the routes back).
 interface ElkInputNode {
   id: string;
   width?: number;
@@ -75,19 +66,7 @@ interface ElkInputNode {
   edges?: { id: string; sources: string[]; targets: string[] }[];
 }
 
-// Minimal shape of the ELK RESULT we read back: node geometry plus each edge's
-// routing sections (start/bend/end points).
-interface ElkResultEdgeSection {
-  startPoint?: ElkPoint;
-  endPoint?: ElkPoint;
-  bendPoints?: ElkPoint[];
-}
-
-interface ElkResultEdge {
-  id: string;
-  sections?: ElkResultEdgeSection[];
-}
-
+// Minimal shape of the ELK RESULT we read back: node geometry only.
 interface ElkResultNode {
   id: string;
   x?: number;
@@ -95,7 +74,6 @@ interface ElkResultNode {
   width?: number;
   height?: number;
   children?: ElkResultNode[];
-  edges?: ElkResultEdge[];
 }
 
 // Use elk-api with elk-worker.min.js loaded as a real sub-worker script.
@@ -127,20 +105,10 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
         // Keep edges (and their labels) from crowding the nodes they pass.
         "elk.spacing.edgeNode": "40",
         "elk.layered.spacing.edgeNodeBetweenLayers": "40",
-        "elk.spacing.edgeEdge": "18",
-        "elk.layered.spacing.edgeEdgeBetweenLayers": "18",
         "elk.padding": "[top=32, left=32, bottom=32, right=32]",
-        // ORTHOGONAL routing yields clean right-angled lines that follow the
-        // channels between layers instead of cutting diagonally through
-        // unrelated containers — the renderer consumes the computed bend
-        // points (see ResultEdge) so what's drawn matches what ELK planned.
-        "elk.edgeRouting": "ORTHOGONAL",
-        // Merge edges that share an endpoint into a common trunk, which cuts
-        // the parallel-line spaghetti when many nodes fan into one.
-        "elk.layered.mergeEdges": "true",
-        // Network-simplex node placement straightens edges and tightens the
-        // diagram without the heavier thoroughness/crossing knobs that would
-        // worsen the layout-time budget (see issue #25).
+        // Network-simplex placement straightens the hierarchy and tends to keep
+        // each parent centered over its children — cheap and tidy. (We draw the
+        // edges ourselves, so ELK's own edge routing is irrelevant here.)
         "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
       },
       children: nodes.map(toElkNode),
@@ -154,12 +122,9 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
     )) as unknown as ElkResultNode;
 
     const out: ResultNode[] = [];
-    const outEdges: ResultEdge[] = [];
-    // Root-level edges are positioned relative to the root origin (0,0).
-    collectEdges(result.edges, 0, 0, outEdges);
-    collect(result.children ?? [], null, 0, 0, out, outEdges);
+    collect(result.children ?? [], null, out);
 
-    const response: LayoutResponse = { id, ok: true, nodes: out, edges: outEdges };
+    const response: LayoutResponse = { id, ok: true, nodes: out };
     self.postMessage(response);
   } catch (err) {
     const response: LayoutResponse = {
@@ -191,69 +156,23 @@ function toElkNode(node: LayoutNode): ElkInputNode {
   return elkNode;
 }
 
-/**
- * Flatten ELK's result tree, recording each node's parent and relative pos.
- * `offX`/`offY` are the parent container's ABSOLUTE origin, accumulated as we
- * recurse so edges nested inside a container can be lifted into absolute space.
- */
+/** Flatten ELK's result tree, recording each node's parent and relative pos. */
 function collect(
   children: readonly ElkResultNode[],
   parentId: string | null,
-  offX: number,
-  offY: number,
   out: ResultNode[],
-  outEdges: ResultEdge[],
 ): void {
   for (const child of children) {
-    const x = child.x ?? 0;
-    const y = child.y ?? 0;
     out.push({
       id: child.id,
-      x,
-      y,
+      x: child.x ?? 0,
+      y: child.y ?? 0,
       width: child.width ?? 0,
       height: child.height ?? 0,
       parentId,
     });
-
-    // Edges assigned to this compound node are routed in ITS coordinate space;
-    // its absolute origin is the accumulated offset plus its own position.
-    const childAbsX = offX + x;
-    const childAbsY = offY + y;
-    collectEdges(child.edges, childAbsX, childAbsY, outEdges);
-
     if (child.children !== undefined && child.children.length > 0) {
-      collect(child.children, child.id, childAbsX, childAbsY, out, outEdges);
+      collect(child.children, child.id, out);
     }
-  }
-}
-
-/**
- * Lift each edge's route into absolute coordinates by the container offset. We
- * keep the FULL polyline — startPoint, bendPoints, endPoint — because ELK
- * attaches edges at computed ports (a back-edge leaves the *top* of its source,
- * not the bottom). Drawing the whole route reproduces exactly what ELK planned;
- * forcing it through React Flow's fixed Top/Bottom handles instead would make
- * such edges dart across the node and back.
- */
-function collectEdges(
-  edges: readonly ElkResultEdge[] | undefined,
-  offX: number,
-  offY: number,
-  out: ResultEdge[],
-): void {
-  if (edges === undefined) return;
-  for (const edge of edges) {
-    const section = edge.sections?.[0];
-    if (section?.startPoint === undefined || section.endPoint === undefined) {
-      // No usable route — record empty so the renderer falls back cleanly.
-      out.push({ id: edge.id, points: [] });
-      continue;
-    }
-    const raw = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint];
-    out.push({
-      id: edge.id,
-      points: raw.map((p) => ({ x: p.x + offX, y: p.y + offY })),
-    });
   }
 }

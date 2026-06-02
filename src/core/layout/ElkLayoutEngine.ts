@@ -14,7 +14,6 @@ import type {
   LayoutEngine,
   LayoutNode,
   LayoutOptions,
-  LayoutPoint,
   LayoutResult,
   LayoutResultNode,
 } from "@/core/layout/LayoutEngine";
@@ -26,13 +25,8 @@ const DEFAULT_OPTIONS: Required<LayoutOptions> = {
 };
 
 type WorkerResponse =
-  | { id: number; ok: true; nodes: LayoutResultNode[]; edges: WorkerResultEdge[] }
+  | { id: number; ok: true; nodes: LayoutResultNode[] }
   | { id: number; ok: false; error: string };
-
-interface WorkerResultEdge {
-  id: string;
-  points: LayoutPoint[];
-}
 
 export class ElkLayoutEngine implements LayoutEngine {
   private readonly worker: Worker;
@@ -56,10 +50,7 @@ export class ElkLayoutEngine implements LayoutEngine {
       this.pending.delete(response.id);
 
       if (response.ok) {
-        callbacks.resolve({
-          nodes: new Map(response.nodes.map((n) => [n.id, n])),
-          edges: new Map(response.edges.map((e) => [e.id, e.points])),
-        });
+        callbacks.resolve({ nodes: new Map(response.nodes.map((n) => [n.id, n])) });
       } else {
         callbacks.reject(new Error(response.error));
       }

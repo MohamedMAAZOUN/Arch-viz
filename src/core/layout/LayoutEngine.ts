@@ -48,30 +48,9 @@ export interface LayoutResultNode {
   parentId: string | null;
 }
 
-/** A point in absolute layout coordinates. */
-export interface LayoutPoint {
-  x: number;
-  y: number;
-}
-
-/**
- * The engine's computed route for one edge: the FULL orthogonal polyline
- * (start → bends → end) in ABSOLUTE coordinates (the same space as a node's
- * accumulated absolute position). The renderer draws this verbatim — ELK picks
- * the port each end attaches to, so reproducing the whole route avoids the
- * darting you'd get by re-pinning the ends to fixed handles.
- */
-export interface LayoutResultEdge {
-  id: string;
-  points: readonly LayoutPoint[];
-}
-
 export interface LayoutResult {
   /** Every laid-out node, keyed by id. Flat map; nesting lives in `parentId`. */
   nodes: ReadonlyMap<string, LayoutResultNode>;
-  /** Per-edge bend points, keyed by edge id. Empty when the engine routed an
-   *  edge with no bends (a straight segment). */
-  edges: ReadonlyMap<string, readonly LayoutPoint[]>;
 }
 
 export interface LayoutEngine {

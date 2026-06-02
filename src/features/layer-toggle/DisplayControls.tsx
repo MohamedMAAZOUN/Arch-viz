@@ -127,58 +127,58 @@ export default function DisplayControls() {
               aria-label="Display options"
               style={{ top: pos.top, left: pos.left }}
             >
-          <Segmented
-            label="Density"
-            value={density}
-            options={[
-              { value: "comfortable", label: "Comfortable" },
-              { value: "compact", label: "Compact" },
-            ]}
-            onChange={setDensity}
-          />
-          <Segmented
-            label="Edge labels"
-            value={edgeLabels}
-            options={[
-              { value: "hover", label: "On hover" },
-              { value: "always", label: "Always" },
-            ]}
-            onChange={setEdgeLabels}
-          />
+              <Segmented
+                label="Density"
+                value={density}
+                options={[
+                  { value: "comfortable", label: "Comfortable" },
+                  { value: "compact", label: "Compact" },
+                ]}
+                onChange={setDensity}
+              />
+              <Segmented
+                label="Edge labels"
+                value={edgeLabels}
+                options={[
+                  { value: "hover", label: "On hover" },
+                  { value: "always", label: "Always" },
+                ]}
+                onChange={setEdgeLabels}
+              />
 
-          <label className="display-controls-toggle">
-            <span className="display-controls-row-label">Focus on select</span>
-            <input
-              type="checkbox"
-              checked={focusOnSelect}
-              onChange={(e) => {
-                setFocusOnSelect(e.target.checked);
-              }}
-            />
-            <span className="display-controls-switch" aria-hidden />
-          </label>
+              <label className="display-controls-toggle">
+                <span className="display-controls-row-label">Focus on select</span>
+                <input
+                  type="checkbox"
+                  checked={focusOnSelect}
+                  onChange={(e) => {
+                    setFocusOnSelect(e.target.checked);
+                  }}
+                />
+                <span className="display-controls-switch" aria-hidden />
+              </label>
 
-          <div className="display-controls-group">
-            <span className="display-controls-row-label">Subsystems</span>
-            <div className="display-controls-actions">
-              <button
-                type="button"
-                className="display-controls-action"
-                onClick={collapseAll}
-                disabled={groupIds.length === 0}
-              >
-                Collapse all
-              </button>
-              <button
-                type="button"
-                className="display-controls-action"
-                onClick={expandAll}
-                disabled={groupIds.length === 0}
-              >
-                Expand all
-              </button>
-            </div>
-          </div>
+              <div className="display-controls-group">
+                <span className="display-controls-row-label">Subsystems</span>
+                <div className="display-controls-actions">
+                  <button
+                    type="button"
+                    className="display-controls-action"
+                    onClick={collapseAll}
+                    disabled={groupIds.length === 0}
+                  >
+                    Collapse all
+                  </button>
+                  <button
+                    type="button"
+                    className="display-controls-action"
+                    onClick={expandAll}
+                    disabled={groupIds.length === 0}
+                  >
+                    Expand all
+                  </button>
+                </div>
+              </div>
             </div>,
             document.body,
           )
