@@ -96,6 +96,7 @@ function CanvasInner() {
   const resolved = useResolvedDoc();
   const currentLayer = useViewStore((s) => s.currentLayer);
   const mvpMode = useViewStore((s) => s.mvpMode);
+  const currentMvp = useViewStore((s) => s.currentMvp);
   const cursorMode = useViewStore((s) => s.cursorMode);
   const setCursorMode = useViewStore((s) => s.setCursorMode);
   const { placements, edgeRoutes } = useLayoutedGraph(doc, currentLayer);
@@ -146,13 +147,28 @@ function CanvasInner() {
   // otherwise selection focus; otherwise null (everything reads at rest).
   const highlightIds = tourHighlight ?? focusIds;
 
-  // ELK's computed routes are only trustworthy while the layer is in its
-  // auto-laid-out state — a manual drag moves a node out from under its stored
-  // bends. When overrides exist we fall back to synthesized smoothstep paths.
+  // ELK's computed routes are only trustworthy when what's on screen matches
+  // the set they were laid out against:
+  //   - a manual drag moves a node out from under its stored bends, and
+  //   - routes are computed for the MAXIMAL set (latest MVP). At an earlier
+  //     MVP some of those nodes are hidden, so the orthogonal route detours
+  //     around empty space — leaving stray "hooks". Overlay shows every
+  //     element, so it's maximal too.
+  // In either case we fall back to a synthesized smoothstep path that simply
+  // connects the visible endpoints.
   const layerHasOverrides = useMemo(() => {
     const overrides = doc?.layout?.[currentLayer];
     return overrides !== undefined && Object.keys(overrides).length > 0;
   }, [doc, currentLayer]);
+
+  const showingMaximalMvp = useMemo(() => {
+    if (doc === null) return false;
+    if (mvpMode === "overlay") return true;
+    const latestMvp = [...doc.mvps].sort((a, b) => b.order - a.order)[0];
+    return latestMvp !== undefined && currentMvp === latestMvp.id;
+  }, [doc, mvpMode, currentMvp]);
+
+  const routesUsable = !layerHasOverrides && showingMaximalMvp;
 
   // Build a fast lookup of MVP id → signature color (passed into every node)
   const mvpColors = useMemo(() => buildMvpColorMap(doc), [doc]);
@@ -165,11 +181,11 @@ function CanvasInner() {
 
   const derivedEdges = useMemo<CanvasEdge[]>(() => {
     if (resolved === null) return [];
-    const routes = layerHasOverrides ? null : edgeRoutes;
+    const routes = routesUsable ? edgeRoutes : null;
     return resolved.edges.map(
       (e): CanvasEdge => edgeFromResolved(e, highlightIds, routes?.get(e.id), edgeLabels),
     );
-  }, [resolved, highlightIds, edgeRoutes, layerHasOverrides, edgeLabels]);
+  }, [resolved, highlightIds, edgeRoutes, routesUsable, edgeLabels]);
 
   // React Flow state — owns selection internally. Without these handlers,
   // single-click selection silently fails (the change event is dropped).
@@ -600,7 +616,10 @@ function edgeFromResolved(
     source: e.from,
     target: e.to,
     type: "routed",
-    animated: !dimmed && isAnimatedEdge(e.type),
+    // Motion is a signal, not decoration: only animate async/event edges that
+    // belong to the focused neighborhood. At rest (nothing selected) the
+    // canvas is still, so no stray dashes drift across faint idle lines.
+    animated: emphasized && isAnimatedEdge(e.type),
     data: {
       ...(points !== undefined ? { points } : {}),
       ...(labelText !== undefined ? { labelText } : {}),
