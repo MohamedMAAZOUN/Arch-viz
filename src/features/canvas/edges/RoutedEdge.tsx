@@ -71,9 +71,15 @@ export function RoutedEdge({
 
   const route = data?.points;
   if (route !== undefined && route.length >= 2) {
-    // Draw ELK's full computed route verbatim (start → bends → end).
-    path = roundedPath(route, CORNER_RADIUS);
-    const mid = route[Math.floor(route.length / 2)] ?? route[0];
+    // Draw ELK's full computed route (start → bends → end), but pin each end
+    // to the real handle when ELK left a little clearance there. ELK gives a
+    // forward edge a small gap at the node border; snapping it to the handle
+    // closes the "line doesn't reach the node" gap. A back-edge leaves the
+    // OPPOSITE side (its endpoint is far from the handle, on the other face),
+    // so we leave it alone — snapping it would dart back through the node.
+    const pts = snapEndpointsToHandles(route, sourceX, sourceY, targetX, targetY);
+    path = roundedPath(pts, CORNER_RADIUS);
+    const mid = pts[Math.floor(pts.length / 2)] ?? pts[0];
     labelX = mid?.x ?? sourceX;
     labelY = mid?.y ?? sourceY;
   } else {
@@ -146,6 +152,38 @@ export function RoutedEdge({
 // ---------------------------------------------------------------------------
 // Path geometry
 // ---------------------------------------------------------------------------
+
+// How close (in y) ELK's endpoint must be to a handle to count as "same side".
+// A forward edge's port sits within a node-border clearance of the handle
+// (~12-20px); a back-edge's port is a full node-height away on the far side, so
+// this margin separates the two cleanly even for compact (48px-tall) cards.
+const SAME_SIDE_MARGIN = 26;
+
+/**
+ * Pin the route's first/last point to the source/target handle when ELK placed
+ * its endpoint on the SAME face as the handle (source handle = node bottom,
+ * target handle = node top, in our DOWN layout). This closes the small gap ELK
+ * leaves at a forward edge's border without touching back-edges, whose ports
+ * are correctly on the opposite face and must keep their own route.
+ */
+function snapEndpointsToHandles(
+  route: readonly LayoutPoint[],
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+): LayoutPoint[] {
+  const pts = route.map((p) => ({ x: p.x, y: p.y }));
+  const start = pts[0];
+  const end = pts[pts.length - 1];
+  if (start !== undefined && Math.abs(start.y - sourceY) <= SAME_SIDE_MARGIN) {
+    pts[0] = { x: sourceX, y: sourceY };
+  }
+  if (end !== undefined && Math.abs(end.y - targetY) <= SAME_SIDE_MARGIN) {
+    pts[pts.length - 1] = { x: targetX, y: targetY };
+  }
+  return pts;
+}
 
 /**
  * An SVG path through `points` with rounded corners at each interior vertex.
