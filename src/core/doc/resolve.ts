@@ -94,6 +94,7 @@ export function resolve(
   layer: LayerId,
   mvpId: MvpRef,
   expansion: GroupExpansion = {},
+  defaultCollapsed = false,
 ): ResolvedState {
   // Pre-compute O(1) lookup maps — avoids O(n) linear scans inside the
   // per-element and per-connection loops (was O(N×M) before).
@@ -125,7 +126,7 @@ export function resolve(
   const collapsed = new Set<string>();
   for (const el of doc.elements) {
     if (!gatedInIds.has(el.id) || (childCount.get(el.id) ?? 0) === 0) continue;
-    if (!isExpanded(el, layer, expansion)) collapsed.add(el.id);
+    if (!isExpanded(el, layer, expansion, defaultCollapsed)) collapsed.add(el.id);
   }
 
   // 4. Visible = gated-in AND no collapsed ancestor anywhere up the chain.
@@ -143,7 +144,7 @@ export function resolve(
   const containment = new Map<string, Containment>();
   for (const el of visibleElements) {
     const childIds = childCount.get(el.id) ?? 0;
-    const expanded = childIds > 0 ? isExpanded(el, layer, expansion) : false;
+    const expanded = childIds > 0 ? isExpanded(el, layer, expansion, defaultCollapsed) : false;
     containment.set(el.id, {
       parentId: nearestVisibleAncestor(el.id, elementById, visibleIds),
       canExpand: childIds > 0,
@@ -176,11 +177,21 @@ export function resolve(
 // ----------------------------------------------------------------------------
 
 /** Effective expand state: explicit override wins over the layer default. */
-function isExpanded(el: Element, layer: LayerId, expansion: GroupExpansion): boolean {
+function isExpanded(
+  el: Element,
+  layer: LayerId,
+  expansion: GroupExpansion,
+  defaultCollapsed: boolean,
+): boolean {
   const override = expansion[el.id];
   if (override !== undefined) return override;
-  // Default: a group aggregating at this layer is collapsed; all else expanded.
-  if (el.type === "group" && el.aggregateAt.includes(layer)) return false;
+  if (el.type === "group") {
+    // With the "collapse subsystems by default" preference on, every group
+    // starts collapsed (a clean overview); otherwise only groups that declare
+    // they aggregate at this layer collapse.
+    if (defaultCollapsed) return false;
+    if (el.aggregateAt.includes(layer)) return false;
+  }
   return true;
 }
 

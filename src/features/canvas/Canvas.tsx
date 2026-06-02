@@ -36,7 +36,7 @@ import {
   useNodesState,
   useStore,
 } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { docStore } from "@/core/doc/DocStore";
 import { buildConnection } from "@/core/doc/authoring";
@@ -50,6 +50,7 @@ import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
 import { duration } from "@/design-system/tokens";
 import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
+import { aggregateCrossGroupEdges } from "@/features/canvas/aggregateCrossGroupEdges";
 import { RoutedEdge } from "@/features/canvas/edges/RoutedEdge";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
@@ -100,11 +101,15 @@ function CanvasInner() {
   const setCursorMode = useViewStore((s) => s.setCursorMode);
   const placements = useLayoutedGraph(doc, currentLayer);
 
-  // Readability prefs (persisted): card density, edge-label visibility, and
-  // whether selecting a node spotlights its neighborhood.
+  // Readability prefs (persisted). Each is independently toggleable in DISPLAY.
   const density = useCanvasPrefsStore((s) => s.density);
   const edgeLabels = useCanvasPrefsStore((s) => s.edgeLabels);
   const focusOnSelect = useCanvasPrefsStore((s) => s.focusOnSelect);
+  const hoverFocus = useCanvasPrefsStore((s) => s.hoverFocus);
+  const aggregateCrossGroup = useCanvasPrefsStore((s) => s.aggregateCrossGroup);
+
+  // Node currently under the pointer (for hover-to-focus). Local UI state.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   // Semantic-zoom level-of-detail, bucketed off the live zoom.
   const lod = useStore((s) => (s.transform[2] < LOD_FAR_ZOOM ? "far" : "near"));
@@ -128,23 +133,35 @@ function CanvasInner() {
     return new Set(step.highlight);
   }, [doc, activeTourId, tourStepIndex]);
 
-  // Focus-on-select: the selected node plus its direct neighbors. A tour, when
-  // active, owns dimming exclusively, so selection focus stands down.
+  // Focus target: hovering wins (most responsive), else the current selection.
+  // A tour owns dimming exclusively, so focus stands down while one plays.
+  const focusTargetId =
+    activeTourId !== null
+      ? null
+      : hoverFocus && hoveredId !== null
+        ? hoveredId
+        : focusOnSelect && selectedId !== null
+          ? selectedId
+          : null;
+
+  // The focus target plus its direct neighbors — drives node dimming and edge
+  // emphasis. Null means nothing is focused (everything reads at rest).
   const focusIds = useMemo<ReadonlySet<string> | null>(() => {
-    if (activeTourId !== null || !focusOnSelect || selectedId === null || resolved === null) {
-      return null;
-    }
-    const set = new Set<string>([selectedId]);
+    if (focusTargetId === null || resolved === null) return null;
+    const set = new Set<string>([focusTargetId]);
     for (const e of resolved.edges) {
-      if (e.from === selectedId) set.add(e.to);
-      if (e.to === selectedId) set.add(e.from);
+      if (e.from === focusTargetId) set.add(e.to);
+      if (e.to === focusTargetId) set.add(e.from);
     }
     return set;
-  }, [activeTourId, focusOnSelect, selectedId, resolved]);
+  }, [focusTargetId, resolved]);
 
   // One highlight set drives both node dimming and edge emphasis. Tour wins;
-  // otherwise selection focus; otherwise null (everything reads at rest).
+  // otherwise the focus (hover/selection) set; otherwise null.
   const highlightIds = tourHighlight ?? focusIds;
+
+  // Lookups for cross-group edge bundling.
+  const elementById = useMemo(() => new Map((doc?.elements ?? []).map((e) => [e.id, e])), [doc]);
 
   // Build a fast lookup of MVP id → signature color (passed into every node)
   const mvpColors = useMemo(() => buildMvpColorMap(doc), [doc]);
@@ -157,8 +174,14 @@ function CanvasInner() {
 
   const derivedEdges = useMemo<CanvasEdge[]>(() => {
     if (resolved === null) return [];
-    return resolved.edges.map((e): CanvasEdge => edgeFromResolved(e, highlightIds, edgeLabels));
-  }, [resolved, highlightIds, edgeLabels]);
+    // Optionally bundle cross-subsystem links into one ×N line per group pair
+    // (edges touching the focused node stay real). Then style each edge.
+    const visibleIds = new Set(resolved.elements.map((e) => e.id));
+    const edges = aggregateCrossGroup
+      ? aggregateCrossGroupEdges(resolved.edges, elementById, visibleIds, highlightIds)
+      : resolved.edges;
+    return edges.map((e): CanvasEdge => edgeFromResolved(e, highlightIds, edgeLabels));
+  }, [resolved, highlightIds, edgeLabels, aggregateCrossGroup, elementById]);
 
   // React Flow state — owns selection internally. Without these handlers,
   // single-click selection silently fails (the change event is dropped).
@@ -188,6 +211,16 @@ function CanvasInner() {
 
   const onPaneClick = () => {
     select(null);
+  };
+
+  // Hover-to-focus: track the node under the pointer (only when the pref is on,
+  // so we don't pay re-renders for a feature that's disabled).
+  const onNodeMouseEnter = (_event: React.MouseEvent, node: CanvasNode) => {
+    if (hoverFocus) setHoveredId(node.id);
+  };
+
+  const onNodeMouseLeave = () => {
+    if (hoverFocus) setHoveredId(null);
   };
 
   // Drag-to-connect: draw a new connection between two node handles. The edge
@@ -388,6 +421,8 @@ function CanvasInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
         onConnect={onConnect}

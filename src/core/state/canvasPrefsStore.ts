@@ -5,14 +5,9 @@
 // these are sticky personal preferences worth remembering across reloads, so
 // they go through the persist middleware — same pattern as uiStore.
 //
-// They exist to tame a dense diagram:
-//   - density       → comfortable cards vs. compact (name + type only). Compact
-//                     also tightens the auto-layout (smaller node footprints).
-//   - edgeLabels    → show protocol/count labels always, or only on
-//                     hover/selection (the default — labels are the noisiest
-//                     thing at edge density; see issue #23).
-//   - focusOnSelect → when a node is selected, dim everything not directly
-//                     connected to it so the local neighborhood reads clearly.
+// Every lever here is individually toggleable from the DISPLAY popover; the
+// defaults are chosen to open a dense diagram as a readable overview, but any
+// of them can be switched off.
 // ============================================================================
 
 import { create } from "zustand";
@@ -22,26 +17,42 @@ const STORAGE_KEY = "architecture-visualizer:canvas-prefs";
 
 export type NodeDensity = "comfortable" | "compact";
 export type EdgeLabelMode = "hover" | "always";
+export type LayoutSpacing = "cozy" | "normal" | "spacious";
 
 export interface CanvasPrefsState {
   density: NodeDensity;
   edgeLabels: EdgeLabelMode;
+  /** Dim everything outside the SELECTED node's neighborhood. */
   focusOnSelect: boolean;
+  /** Dim everything outside the HOVERED node's neighborhood (no click needed). */
+  hoverFocus: boolean;
+  /** Open domain groups collapsed by default — a clean subsystem overview. */
+  defaultCollapse: boolean;
+  /** Bundle the many links between two expanded groups into one ×N link. */
+  aggregateCrossGroup: boolean;
+  /** ELK node/rank spacing — trades compactness for breathing room. */
+  layoutSpacing: LayoutSpacing;
 
   setDensity: (density: NodeDensity) => void;
   setEdgeLabels: (mode: EdgeLabelMode) => void;
   setFocusOnSelect: (focus: boolean) => void;
+  setHoverFocus: (focus: boolean) => void;
+  setDefaultCollapse: (collapse: boolean) => void;
+  setAggregateCrossGroup: (aggregate: boolean) => void;
+  setLayoutSpacing: (spacing: LayoutSpacing) => void;
 }
 
 export const useCanvasPrefsStore = create<CanvasPrefsState>()(
   persist(
     (set) => ({
-      // Defaults chosen to declutter out of the box without surprising anyone:
-      // comfortable cards (familiar), labels only on hover (quiet edges), and
-      // focus-on-select on (clicking a node spotlights its neighborhood).
+      // Defaults open a dense diagram as a readable overview; all switchable.
       density: "comfortable",
       edgeLabels: "hover",
       focusOnSelect: true,
+      hoverFocus: true,
+      defaultCollapse: true,
+      aggregateCrossGroup: true,
+      layoutSpacing: "normal",
 
       setDensity: (density) => {
         set({ density });
@@ -52,7 +63,19 @@ export const useCanvasPrefsStore = create<CanvasPrefsState>()(
       setFocusOnSelect: (focusOnSelect) => {
         set({ focusOnSelect });
       },
+      setHoverFocus: (hoverFocus) => {
+        set({ hoverFocus });
+      },
+      setDefaultCollapse: (defaultCollapse) => {
+        set({ defaultCollapse });
+      },
+      setAggregateCrossGroup: (aggregateCrossGroup) => {
+        set({ aggregateCrossGroup });
+      },
+      setLayoutSpacing: (layoutSpacing) => {
+        set({ layoutSpacing });
+      },
     }),
-    { name: STORAGE_KEY, version: 1 },
+    { name: STORAGE_KEY, version: 2 },
   ),
 );

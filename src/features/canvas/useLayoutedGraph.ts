@@ -41,7 +41,7 @@ import {
 import type { GroupExpansion } from "@/core/doc/resolve";
 import type { LayoutResultNode } from "@/core/layout/LayoutEngine";
 import type { LayerId, ProjectDocument } from "@/core/schema/schema";
-import type { NodeDensity } from "@/core/state/canvasPrefsStore";
+import type { LayoutSpacing, NodeDensity } from "@/core/state/canvasPrefsStore";
 import type { LayoutSizing } from "@/features/canvas/buildLayoutTree";
 
 export interface Placement {
@@ -64,9 +64,18 @@ const SIZING_BY_DENSITY: Record<NodeDensity, LayoutSizing> = {
   compact: { dimensions: COMPACT_NODE_DIMENSIONS, containerPadding: COMPACT_CONTAINER_PADDING },
 };
 
+/** ELK node/rank spacing per spacing preference. */
+const SPACING_OPTS: Record<LayoutSpacing, { nodeNodeSpacing: number; rankSpacing: number }> = {
+  cozy: { nodeNodeSpacing: 64, rankSpacing: 80 },
+  normal: { nodeNodeSpacing: 90, rankSpacing: 110 },
+  spacious: { nodeNodeSpacing: 140, rankSpacing: 170 },
+};
+
 export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): PlacementMap {
   const groupExpansion = useViewStore((s) => s.groupExpansion);
   const density = useCanvasPrefsStore((s) => s.density);
+  const defaultCollapse = useCanvasPrefsStore((s) => s.defaultCollapse);
+  const layoutSpacing = useCanvasPrefsStore((s) => s.layoutSpacing);
   const [autoNodes, setAutoNodes] = useState<ReadonlyMap<string, LayoutResultNode>>(
     () => new Map(),
   );
@@ -74,11 +83,11 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
   // Hash the topology so we re-run ELK only when the graph shape actually
   // changes (elements added/removed, connections added/removed, parent
   // relationships moved, aggregation config changed, expand/collapse toggled,
-  // or the density that drives node footprints). Position overrides and
-  // property edits do NOT contribute.
+  // the default-collapse policy, the density that drives node footprints, or
+  // the spacing). Position overrides and property edits do NOT contribute.
   const topologyKey = useMemo(
-    () => computeTopologyKey(doc, layer, groupExpansion, density),
-    [doc, layer, groupExpansion, density],
+    () => computeTopologyKey(doc, layer, groupExpansion, density, defaultCollapse, layoutSpacing),
+    [doc, layer, groupExpansion, density, defaultCollapse, layoutSpacing],
   );
   const lastTopologyKey = useRef<string | null>(null);
 
@@ -98,14 +107,14 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
       return;
     }
 
-    const maximal = resolve(doc, layer, latestMvp.id, groupExpansion);
+    const maximal = resolve(doc, layer, latestMvp.id, groupExpansion, defaultCollapse);
     const tree = buildLayoutTree(maximal.elements, maximal.containment, SIZING_BY_DENSITY[density]);
     const layoutEdges = maximal.edges.map((e) => ({ id: e.id, source: e.from, target: e.to }));
 
     let cancelled = false;
 
     void elkLayoutEngine
-      .layout(tree, layoutEdges, { direction: "DOWN" })
+      .layout(tree, layoutEdges, { direction: "DOWN", ...SPACING_OPTS[layoutSpacing] })
       .then((result) => {
         if (cancelled) return;
         setAutoNodes(result.nodes);
@@ -118,7 +127,7 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
     return () => {
       cancelled = true;
     };
-  }, [doc, layer, topologyKey, groupExpansion, density]);
+  }, [doc, layer, topologyKey, groupExpansion, density, defaultCollapse, layoutSpacing]);
 
   // Override merge + absolute-coordinate resolution — runs every render. Cheap.
   return useMemo(() => mergePlacements(autoNodes, doc?.layout?.[layer]), [autoNodes, doc, layer]);
@@ -190,6 +199,8 @@ function computeTopologyKey(
   layer: LayerId,
   expansion: GroupExpansion,
   density: NodeDensity,
+  defaultCollapsed: boolean,
+  spacing: LayoutSpacing,
 ): string {
   if (doc === null) return "empty";
   const elementSig = doc.elements
@@ -203,5 +214,5 @@ function computeTopologyKey(
     .sort()
     .map((id) => `${id}=${expansion[id] === true ? "1" : "0"}`)
     .join(",");
-  return `${density}\n${layer}\n${elementSig}\n${connSig}\n${expansionSig}`;
+  return `${density}\n${spacing}\n${defaultCollapsed ? "dc1" : "dc0"}\n${layer}\n${elementSig}\n${connSig}\n${expansionSig}`;
 }

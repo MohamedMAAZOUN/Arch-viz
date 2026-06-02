@@ -1,14 +1,18 @@
 // ============================================================================
 // DisplayControls — readability controls for a dense canvas
 // ============================================================================
-// A small popover in the view-controls row that gathers the levers for taming
-// a cluttered diagram, so the top bar stays tidy:
+// A small popover in the view-controls row that gathers every lever for taming
+// a cluttered diagram, so the top bar stays tidy. All are independently
+// toggleable:
 //   - Density        → comfortable cards vs. compact (also tightens layout).
+//   - Spacing        → ELK breathing room (cozy / normal / spacious).
 //   - Edge labels    → only on hover/selection vs. always.
-//   - Focus          → dim everything but the selected node's neighborhood.
-//   - Collapse all   → fold every subsystem to a single box (expand restores).
+//   - Collapse subsystems by default → open as a clean overview of boxes.
+//   - Bundle cross-group links → one ×N line between two expanded domains.
+//   - Focus on select / on hover → dim all but the active node's neighborhood.
+//   - Collapse all / Expand all  → fold or open every subsystem at once.
 //
-// Density / labels / focus persist (canvasPrefsStore). Collapse/expand-all are
+// The preferences persist (canvasPrefsStore). Collapse/expand-all are
 // per-session view state (viewStore expand overrides).
 // ============================================================================
 
@@ -59,6 +63,14 @@ export default function DisplayControls() {
   const setEdgeLabels = useCanvasPrefsStore((s) => s.setEdgeLabels);
   const focusOnSelect = useCanvasPrefsStore((s) => s.focusOnSelect);
   const setFocusOnSelect = useCanvasPrefsStore((s) => s.setFocusOnSelect);
+  const hoverFocus = useCanvasPrefsStore((s) => s.hoverFocus);
+  const setHoverFocus = useCanvasPrefsStore((s) => s.setHoverFocus);
+  const defaultCollapse = useCanvasPrefsStore((s) => s.defaultCollapse);
+  const setDefaultCollapse = useCanvasPrefsStore((s) => s.setDefaultCollapse);
+  const aggregateCrossGroup = useCanvasPrefsStore((s) => s.aggregateCrossGroup);
+  const setAggregateCrossGroup = useCanvasPrefsStore((s) => s.setAggregateCrossGroup);
+  const layoutSpacing = useCanvasPrefsStore((s) => s.layoutSpacing);
+  const setLayoutSpacing = useCanvasPrefsStore((s) => s.setLayoutSpacing);
   const setGroupExpansionMany = useViewStore((s) => s.setGroupExpansionMany);
   const clearGroupExpansion = useViewStore((s) => s.clearGroupExpansion);
 
@@ -137,6 +149,16 @@ export default function DisplayControls() {
                 onChange={setDensity}
               />
               <Segmented
+                label="Spacing"
+                value={layoutSpacing}
+                options={[
+                  { value: "cozy", label: "Cozy" },
+                  { value: "normal", label: "Normal" },
+                  { value: "spacious", label: "Spacious" },
+                ]}
+                onChange={setLayoutSpacing}
+              />
+              <Segmented
                 label="Edge labels"
                 value={edgeLabels}
                 options={[
@@ -146,17 +168,18 @@ export default function DisplayControls() {
                 onChange={setEdgeLabels}
               />
 
-              <label className="display-controls-toggle">
-                <span className="display-controls-row-label">Focus on select</span>
-                <input
-                  type="checkbox"
-                  checked={focusOnSelect}
-                  onChange={(e) => {
-                    setFocusOnSelect(e.target.checked);
-                  }}
-                />
-                <span className="display-controls-switch" aria-hidden />
-              </label>
+              <Toggle
+                label="Collapse subsystems by default"
+                checked={defaultCollapse}
+                onChange={setDefaultCollapse}
+              />
+              <Toggle
+                label="Bundle cross-group links"
+                checked={aggregateCrossGroup}
+                onChange={setAggregateCrossGroup}
+              />
+              <Toggle label="Focus on select" checked={focusOnSelect} onChange={setFocusOnSelect} />
+              <Toggle label="Focus on hover" checked={hoverFocus} onChange={setHoverFocus} />
 
               <div className="display-controls-group">
                 <span className="display-controls-row-label">Subsystems</span>
@@ -223,6 +246,34 @@ function Segmented<T extends string>({
         ))}
       </div>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Toggle — a labelled on/off switch reused for the boolean prefs.
+// ---------------------------------------------------------------------------
+
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="display-controls-toggle">
+      <span className="display-controls-row-label">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => {
+          onChange(e.target.checked);
+        }}
+      />
+      <span className="display-controls-switch" aria-hidden />
+    </label>
   );
 }
 
