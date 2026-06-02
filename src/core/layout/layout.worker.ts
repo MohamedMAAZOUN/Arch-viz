@@ -229,9 +229,12 @@ function collect(
 }
 
 /**
- * Lift each edge's interior bend points into absolute coordinates by the
- * container offset. Endpoints (start/end) are dropped — the renderer pins the
- * path to the live source/target handles, so only the bends matter.
+ * Lift each edge's route into absolute coordinates by the container offset. We
+ * keep the FULL polyline — startPoint, bendPoints, endPoint — because ELK
+ * attaches edges at computed ports (a back-edge leaves the *top* of its source,
+ * not the bottom). Drawing the whole route reproduces exactly what ELK planned;
+ * forcing it through React Flow's fixed Top/Bottom handles instead would make
+ * such edges dart across the node and back.
  */
 function collectEdges(
   edges: readonly ElkResultEdge[] | undefined,
@@ -242,10 +245,15 @@ function collectEdges(
   if (edges === undefined) return;
   for (const edge of edges) {
     const section = edge.sections?.[0];
-    const bends = section?.bendPoints ?? [];
+    if (section?.startPoint === undefined || section.endPoint === undefined) {
+      // No usable route — record empty so the renderer falls back cleanly.
+      out.push({ id: edge.id, points: [] });
+      continue;
+    }
+    const raw = [section.startPoint, ...(section.bendPoints ?? []), section.endPoint];
     out.push({
       id: edge.id,
-      points: bends.map((p) => ({ x: p.x + offX, y: p.y + offY })),
+      points: raw.map((p) => ({ x: p.x + offX, y: p.y + offY })),
     });
   }
 }

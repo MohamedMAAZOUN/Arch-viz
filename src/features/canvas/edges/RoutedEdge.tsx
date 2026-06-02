@@ -33,7 +33,8 @@ import type { Edge, EdgeProps } from "@xyflow/react";
 import "@/features/canvas/edges/RoutedEdge.css";
 
 export interface RoutedEdgeData extends Record<string, unknown> {
-  /** ELK bend points (absolute). Absent → fall back to smoothstep. */
+  /** ELK's full route (start → bends → end, absolute). A non-empty list is
+   *  drawn verbatim; absent or empty → fall back to smoothstep. */
   points?: readonly LayoutPoint[];
   /** Protocol or ×count text shown as the edge label. */
   labelText?: string;
@@ -63,26 +64,18 @@ export function RoutedEdge({
 }: EdgeProps<RoutedEdgeType>) {
   const [hovered, setHovered] = useState(false);
 
-  const source = { x: sourceX, y: sourceY };
-  const target = { x: targetX, y: targetY };
-
   // Build the visible path + a point to anchor the label.
   let path: string;
   let labelX: number;
   let labelY: number;
 
-  const bends = data?.points;
-  if (bends !== undefined && bends.length > 0) {
-    const pts = [source, ...bends, target];
-    path = roundedPath(pts, CORNER_RADIUS);
-    const mid = pts[Math.floor(pts.length / 2)] ?? source;
-    labelX = mid.x;
-    labelY = mid.y;
-  } else if (bends !== undefined) {
-    // ELK routed it with no bends — a straight segment between the handles.
-    path = `M${String(sourceX)},${String(sourceY)} L${String(targetX)},${String(targetY)}`;
-    labelX = (sourceX + targetX) / 2;
-    labelY = (sourceY + targetY) / 2;
+  const route = data?.points;
+  if (route !== undefined && route.length >= 2) {
+    // Draw ELK's full computed route verbatim (start → bends → end).
+    path = roundedPath(route, CORNER_RADIUS);
+    const mid = route[Math.floor(route.length / 2)] ?? route[0];
+    labelX = mid?.x ?? sourceX;
+    labelY = mid?.y ?? sourceY;
   } else {
     const [d, lx, ly] = getSmoothStepPath({
       sourceX,

@@ -55,11 +55,11 @@ export interface LayoutPoint {
 }
 
 /**
- * The engine's computed route for one edge: its interior bend points in
- * ABSOLUTE coordinates (the same space as a node's accumulated absolute
- * position). Endpoints are intentionally omitted — the renderer pins the path
- * to the actual source/target handles and threads it through these bends, so a
- * small handle offset never leaves a gap.
+ * The engine's computed route for one edge: the FULL orthogonal polyline
+ * (start → bends → end) in ABSOLUTE coordinates (the same space as a node's
+ * accumulated absolute position). The renderer draws this verbatim — ELK picks
+ * the port each end attaches to, so reproducing the whole route avoids the
+ * darting you'd get by re-pinning the ends to fixed handles.
  */
 export interface LayoutResultEdge {
   id: string;

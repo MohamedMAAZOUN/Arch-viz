@@ -12,7 +12,8 @@
 // per-session view state (viewStore expand overrides).
 // ============================================================================
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useCanvasPrefsStore } from "@/core/state/canvasPrefsStore";
@@ -23,8 +24,34 @@ import "@/features/layer-toggle/DisplayControls.css";
 export default function DisplayControls() {
   const doc = useDocSnapshot();
   const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const menuId = useId();
+
+  // The menu is portaled to <body> so it escapes the floating panel's
+  // `overflow: hidden` clipping; it's positioned with fixed coords anchored
+  // under the trigger, right-aligned and clamped into the viewport.
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const MENU_WIDTH = 272; // matches .display-controls-menu width (17rem)
+
+  const reposition = useCallback(() => {
+    const trigger = triggerRef.current;
+    if (trigger === null) return;
+    const rect = trigger.getBoundingClientRect();
+    const left = Math.max(8, Math.min(rect.right - MENU_WIDTH, window.innerWidth - MENU_WIDTH - 8));
+    setPos({ top: rect.bottom + 8, left });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [open, reposition]);
 
   const density = useCanvasPrefsStore((s) => s.density);
   const setDensity = useCanvasPrefsStore((s) => s.setDensity);
@@ -35,11 +62,15 @@ export default function DisplayControls() {
   const setGroupExpansionMany = useViewStore((s) => s.setGroupExpansionMany);
   const clearGroupExpansion = useViewStore((s) => s.clearGroupExpansion);
 
-  // Close on outside-click / Esc while open.
+  // Close on outside-click / Esc while open. The menu lives in a portal, so an
+  // outside click is one that hits neither the trigger nor the menu.
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (e: PointerEvent) => {
-      if (rootRef.current !== null && !rootRef.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      const insideTrigger = triggerRef.current?.contains(target) ?? false;
+      const insideMenu = menuRef.current?.contains(target) ?? false;
+      if (!insideTrigger && !insideMenu) setOpen(false);
     };
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -68,8 +99,9 @@ export default function DisplayControls() {
   };
 
   return (
-    <div className="display-controls" ref={rootRef}>
+    <div className="display-controls">
       <button
+        ref={triggerRef}
         type="button"
         className="display-controls-trigger"
         data-active={open}
@@ -85,8 +117,16 @@ export default function DisplayControls() {
         <span>display</span>
       </button>
 
-      {open ? (
-        <div className="display-controls-menu" id={menuId} role="dialog" aria-label="Display options">
+      {open && pos !== null
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className="display-controls-menu"
+              id={menuId}
+              role="dialog"
+              aria-label="Display options"
+              style={{ top: pos.top, left: pos.left }}
+            >
           <Segmented
             label="Density"
             value={density}
@@ -139,8 +179,10 @@ export default function DisplayControls() {
               </button>
             </div>
           </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
