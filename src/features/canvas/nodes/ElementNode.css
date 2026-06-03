@@ -254,6 +254,34 @@
   opacity: 0.22;
 }
 
+/* -- Compact density + far-zoom level-of-detail -------------------------- */
+/* Driven by data attributes on the .canvas wrapper (see Canvas.tsx). Compact
+ * is a manual user choice that also tightens the auto-layout (smaller reserved
+ * footprints); far-LOD kicks in automatically when zoomed out. Both strip a
+ * card back toward its identifying row so a dense diagram reads as a clean
+ * grid instead of a wall of text. */
+
+.canvas[data-density="compact"] .element-node {
+  width: 184px;
+  padding: var(--space-2) var(--space-3);
+  gap: 0;
+}
+
+.canvas[data-density="compact"] .element-node-desc,
+.canvas[data-density="compact"] .element-node-tags,
+.canvas[data-lod="far"] .element-node-desc,
+.canvas[data-lod="far"] .element-node-tags {
+  display: none;
+}
+
+/* At far zoom the words are unreadable anyway — drop the type/MVP text labels
+ * and the live chip, leaving the glyph, name, and status dot to carry it. */
+.canvas[data-lod="far"] .element-node-type-label,
+.canvas[data-lod="far"] .element-node-mvp-label,
+.canvas[data-lod="far"] .live-chip {
+  display: none;
+}
+
 /* -- Live data indicator (shared by ElementNode and GroupNode) ----------- */
 
 .live-indicator {

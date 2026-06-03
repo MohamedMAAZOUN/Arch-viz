@@ -6,6 +6,7 @@
 // the canvas rather than the app chrome.
 // ============================================================================
 
+import DisplayControls from "@/features/layer-toggle/DisplayControls";
 import LayerToggle from "@/features/layer-toggle/LayerToggle";
 import ReorganizeButton from "@/features/layer-toggle/ReorganizeButton";
 import MvpSlider from "@/features/mvp-slider/MvpSlider";
@@ -17,6 +18,7 @@ export default function ViewControlsPanel() {
     <div className="view-controls">
       <LayerToggle />
       <ReorganizeButton />
+      <DisplayControls />
       <MvpSlider />
     </div>
   );

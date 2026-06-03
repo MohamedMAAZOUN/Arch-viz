@@ -55,6 +55,9 @@ export interface ViewState {
   setCursorMode: (mode: CursorMode) => void;
   setViewport: (vp: { x: number; y: number; zoom: number }) => void;
   setGroupExpansion: (elementId: string, expanded: boolean) => void;
+  /** Set many expand/collapse overrides at once (collapse-all / expand-all),
+   *  so a bulk change is a single store update and one re-layout. */
+  setGroupExpansionMany: (entries: Readonly<Record<string, boolean>>) => void;
   clearGroupExpansion: () => void;
 }
 
@@ -84,6 +87,11 @@ export const useViewStore = create<ViewState>((set) => ({
   setGroupExpansion: (elementId, expanded) => {
     set((state) => ({
       groupExpansion: { ...state.groupExpansion, [elementId]: expanded },
+    }));
+  },
+  setGroupExpansionMany: (entries) => {
+    set((state) => ({
+      groupExpansion: { ...state.groupExpansion, ...entries },
     }));
   },
   clearGroupExpansion: () => {

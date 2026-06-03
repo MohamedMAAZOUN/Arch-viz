@@ -54,17 +54,26 @@ type LayoutResponse =
   | { id: number; ok: true; nodes: ResultNode[] }
   | { id: number; ok: false; error: string };
 
-// Minimal shape of an ELK graph node — recursive. We build these from our
-// LayoutNode tree and read x/y/width/height back off the result.
-interface ElkNode {
+// Minimal shape of an ELK graph node we BUILD as input — recursive. Edges are
+// declared with just endpoints; ELK uses them to place nodes (we draw the lines
+// ourselves with React Flow, so we never read the routes back).
+interface ElkInputNode {
   id: string;
   width?: number;
   height?: number;
+  layoutOptions?: Record<string, string>;
+  children?: ElkInputNode[];
+  edges?: { id: string; sources: string[]; targets: string[] }[];
+}
+
+// Minimal shape of the ELK RESULT we read back: node geometry only.
+interface ElkResultNode {
+  id: string;
   x?: number;
   y?: number;
-  layoutOptions?: Record<string, string>;
-  children?: ElkNode[];
-  edges?: { id: string; sources: string[]; targets: string[] }[];
+  width?: number;
+  height?: number;
+  children?: ElkResultNode[];
 }
 
 // Use elk-api with elk-worker.min.js loaded as a real sub-worker script.
@@ -83,7 +92,7 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
   const { id, nodes, edges, options } = event.data;
 
   try {
-    const graph: ElkNode = {
+    const graph: ElkInputNode = {
       id: "root",
       layoutOptions: {
         "elk.algorithm": "layered",
@@ -97,6 +106,10 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
         "elk.spacing.edgeNode": "40",
         "elk.layered.spacing.edgeNodeBetweenLayers": "40",
         "elk.padding": "[top=32, left=32, bottom=32, right=32]",
+        // Network-simplex placement straightens the hierarchy and tends to keep
+        // each parent centered over its children — cheap and tidy. (We draw the
+        // edges ourselves, so ELK's own edge routing is irrelevant here.)
+        "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
       },
       children: nodes.map(toElkNode),
       // All edges are declared at the root; INCLUDE_CHILDREN routes the ones
@@ -104,7 +117,9 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
       edges: edges.map((e) => ({ id: e.id, sources: [e.source], targets: [e.target] })),
     };
 
-    const result = await elk.layout(graph);
+    const result = (await elk.layout(
+      graph as unknown as Parameters<typeof elk.layout>[0],
+    )) as unknown as ElkResultNode;
 
     const out: ResultNode[] = [];
     collect(result.children ?? [], null, out);
@@ -122,9 +137,9 @@ async function handleMessage(event: MessageEvent<LayoutRequest>): Promise<void> 
 }
 
 /** Translate our LayoutNode tree into ELK's graph node shape. */
-function toElkNode(node: LayoutNode): ElkNode {
+function toElkNode(node: LayoutNode): ElkInputNode {
   const hasChildren = node.children !== undefined && node.children.length > 0;
-  const elkNode: ElkNode = { id: node.id };
+  const elkNode: ElkInputNode = { id: node.id };
 
   if (hasChildren && node.children !== undefined) {
     const p = node.padding ?? { top: 24, left: 24, bottom: 24, right: 24 };
@@ -142,7 +157,11 @@ function toElkNode(node: LayoutNode): ElkNode {
 }
 
 /** Flatten ELK's result tree, recording each node's parent and relative pos. */
-function collect(children: readonly ElkNode[], parentId: string | null, out: ResultNode[]): void {
+function collect(
+  children: readonly ElkResultNode[],
+  parentId: string | null,
+  out: ResultNode[],
+): void {
   for (const child of children) {
     out.push({
       id: child.id,
