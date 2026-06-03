@@ -23,13 +23,27 @@
 
 import * as Y from "yjs";
 
+import { assertNever } from "@/core/errors";
+
 import type {
   Annotation,
   Connection,
+  ConnectionType,
   Element,
   LayerId,
   ProjectDocument,
 } from "@/core/schema/schema";
+
+/**
+ * The connection fields the inspector is allowed to edit, modelled as a
+ * discriminated union so each field carries exactly the value type it accepts.
+ * Replaces the old loose `(key: string, value: unknown)` surface — widening
+ * this set is now a deliberate, type-checked decision rather than an accident.
+ */
+export type ConnectionEdit =
+  | { readonly field: "type"; readonly value: ConnectionType }
+  /** `null` (or blank) clears the optional protocol back to unset. */
+  | { readonly field: "protocol"; readonly value: string | null };
 
 const DOC_KEY = "document";
 
@@ -82,8 +96,9 @@ export interface DocStore {
   /** Remove a single annotation from an element by its id. */
   removeAnnotation(elementId: string, annotationId: string): void;
 
-  /** Update a single property on a connection. */
-  updateConnectionProperty(connectionId: string, key: string, value: unknown): void;
+  /** Edit one of the known-editable fields on a connection. The {@link
+   *  ConnectionEdit} union keeps the value type tied to the field being set. */
+  updateConnectionProperty(connectionId: string, edit: ConnectionEdit): void;
 
   // -- Structural mutations (add / remove elements and connections) ------
   /** Append a new, fully-formed element. The caller is responsible for a
@@ -124,6 +139,11 @@ export function createDocStore(): DocStore {
   });
 
   let committedSnapshot: ProjectDocument | null = null;
+  // Cached draft-vs-committed answer. `null` means "stale — recompute on the
+  // next dirty() call". The doc only changes on mutate / undo / redo / load /
+  // commit / discard, so we recompute at most once per change instead of on
+  // every dirty() call (which the topbar/save flow polls). See dirty() below.
+  let dirtyCache: boolean | null = null;
   const handlers = new Set<DocChangeHandler>();
 
   function readDoc(): ProjectDocument | null {
@@ -147,6 +167,9 @@ export function createDocStore(): DocStore {
   }
 
   function notify(): void {
+    // Any observed change (mutate, undo, redo, load, discard) can flip the
+    // dirty answer — invalidate the cache so the next dirty() recomputes.
+    dirtyCache = null;
     const snapshot = readDoc();
     if (snapshot === null) return;
     for (const handler of handlers) {
@@ -164,6 +187,7 @@ export function createDocStore(): DocStore {
         yRoot.set(DOC_KEY, doc);
       });
       committedSnapshot = doc;
+      dirtyCache = false; // freshly loaded == committed
       undoManager.clear();
     },
 
@@ -184,6 +208,7 @@ export function createDocStore(): DocStore {
       const current = readDoc();
       if (current === null) return;
       committedSnapshot = current;
+      dirtyCache = false; // current is now the committed baseline
     },
 
     discard() {
@@ -191,13 +216,20 @@ export function createDocStore(): DocStore {
       yDoc.transact(() => {
         yRoot.set(DOC_KEY, committedSnapshot);
       });
+      // notify() ran inside the transact and set the cache stale; the doc now
+      // equals the committed snapshot again, so it's clean.
+      dirtyCache = false;
       undoManager.clear();
     },
 
     dirty() {
-      const current = readDoc();
-      if (current === null && committedSnapshot === null) return false;
-      return stableStringify(current) !== stableStringify(committedSnapshot);
+      // O(1) while the doc is unchanged; recomputes only after a doc change
+      // invalidates the cache. The comparison short-circuits on the first
+      // difference and is key-order insensitive (structural, not stringified).
+      if (dirtyCache === null) {
+        dirtyCache = !jsonEqual(readDoc(), committedSnapshot);
+      }
+      return dirtyCache;
     },
 
     undo() {
@@ -316,14 +348,21 @@ export function createDocStore(): DocStore {
       });
     },
 
-    updateConnectionProperty(connectionId, key, value) {
+    updateConnectionProperty(connectionId, edit) {
       mutate((doc) => {
         const connections = doc.connections.map((c): Connection => {
           if (c.id !== connectionId) return c;
-          // Only allowed top-level keys; we keep this typed loose because
-          // Connection has a discriminated property surface and editing is
-          // mostly for `protocol` and `type` in v1.
-          return { ...c, [key]: value };
+          switch (edit.field) {
+            case "type":
+              return { ...c, type: edit.value };
+            case "protocol":
+              // Blank or null clears the optional protocol; otherwise set it.
+              return edit.value === null || edit.value.trim() === ""
+                ? omitKey(c, "protocol")
+                : { ...c, protocol: edit.value };
+            default:
+              return assertNever(edit);
+          }
         });
         return { ...doc, connections };
       });
@@ -385,21 +424,52 @@ export function createDocStore(): DocStore {
 // ----------------------------------------------------------------------------
 
 /**
- * JSON.stringify with alphabetically-sorted keys at every nesting level.
- * Guards against false dirty-positives caused by key-insertion-order differences
- * between the committed snapshot and a document reconstructed via object spreads.
+ * Structural deep-equality for the JSON-shaped project document.
+ *
+ * Replaces the previous `stableStringify`-and-compare approach (issue #12).
+ * Two wins over stringifying both sides on every call:
+ *   - **Short-circuits** on the first difference — the common "is it dirty?"
+ *     case returns the moment any field diverges, instead of serialising the
+ *     whole document first.
+ *   - **Key-order insensitive** by construction — it compares values by key,
+ *     so a document rebuilt via object spreads never reads as falsely dirty.
+ *
+ * Only JSON values appear in the document (objects, arrays, primitives), so we
+ * don't handle Dates/Maps/etc. Object keys whose value is `undefined` are
+ * treated as absent to match JSON semantics (`JSON.stringify` drops them).
  */
-function stableStringify(value: unknown): string {
-  return JSON.stringify(value, (_key, val: unknown): unknown => {
-    if (val !== null && typeof val === "object" && !Array.isArray(val)) {
-      const sorted: Record<string, unknown> = {};
-      for (const k of Object.keys(val as Record<string, unknown>).sort()) {
-        sorted[k] = (val as Record<string, unknown>)[k];
-      }
-      return sorted;
+function jsonEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) {
+    return false;
+  }
+
+  const aIsArray = Array.isArray(a);
+  const bIsArray = Array.isArray(b);
+  if (aIsArray !== bIsArray) return false;
+
+  if (aIsArray && bIsArray) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      if (!jsonEqual(a[i], b[i])) return false;
     }
-    return val;
-  });
+    return true;
+  }
+
+  const ao = a as Record<string, unknown>;
+  const bo = b as Record<string, unknown>;
+  const aKeys = definedKeys(ao);
+  const bKeys = definedKeys(bo);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (!jsonEqual(ao[key], bo[key])) return false;
+  }
+  return true;
+}
+
+/** Keys of `obj` whose value is not `undefined` (mirrors JSON's omit rule). */
+function definedKeys(obj: Record<string, unknown>): readonly string[] {
+  return Object.keys(obj).filter((k) => obj[k] !== undefined);
 }
 
 /**

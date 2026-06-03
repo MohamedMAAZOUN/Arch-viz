@@ -67,7 +67,7 @@ The DocStore API surface (use these, don't reach into the Y.Doc):
 - `docStore.updateElementPropertyPath(id, path, value)`
 - `docStore.updateElementDocumentation(id, markdown)` — pass `null` to clear
 - `docStore.addAnnotation(id, annotation)` / `docStore.removeAnnotation(id, annotationId)`
-- `docStore.updateConnectionProperty(id, key, value)`
+- `docStore.updateConnectionProperty(id, edit)` — `edit` is a typed `ConnectionEdit` (`{ field: "type", value } | { field: "protocol", value }`); `protocol: null` clears it
 - `docStore.addElement(element)` / `docStore.removeElement(id)` — remove cascades to the subtree, touching connections, and layout overrides
 - `docStore.addConnection(connection)` / `docStore.removeConnection(id)`
 - `docStore.setElementLayoutOverride(layer, elementId, position)` — pass `null` to clear
