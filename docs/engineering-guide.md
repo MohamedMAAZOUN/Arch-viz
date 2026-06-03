@@ -1061,6 +1061,39 @@ These are documented because we wasted time on them once. Don't waste time on th
 
 ESLint's `no-restricted-imports` blocks `elk.bundled.js` everywhere. The error message points back here.
 
+#### `elk-worker.min.js` is large but lazy — verified, don't panic at the chunk list
+
+`vite build` emits `assets/elk-worker.min-*.js` at **~1.52 MB raw**. That number
+looks alarming in the build output, but it does **not** count against the
+first-load budget. Verified 2026-06-03 against a production build:
+
+- **Lazy, not first-paint.** The asset is referenced **only** by the layout
+  worker chunk (`layout.worker-*.js`), never by `index.html` or the main entry
+  chunk (`index-*.js`). It enters via `import "…/elk-worker.min.js?url"`, so Vite
+  emits it as a standalone asset and ELK fetches it as a sub-worker **on the
+  first layout request** — i.e. after a project loads and the canvas asks for a
+  layout, well past first paint.
+- **Compresses ~3.5×.** Raw 1.52 MB → **~451 KB gzip** (brotli is smaller
+  again). It's already minified; the win on the wire is purely transport
+  compression, which is the host's job.
+
+**Action when deploying:** make sure the static host serves `*.js` assets with
+gzip or brotli (most do by default — Netlify, Vercel, Cloudflare, nginx with
+`gzip on`). The `?url` asset is fingerprinted and immutable, so cache it
+aggressively (`Cache-Control: public, max-age=31536000, immutable`).
+
+**Re-verify after an `elkjs` bump:**
+
+```bash
+pnpm build
+cd dist
+# 1. Lazy: should print only layout.worker-*.js, NOT index-*.js / index.html
+grep -rl elk-worker assets/*.js
+grep -l elk-worker index.html assets/index-*.js || echo "good: not in the entry"
+# 2. Transport size: gzip the emitted asset
+gzip -9 -c assets/elk-worker.min-*.js | wc -c
+```
+
 ### Tailwind v4 + Vite plugin version
 
 The `@tailwindcss/vite@4.0.0` release had a bundler bug ("Cannot convert undefined or null to object"). Pin to `4.3.0` or later. Documented in `docs/adr/0001-initial-scaffold.md`.

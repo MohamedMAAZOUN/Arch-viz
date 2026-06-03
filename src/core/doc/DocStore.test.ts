@@ -248,3 +248,128 @@ describe("DocStore — structural mutations", () => {
     expect(store.get()?.connections).toHaveLength(0);
   });
 });
+
+// A document with one connection we can edit in the tests below.
+function withConnection(): ProjectDocument {
+  const base = fixture();
+  return {
+    ...base,
+    elements: [
+      ...base.elements,
+      {
+        id: "svc-b",
+        type: "service",
+        name: "Svc B",
+        minLayer: "architecture",
+        properties: {},
+        lifecycle: { introducedIn: "mvp1" },
+      },
+    ],
+    connections: [
+      {
+        id: "conn-1",
+        from: "svc-a",
+        to: "svc-b",
+        type: "sync",
+        protocol: "REST",
+        minLayer: "architecture",
+        lifecycle: { introducedIn: "mvp1" },
+      },
+    ],
+  };
+}
+
+describe("DocStore — typed connection editing", () => {
+  it("changes a connection's type", () => {
+    const store = createDocStore();
+    store.load(withConnection());
+    store.updateConnectionProperty("conn-1", { field: "type", value: "async" });
+    expect(store.get()?.connections[0]?.type).toBe("async");
+  });
+
+  it("sets and clears the optional protocol", () => {
+    const store = createDocStore();
+    store.load(withConnection());
+
+    store.updateConnectionProperty("conn-1", { field: "protocol", value: "gRPC" });
+    expect(store.get()?.connections[0]?.protocol).toBe("gRPC");
+
+    // null (and blank) clears the key entirely rather than leaving an empty string.
+    store.updateConnectionProperty("conn-1", { field: "protocol", value: null });
+    expect(store.get()?.connections[0]?.protocol).toBeUndefined();
+    expect("protocol" in (store.get()?.connections[0] ?? {})).toBe(false);
+
+    store.updateConnectionProperty("conn-1", { field: "protocol", value: "   " });
+    expect(store.get()?.connections[0]?.protocol).toBeUndefined();
+  });
+
+  it("leaves other connections untouched", () => {
+    const store = createDocStore();
+    const doc = withConnection();
+    store.load({
+      ...doc,
+      connections: [
+        ...doc.connections,
+        {
+          id: "conn-2",
+          from: "svc-b",
+          to: "svc-a",
+          type: "event",
+          minLayer: "architecture",
+          lifecycle: { introducedIn: "mvp1" },
+        },
+      ],
+    });
+    store.updateConnectionProperty("conn-1", { field: "type", value: "data" });
+    expect(store.get()?.connections.find((c) => c.id === "conn-1")?.type).toBe("data");
+    expect(store.get()?.connections.find((c) => c.id === "conn-2")?.type).toBe("event");
+  });
+});
+
+describe("DocStore — dirty tracking", () => {
+  it("is clean immediately after load", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    expect(store.dirty()).toBe(false);
+  });
+
+  it("becomes dirty after a mutation and clean again after commit", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.updateElementName("svc-a", "Renamed");
+    expect(store.dirty()).toBe(true);
+    store.commit();
+    expect(store.dirty()).toBe(false);
+  });
+
+  it("returns clean after undoing back to the committed state", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.updateElementName("svc-a", "Renamed");
+    expect(store.dirty()).toBe(true);
+    store.undo();
+    // Content matches the committed snapshot again — must read as clean, not
+    // merely "was mutated once". This is the case a naive dirty-flag breaks.
+    expect(store.dirty()).toBe(false);
+  });
+
+  it("returns clean after discard", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    store.updateElementProperty("svc-a", "owner", "team-z");
+    expect(store.dirty()).toBe(true);
+    store.discard();
+    expect(store.dirty()).toBe(false);
+    expect(store.get()?.elements[0]?.properties.owner).toBe("team-a");
+  });
+
+  it("is insensitive to key insertion order", () => {
+    const store = createDocStore();
+    store.load(fixture());
+    // Set a property then set it back to its original value via a different
+    // construction path. The structural compare must not report this as dirty.
+    store.updateElementProperty("svc-a", "owner", "changed");
+    store.updateElementProperty("svc-a", "owner", "team-a");
+    expect(store.dirty()).toBe(false);
+  });
+});

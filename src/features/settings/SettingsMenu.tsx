@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 
 import { loadExampleById } from "@/core/doc/loadExampleById";
+import { notify } from "@/core/state/notificationStore";
 import { EXAMPLES } from "@/data/examples";
 import { getPreferences, onChange, setPreferences } from "@/design-system/theme";
 
@@ -136,7 +137,11 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
                 onClick={() => {
                   void loadExampleById(ex.id).then((result) => {
                     if (!result.ok) {
-                      console.error("Failed to load example:", result.error);
+                      notify({
+                        level: "error",
+                        title: `Couldn't load “${ex.name}”`,
+                        detail: result.error,
+                      });
                       return;
                     }
                     onClose();
