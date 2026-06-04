@@ -16,7 +16,6 @@ import { parseProjectDocument } from "@/core/schema/schema";
 import { useViewStore } from "@/core/state/viewStore";
 import LayerToggle from "@/features/layer-toggle/LayerToggle";
 
-
 // Lists the names of every element the current view resolves as visible.
 function ResolvedNames() {
   const resolved = useResolvedDoc();

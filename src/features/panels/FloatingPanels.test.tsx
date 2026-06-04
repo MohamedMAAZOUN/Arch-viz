@@ -14,7 +14,6 @@ import { parseProjectDocument } from "@/core/schema/schema";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import FloatingPanels from "@/features/panels/FloatingPanels";
 
-
 function loadFixture() {
   const doc = parseProjectDocument({
     $schemaVersion: "1.0.0",
