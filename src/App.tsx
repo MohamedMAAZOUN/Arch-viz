@@ -14,6 +14,7 @@ import FileLoader from "@/features/file-loader/FileLoader";
 import MvpOverlayLegend from "@/features/mvp-slider/MvpOverlayLegend";
 import NotificationHost from "@/features/notifications/NotificationHost";
 import FloatingPanels from "@/features/panels/FloatingPanels";
+import ShortcutsOverlay from "@/features/shortcuts/ShortcutsOverlay";
 import TopBar from "@/features/topbar/TopBar";
 import TourLauncher from "@/features/tour/TourLauncher";
 import TourMount from "@/features/tour/TourMount";
@@ -35,6 +36,7 @@ export default function App() {
           <TourMount />
         </main>
         <NotificationHost />
+        <ShortcutsOverlay />
       </div>
     </FileLoader>
   );

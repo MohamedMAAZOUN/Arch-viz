@@ -32,3 +32,11 @@
   color: var(--color-fg-default);
   border-color: var(--color-border-default);
 }
+
+/* At far zoom the labels are unreadable and overlap the worst (issue #23), so
+ * drop them entirely — the same level-of-detail rule that strips node text.
+ * Hover/selection still works because hovering an edge zooms the user's intent,
+ * not the camera; but in the zoomed-out overview the canvas stays clean. */
+.canvas[data-lod="far"] .routed-edge-label {
+  display: none;
+}

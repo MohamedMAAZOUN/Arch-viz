@@ -17,7 +17,6 @@ import { useSelectionStore } from "@/core/state/selectionStore";
 import { useViewStore } from "@/core/state/viewStore";
 import ElementSections from "@/features/inspector/sections/ElementSections";
 
-
 import type { ProjectDocument } from "@/core/schema/schema";
 
 // A minimal but schema-valid two-element document. Parsed through the real Zod
@@ -67,7 +66,9 @@ describe("ElementSections — edit reaches the DocStore and re-renders", () => {
     // The mutation landed in the document...
     expect(docStore.get()?.elements.find((e) => e.id === "svc-a")?.name).toBe("Orders v2");
     // ...and the inspector re-rendered to show it.
-    expect(screen.getByRole("button", { name: "Edit element name" })).toHaveTextContent("Orders v2");
+    expect(screen.getByRole("button", { name: "Edit element name" })).toHaveTextContent(
+      "Orders v2",
+    );
   });
 
   it("editing the owner property flows through updateElementProperty", () => {

@@ -15,7 +15,6 @@ import { loadProject } from "@/core/doc/loadProject";
 import { parseProjectDocument } from "@/core/schema/schema";
 import TopBar from "@/features/topbar/TopBar";
 
-
 function loadFixture() {
   const doc = parseProjectDocument({
     $schemaVersion: "1.0.0",
