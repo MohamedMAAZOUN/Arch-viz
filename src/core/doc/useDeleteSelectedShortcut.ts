@@ -1,17 +1,15 @@
 // ============================================================================
-// useDeleteSelectedShortcut — Delete/Backspace removes the selected element
+// useDeleteSelectedShortcut — Delete/Backspace removes the selected element(s)
 // ============================================================================
 // Listens at the window level, skipping text-field focus so editing is never
-// interrupted. Fires only when an element is selected. When removal would
-// cascade to dependents (connections or nested elements), it asks for explicit
-// confirmation first — the cascade is documented in DocStore.removeElement.
-// Mount once at the app shell.
+// interrupted. Fires only when at least one element is selected, and delegates
+// to deleteSelectedElements (which handles the cascade confirmation for both
+// single and multi-selection). Mount once at the app shell.
 // ============================================================================
 
 import { useEffect } from "react";
 
-import { docStore } from "@/core/doc/DocStore";
-import { countElementDependents } from "@/core/doc/elementDependents";
+import { deleteSelectedElements } from "@/core/doc/deleteSelection";
 import { useSelectionStore } from "@/core/state/selectionStore";
 
 export function useDeleteSelectedShortcut(): void {
@@ -19,27 +17,10 @@ export function useDeleteSelectedShortcut(): void {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Delete" && e.key !== "Backspace") return;
       if (isEditingTextField(e.target)) return;
-
-      const selectedId = useSelectionStore.getState().selectedId;
-      if (selectedId === null) return;
-
-      const doc = docStore.get();
-      if (doc === null) return;
+      if (useSelectionStore.getState().selectedIds.length === 0) return;
 
       e.preventDefault();
-
-      const { connections, descendants } = countElementDependents(doc, selectedId);
-      if (connections > 0 || descendants > 0) {
-        const summary = describeDependents(connections, descendants);
-        // Native confirm: destructive and out of the render path. Undo also
-        // restores it, but the cascade warrants an explicit acknowledgement.
-        if (!window.confirm(`Delete this element? This also removes ${summary}.`)) {
-          return;
-        }
-      }
-
-      docStore.removeElement(selectedId);
-      useSelectionStore.getState().clear();
+      deleteSelectedElements();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -47,17 +28,6 @@ export function useDeleteSelectedShortcut(): void {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
-}
-
-function describeDependents(connections: number, descendants: number): string {
-  const parts: string[] = [];
-  if (descendants > 0) {
-    parts.push(`${String(descendants)} nested element${descendants === 1 ? "" : "s"}`);
-  }
-  if (connections > 0) {
-    parts.push(`${String(connections)} connection${connections === 1 ? "" : "s"}`);
-  }
-  return parts.join(" and ");
 }
 
 function isEditingTextField(target: EventTarget | null): boolean {

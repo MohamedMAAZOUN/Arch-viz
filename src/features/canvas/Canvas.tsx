@@ -119,6 +119,8 @@ function CanvasInner() {
   const lockHint = useLockedMoveHint(canvasRef, cursorMode === "lock");
 
   const select = useSelectionStore((s) => s.select);
+  const toggle = useSelectionStore((s) => s.toggle);
+  const clearSelection = useSelectionStore((s) => s.clear);
   const selectedId = useSelectionStore((s) => s.selectedId);
 
   // Tour playback — the Canvas owns the camera + node dimming. The step's
@@ -188,30 +190,50 @@ function CanvasInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasNode>(derivedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>(derivedEdges);
 
-  // Sync FROM doc → React Flow state, preserving selection across re-derives.
+  // Our selection store is the single source of truth for which nodes read as
+  // selected (so shift-click / box-select multi-selection shows the glow on
+  // every member, regardless of React Flow's own key conventions). Sync it onto
+  // the React Flow nodes whenever the derived graph or the selection changes.
+  const selectedIds = useSelectionStore((s) => s.selectedIds);
   useEffect(() => {
-    setNodes((prev) => {
-      const selectedSet = new Set(prev.filter((n) => n.selected === true).map((n) => n.id));
-      return derivedNodes.map((n) => (selectedSet.has(n.id) ? { ...n, selected: true } : n));
-    });
-  }, [derivedNodes, setNodes]);
+    const selectedSet = new Set(selectedIds);
+    setNodes(derivedNodes.map((n) => ({ ...n, selected: selectedSet.has(n.id) })));
+  }, [derivedNodes, selectedIds, setNodes]);
 
   useEffect(() => {
     setEdges(derivedEdges);
   }, [derivedEdges, setEdges]);
 
-  // Sync TO selection store (so the inspector can react). Selection is
-  // CLICK-driven only: we deliberately do NOT use onSelectionChange, because
-  // React Flow fires it on pointer-down — the start of a drag — which would
-  // open the inspector the moment you begin moving a node. onNodeClick fires
-  // only on a true click (no drag), and onPaneClick clears it.
-  const onNodeClick = (_event: React.MouseEvent, node: CanvasNode) => {
-    select(node.id);
+  // Sync TO selection store (so the inspector can react). Single selection is
+  // CLICK-driven (onNodeClick fires only on a true click, never a drag start —
+  // so beginning to move a node doesn't pop the inspector). Shift-click toggles
+  // membership for multi-select; box-select is handled via onSelectionChange
+  // below, gated to the select tool.
+  const onNodeClick = (event: React.MouseEvent, node: CanvasNode) => {
+    if (event.shiftKey) toggle(node.id);
+    else select(node.id);
   };
 
   const onPaneClick = () => {
-    select(null);
+    clearSelection();
   };
+
+  // Box-select: React Flow owns the marquee (enabled via selectionOnDrag for
+  // the select tool). We mirror its result into our store ONLY in select mode —
+  // in pan mode onSelectionChange would also fire on a node-drag start, which is
+  // exactly the inspector-popping behaviour onNodeClick exists to avoid.
+  const onSelectionChange = useCallback(
+    ({ nodes: selectedNodes }: { nodes: readonly CanvasNode[] }) => {
+      if (useViewStore.getState().cursorMode !== "select") return;
+      const ids = selectedNodes.map((n) => n.id);
+      // We also push our store's selection back onto the nodes (see the sync
+      // effect), so guard against echoing an unchanged set into a render loop.
+      const current = useSelectionStore.getState().selectedIds;
+      if (sameIdSet(ids, current)) return;
+      useSelectionStore.getState().setMany(ids);
+    },
+    [],
+  );
 
   // Hover-to-focus: track the node under the pointer (only when the pref is on,
   // so we don't pay re-renders for a feature that's disabled).
@@ -246,20 +268,34 @@ function CanvasInner() {
   // node React Flow already reports a parent-relative position; for a node
   // rendered top-level whose layout parent is hidden, we subtract the parent's
   // absolute offset ourselves.
-  const onNodeDragStop = (_event: React.MouseEvent, node: CanvasNode) => {
-    const placement = placements.get(node.id);
-    const layoutParentId = placement?.parentId ?? null;
-    const renderedNested = node.parentId !== undefined;
+  const persistNodePosition = useCallback(
+    (node: CanvasNode) => {
+      const placement = placements.get(node.id);
+      const layoutParentId = placement?.parentId ?? null;
+      const renderedNested = node.parentId !== undefined;
 
-    let position = node.position;
-    if (!renderedNested && layoutParentId !== null) {
-      const parent = placements.get(layoutParentId);
-      position = {
-        x: node.position.x - (parent?.absX ?? 0),
-        y: node.position.y - (parent?.absY ?? 0),
-      };
-    }
-    docStore.setElementLayoutOverride(currentLayer, node.id, position);
+      let position = node.position;
+      if (!renderedNested && layoutParentId !== null) {
+        const parent = placements.get(layoutParentId);
+        position = {
+          x: node.position.x - (parent?.absX ?? 0),
+          y: node.position.y - (parent?.absY ?? 0),
+        };
+      }
+      docStore.setElementLayoutOverride(currentLayer, node.id, position);
+    },
+    [placements, currentLayer],
+  );
+
+  const onNodeDragStop = (_event: React.MouseEvent, node: CanvasNode) => {
+    persistNodePosition(node);
+  };
+
+  // Dragging a multi-selection moves every selected node together; React Flow
+  // reports the group via onSelectionDragStop. Persist each one (all land in a
+  // single undo capture window — see DocStore).
+  const onSelectionDragStop = (_event: React.MouseEvent, draggedNodes: CanvasNode[]) => {
+    for (const node of draggedNodes) persistNodePosition(node);
   };
 
   // Fit view once when the first batch of positions lands for a project.
@@ -421,10 +457,12 @@ function CanvasInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onSelectionChange={onSelectionChange}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
+        onSelectionDragStop={onSelectionDragStop}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -491,14 +529,44 @@ function CanvasInner() {
         </div>
       ) : null}
 
-      {doc === null ? <CanvasEmptyState /> : null}
+      <CanvasStatus kind={canvasStatusKind(doc, resolved, nodes.length)} />
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Canvas status — the one intentional state for every empty/loading surface
+// ---------------------------------------------------------------------------
+// Resolves the canvas into exactly one of: a first-run welcome, an empty
+// project, a view that gates everything out at this layer/MVP, an in-progress
+// layout, or "show the graph". Keeps the blank-canvas cases from reading as a
+// glitch. See issue #19.
+
+type CanvasStatusKind = "welcome" | "empty-project" | "empty-view" | "computing" | "ready";
+
+function canvasStatusKind(
+  doc: ProjectDocument | null,
+  resolved: ReturnType<typeof useResolvedDoc>,
+  nodeCount: number,
+): CanvasStatusKind {
+  if (doc === null) return "welcome";
+  if (doc.elements.length === 0) return "empty-project";
+  if (resolved !== null && resolved.elements.length === 0) return "empty-view";
+  // Elements resolve in but no nodes are placed yet → ELK is still laying out.
+  if (resolved !== null && resolved.elements.length > 0 && nodeCount === 0) return "computing";
+  return "ready";
 }
 
 // Middle + right mouse buttons keep panning available while the select tool
 // owns the left-drag (React Flow encodes pan buttons as a number[]).
 const PAN_MOUSE_BUTTONS = [1, 2];
+
+/** Order-insensitive equality for two id lists (selection sets). */
+function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
+  if (a.length !== b.length) return false;
+  const set = new Set(b);
+  return a.every((id) => set.has(id));
+}
 
 // ---------------------------------------------------------------------------
 // Node construction — maps resolved elements + placements to React Flow nodes
@@ -741,15 +809,50 @@ function LockIcon() {
   );
 }
 
-function CanvasEmptyState() {
+function CanvasStatus({ kind }: { kind: CanvasStatusKind }) {
+  if (kind === "ready") return null;
+
+  if (kind === "welcome") {
+    return (
+      <div className="canvas-empty">
+        <div className="canvas-empty-eyebrow">welcome</div>
+        <div className="canvas-empty-title">Architecture Visualizer</div>
+        <div className="canvas-empty-text">
+          Browse platforms across layers and time. Load the example to see it in action.
+        </div>
+        <LoadExampleButton />
+      </div>
+    );
+  }
+
+  if (kind === "computing") {
+    return (
+      <div className="canvas-status" role="status" aria-live="polite">
+        <span className="canvas-status-spinner" aria-hidden />
+        <span className="canvas-status-text">Laying out the diagram…</span>
+      </div>
+    );
+  }
+
+  // empty-project / empty-view — both render a calm centered message.
+  const copy =
+    kind === "empty-project"
+      ? {
+          eyebrow: "empty project",
+          title: "No elements yet",
+          text: "This project has no elements. Add one, or open a different project file.",
+        }
+      : {
+          eyebrow: "nothing here",
+          title: "Nothing at this view",
+          text: "Every element is hidden at the current layer and MVP. Try a broader layer or a later MVP.",
+        };
+
   return (
     <div className="canvas-empty">
-      <div className="canvas-empty-eyebrow">welcome</div>
-      <div className="canvas-empty-title">Architecture Visualizer</div>
-      <div className="canvas-empty-text">
-        Browse platforms across layers and time. Load the example to see it in action.
-      </div>
-      <LoadExampleButton />
+      <div className="canvas-empty-eyebrow">{copy.eyebrow}</div>
+      <div className="canvas-empty-title">{copy.title}</div>
+      <div className="canvas-empty-text">{copy.text}</div>
     </div>
   );
 }

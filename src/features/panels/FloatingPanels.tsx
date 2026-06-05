@@ -16,6 +16,7 @@ import { useTourStore } from "@/core/state/tourStore";
 import { useUiStore } from "@/core/state/uiStore";
 import ElementSections from "@/features/inspector/sections/ElementSections";
 import GlobalSections from "@/features/inspector/sections/GlobalSections";
+import MultiSelectionSummary from "@/features/inspector/sections/MultiSelectionSummary";
 import FloatingPanel from "@/features/panels/FloatingPanel";
 import ViewControlsPanel from "@/features/panels/ViewControlsPanel";
 
@@ -24,6 +25,7 @@ import "@/features/inspector/Inspector.css";
 
 export default function FloatingPanels() {
   const selectedId = useSelectionStore((s) => s.selectedId);
+  const selectedIds = useSelectionStore((s) => s.selectedIds);
   const openPanel = useUiStore((s) => s.openPanel);
   const closePanel = useUiStore((s) => s.closePanel);
   const rightPinned = useUiStore((s) => s.panels.right.pinned);
@@ -62,6 +64,8 @@ export default function FloatingPanels() {
       >
         {selectedId === null ? (
           <div className="floating-panel-hint">Select an element to inspect it.</div>
+        ) : selectedIds.length > 1 ? (
+          <MultiSelectionSummary ids={selectedIds} />
         ) : (
           <ElementSections elementId={selectedId} />
         )}

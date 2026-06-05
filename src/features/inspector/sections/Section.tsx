@@ -1,10 +1,12 @@
 // ============================================================================
 // Section — collapsible primitive for the Inspector
 // ============================================================================
-// Tiny presentational component; state lives in the parent.
+// Open/collapse state is persisted per section title (inspectorPrefsStore) so
+// it survives reloads and selection changes; `defaultOpen` is only the initial
+// value used until the user touches the section.
 // ============================================================================
 
-import { useState } from "react";
+import { useInspectorPrefsStore } from "@/core/state/inspectorPrefsStore";
 
 interface SectionProps {
   title: string;
@@ -13,7 +15,9 @@ interface SectionProps {
 }
 
 export function Section({ title, defaultOpen = false, children }: SectionProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const stored = useInspectorPrefsStore((s) => s.sectionOpen[title]);
+  const setSectionOpen = useInspectorPrefsStore((s) => s.setSectionOpen);
+  const open = stored ?? defaultOpen;
 
   return (
     <div className="inspector-section" data-open={open}>
@@ -22,7 +26,7 @@ export function Section({ title, defaultOpen = false, children }: SectionProps) 
         className="inspector-section-trigger"
         aria-expanded={open}
         onClick={() => {
-          setOpen((prev) => !prev);
+          setSectionOpen(title, !open);
         }}
       >
         <span>{title}</span>
