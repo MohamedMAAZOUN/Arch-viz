@@ -90,6 +90,9 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
     [doc, layer, groupExpansion, density, defaultCollapse, layoutSpacing],
   );
   const lastTopologyKey = useRef<string | null>(null);
+  // Monotonic id for the most recently *dispatched* layout. A resolved result
+  // is applied only if it is still the latest — see the guard below.
+  const layoutGeneration = useRef(0);
 
   useEffect(() => {
     if (doc === null) {
@@ -111,22 +114,28 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): P
     const tree = buildLayoutTree(maximal.elements, maximal.containment, SIZING_BY_DENSITY[density]);
     const layoutEdges = maximal.edges.map((e) => ({ id: e.id, source: e.from, target: e.to }));
 
-    let cancelled = false;
+    // Tag this dispatch. We deliberately do NOT cancel on cleanup: tying
+    // cancellation to the effect's lifetime drops the *only* in-flight result
+    // whenever the effect re-runs without re-dispatching — which happens on
+    // React StrictMode's mount→unmount→mount, and on any doc change (drag,
+    // edit) while the first layout is still pending, since the topology guard
+    // above then skips re-dispatching. The result would be a permanently blank
+    // canvas. Instead we stamp a generation and apply a result only while it is
+    // still the most recent request. Applying after unmount is a harmless
+    // no-op in React 18+.
+    const generation = layoutGeneration.current + 1;
+    layoutGeneration.current = generation;
 
     void elkLayoutEngine
       .layout(tree, layoutEdges, { direction: "DOWN", ...SPACING_OPTS[layoutSpacing] })
       .then((result) => {
-        if (cancelled) return;
+        if (generation !== layoutGeneration.current) return; // superseded
         setAutoNodes(result.nodes);
       })
       .catch((err: unknown) => {
-        if (cancelled) return;
+        if (generation !== layoutGeneration.current) return; // superseded
         console.error("Layout failed:", err);
       });
-
-    return () => {
-      cancelled = true;
-    };
   }, [doc, layer, topologyKey, groupExpansion, density, defaultCollapse, layoutSpacing]);
 
   // Override merge + absolute-coordinate resolution — runs every render. Cheap.

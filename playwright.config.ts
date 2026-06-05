@@ -7,10 +7,10 @@
 //
 // The app is served via `webServer` so `pnpm test:e2e` is a one-liner both
 // locally and in CI. We test the PRODUCTION build (`vite build` + `vite
-// preview`), not the dev server: that is the artifact users actually run, and
-// it sidesteps React StrictMode's dev-only double-mount of effects (which the
-// async ELK-in-a-worker layout pipeline is sensitive to on first paint).
-// Locally an already-running preview server is reused; CI builds fresh.
+// preview`), not the dev server — that is the artifact users actually run, and
+// it exercises the real worker-chunked, minified bundle (where bugs that only
+// surface after the build live). Locally an already-running preview server is
+// reused; CI builds fresh.
 // ============================================================================
 
 import { defineConfig, devices } from "@playwright/test";
