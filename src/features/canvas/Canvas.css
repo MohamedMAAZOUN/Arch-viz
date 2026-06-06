@@ -8,6 +8,28 @@
   height: 100%;
 }
 
+/* The canvas is a keyboard-focusable application region (arrows pan, +/- zoom,
+ * Esc clears). Replace the default outline with an inset accent ring so it
+ * reads cleanly over the graph rather than haloing the whole viewport. */
+.canvas:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: -2px;
+}
+
+/* SR-only live region — announces layer / MVP / selection to assistive tech
+ * without taking visual space. */
+.canvas-sr-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Override React Flow defaults with our tokens.
  * React Flow uses CSS variables; we set them via their attribute. */
 .canvas .react-flow {

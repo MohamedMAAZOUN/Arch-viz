@@ -51,6 +51,7 @@ import { useViewStore } from "@/core/state/viewStore";
 import { duration } from "@/design-system/tokens";
 import { LoadExampleButton } from "@/features/canvas/LoadExampleButton";
 import { aggregateCrossGroupEdges } from "@/features/canvas/aggregateCrossGroupEdges";
+import { describeView } from "@/features/canvas/describeView";
 import { RoutedEdge } from "@/features/canvas/edges/RoutedEdge";
 import { ElementNode } from "@/features/canvas/nodes/ElementNode";
 import { GroupNode } from "@/features/canvas/nodes/GroupNode";
@@ -96,6 +97,7 @@ function CanvasInner() {
   const doc = useDocSnapshot();
   const resolved = useResolvedDoc();
   const currentLayer = useViewStore((s) => s.currentLayer);
+  const currentMvp = useViewStore((s) => s.currentMvp);
   const mvpMode = useViewStore((s) => s.mvpMode);
   const cursorMode = useViewStore((s) => s.cursorMode);
   const setCursorMode = useViewStore((s) => s.setCursorMode);
@@ -199,6 +201,14 @@ function CanvasInner() {
     const selectedSet = new Set(selectedIds);
     setNodes(derivedNodes.map((n) => ({ ...n, selected: selectedSet.has(n.id) })));
   }, [derivedNodes, selectedIds, setNodes]);
+
+  // Screen-reader landmark text: the current layer, MVP, and selection. Read
+  // out via an aria-live region so a non-sighted user knows where they are when
+  // the canvas itself is an opaque graph (a11y v1 — issue #28).
+  const srAnnouncement = useMemo(
+    () => describeView(doc, currentLayer, currentMvp, selectedId, selectedIds.length),
+    [doc, currentLayer, currentMvp, selectedId, selectedIds.length],
+  );
 
   useEffect(() => {
     setEdges(derivedEdges);
@@ -315,6 +325,62 @@ function CanvasInner() {
   useEffect(() => {
     fitOnFirstLayout.current = true;
   }, [projectId]);
+
+  // -- Keyboard navigation (a11y v1 — issue #28) ---------------------------
+  // Arrows pan, +/- zoom, Esc clears selection. Registered in the CAPTURE phase
+  // on the canvas container so it pre-empts React Flow's own arrow-key handler
+  // (which would move the focused node) — we pan the viewport instead. Skipped
+  // while typing in a field. Tab-through-nodes is React Flow's built-in
+  // focusability, which we leave on.
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (el === null) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (isEditingTextField(e.target)) return;
+      const flow = flowRef.current;
+      if (flow === null) return;
+
+      switch (e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+        case "ArrowLeft":
+        case "ArrowRight": {
+          const step = e.shiftKey ? PAN_STEP_PX * 3 : PAN_STEP_PX;
+          const vp = flow.getViewport();
+          const dx = e.key === "ArrowLeft" ? step : e.key === "ArrowRight" ? -step : 0;
+          const dy = e.key === "ArrowUp" ? step : e.key === "ArrowDown" ? -step : 0;
+          void flow.setViewport({ x: vp.x + dx, y: vp.y + dy, zoom: vp.zoom });
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        case "+":
+        case "=":
+          void flow.zoomIn();
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        case "-":
+        case "_":
+          void flow.zoomOut();
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        case "Escape":
+          clearSelection();
+          e.stopPropagation();
+          return;
+        default:
+          return;
+      }
+    };
+
+    el.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => {
+      el.removeEventListener("keydown", onKeyDown, { capture: true });
+    };
+  }, [clearSelection]);
 
   // -- Save / restore view around a tour -----------------------------------
   // On entering a tour, snapshot the viewport + selection + layer + MVP and
@@ -447,7 +513,16 @@ function CanvasInner() {
       data-density={density}
       data-lod={lod}
       ref={canvasRef}
+      role="application"
+      aria-label="Architecture diagram"
+      aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight = - Escape"
+      tabIndex={0}
     >
+      {/* SR-only landmark: announces the current layer / MVP / selection. */}
+      <div className="canvas-sr-status" role="status" aria-live="polite" aria-atomic="true">
+        {srAnnouncement}
+      </div>
+
       <ReactFlow<CanvasNode, CanvasEdge>
         onInit={(instance) => {
           flowRef.current = instance;
@@ -571,6 +646,19 @@ function canvasStatusKind(
 // Middle + right mouse buttons keep panning available while the select tool
 // owns the left-drag (React Flow encodes pan buttons as a number[]).
 const PAN_MOUSE_BUTTONS = [1, 2];
+
+// Pixels the viewport pans per arrow-key press (×3 with Shift). A behavioral
+// constant for keyboard navigation, not a visual design token.
+const PAN_STEP_PX = 64;
+
+/** True when a keystroke is destined for a text input — so canvas shortcuts
+ *  (arrows / zoom / escape) don't hijack typing. */
+function isEditingTextField(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
 
 /** Order-insensitive equality for two id lists (selection sets). */
 function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
