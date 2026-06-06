@@ -73,7 +73,6 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: duration.slow / 1000, ease: ease.out }}
-        layout="position"
       >
         <div className="element-node-row">
           <ElementTypeBadge type={element.type} />
