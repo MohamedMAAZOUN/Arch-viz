@@ -718,9 +718,21 @@ Never mock the schema. Always use the real Zod parser in tests. The schema is th
 | Time to Interactive on M2 / 4G | ≤ 2.5s | Lighthouse |
 | Canvas render at 300 nodes | ≤ 16ms per frame | dev profiler |
 | MVP slider scrub | 60fps sustained | dev profiler |
-| Layout recompute (100 nodes) | ≤ 200ms in worker | DocStore log |
+| Layout (first compute, ≤100 nodes) | ≤ 450ms in worker | `useLayoutedGraph` |
+| Layout (cached re-visit, any size) | ≤ 16ms (no ELK) | `useLayoutedGraph` |
 
 If a change pushes a budget, the PR addresses it (lazy-load, defer, alternative library) before merge.
+
+> **Layout budget, revised (issue #25).** The original "≤200ms at 100 nodes"
+> target was ~2× optimistic for ELK's `layered` algorithm: ~90 nodes measure
+> ~394ms, and 270+ nodes ~1s. Two things make this acceptable rather than a
+> regression: (1) layout runs in a Web Worker, so the main thread never blocks;
+> (2) `useLayoutedGraph` caches results per topology key, so the cost is paid
+> once per (topology, layer, density, spacing, expansion) combination — every
+> *re-visit* is instant. A first compute also shows a non-blocking "Updating
+> layout…" indicator so the wait reads as intentional. ELK quality knobs
+> (`thoroughness`, crossing-minimization) and a faster algorithm above N nodes
+> remain open options, deferred until they can be measured in-browser.
 
 ### Rules
 

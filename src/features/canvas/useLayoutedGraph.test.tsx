@@ -58,8 +58,13 @@ vi.mock("@/core/layout/ElkLayoutEngine", () => ({
 function Probe() {
   const doc = useDocSnapshot();
   const layer = useViewStore((s) => s.currentLayer);
-  const placements = useLayoutedGraph(doc, layer);
-  return <div data-testid="count">{placements.size}</div>;
+  const { placements, isLaying } = useLayoutedGraph(doc, layer);
+  return (
+    <>
+      <div data-testid="count">{placements.size}</div>
+      <div data-testid="laying">{isLaying ? "yes" : "no"}</div>
+    </>
+  );
 }
 
 function loadFixture() {
@@ -175,5 +180,55 @@ describe("useLayoutedGraph — layout survives effect churn", () => {
 
     // The stale result must NOT clobber the current one.
     expect(screen.getByTestId("count").textContent).toBe("3");
+  });
+
+  it("reports isLaying while a layout is in flight and clears it on resolve", async () => {
+    loadFixture();
+    render(<Probe />);
+
+    // Dispatched but unresolved → laying out.
+    expect(screen.getByTestId("laying").textContent).toBe("yes");
+
+    await resolveLayout(0);
+
+    expect(screen.getByTestId("laying").textContent).toBe("no");
+  });
+
+  it("re-applies a cached layout instantly when revisiting a layer (no re-run)", async () => {
+    loadFixture();
+    render(<Probe />);
+    await resolveLayout(0); // business laid out + cached → 2 nodes
+    expect(screen.getByTestId("count").textContent).toBe("2");
+
+    // Switch to engineering: topology changes → a fresh layout is dispatched.
+    act(() => {
+      useViewStore.getState().setLayer("engineering");
+    });
+    expect(harness.layout).toHaveBeenCalledTimes(2);
+    await resolveLayout(1); // engineering laid out + cached → 3 nodes
+    expect(screen.getByTestId("count").textContent).toBe("3");
+
+    // Back to business: this topology is cached, so it applies WITHOUT a third
+    // ELK call and without a pending state — the win issue #25 is about.
+    act(() => {
+      useViewStore.getState().setLayer("business");
+    });
+    expect(harness.layout).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId("count").textContent).toBe("2");
+    expect(screen.getByTestId("laying").textContent).toBe("no");
+  });
+
+  it("does not re-run ELK when only the MVP focus changes (scrub)", () => {
+    loadFixture();
+    render(<Probe />);
+    expect(harness.layout).toHaveBeenCalledTimes(1);
+
+    // Scrubbing the MVP timeline is pure view state — the layout is computed for
+    // the maximal element set across all MVPs, so it must NOT trigger a re-run.
+    act(() => {
+      useViewStore.getState().setMvp("mvp1");
+    });
+
+    expect(harness.layout).toHaveBeenCalledTimes(1);
   });
 });

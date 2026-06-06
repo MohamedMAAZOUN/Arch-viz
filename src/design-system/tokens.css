@@ -258,13 +258,41 @@
 
   --color-tone-neutral: oklch(55% 0.07 240);
   --color-tone-critical: oklch(56% 0.22 22);
-  --color-tone-warning: oklch(68% 0.18 78);
-  --color-tone-success: oklch(58% 0.18 148);
+  /* Warning/success are darkened from their first-pass light values so they
+   * clear WCAG AA (≥4.5:1) when used as TEXT on the light surfaces — the
+   * inspector diagnostics and validation messages. See issue #30 / contrast
+   * audit. (The brighter originals measured 2.5–3.4:1.) */
+  --color-tone-warning: oklch(52% 0.18 78);
+  --color-tone-success: oklch(50% 0.18 148);
   --color-tone-muted: oklch(50% 0.04 250);
 
   --color-layer-business: oklch(95% 0.04 145 / 0.6);
   --color-layer-architecture: oklch(95% 0.04 250 / 0.6);
   --color-layer-engineering: oklch(95% 0.04 300 / 0.6);
+
+  /* MVP palette — light-theme overrides. The base (dark) palette sits at
+   * ~70–76% lightness, which only reaches ~1.6–2.6:1 on the light node surface
+   * (bg-2). Darkened here so the MVP badge text, overlay tint and lifecycle
+   * dots clear WCAG AA on light. See issue #30 / contrast audit. */
+  --color-mvp-1: oklch(50% 0.18 250);
+  --color-mvp-2: oklch(52% 0.16 70);
+  --color-mvp-3: oklch(50% 0.17 145);
+  --color-mvp-4: oklch(50% 0.21 350);
+  --color-mvp-5: oklch(48% 0.14 195);
+  --color-mvp-6: oklch(52% 0.21 30);
+  --color-mvp-7: oklch(52% 0.16 115);
+  --color-mvp-8: oklch(50% 0.2 295);
+
+  /* Element-type palette — light-theme overrides (same rationale: the node's
+   * left type bar needs ≥3:1 against the light surface; the dark palette only
+   * reached ~2–3:1). */
+  --color-type-service: oklch(50% 0.16 250);
+  --color-type-database: oklch(50% 0.14 150);
+  --color-type-queue: oklch(52% 0.13 70);
+  --color-type-frontend: oklch(50% 0.13 200);
+  --color-type-external: oklch(50% 0.18 300);
+  --color-type-actor: oklch(52% 0.18 30);
+  --color-type-group: oklch(45% 0.03 250);
 
   /* Lighter shadows in light mode */
   --elevation-1: 0 1px 2px oklch(0% 0 0 / 0.06), 0 0 0 1px oklch(0% 0 0 / 0.04);
@@ -329,7 +357,8 @@
   --color-highlight-soft: oklch(80% 0.17 95 / 0.2);
   --color-highlight-glow: oklch(80% 0.17 95 / 0.3);
   --color-highlight-fg-on: oklch(22% 0.04 95);
-  --color-tone-warning: oklch(64% 0.2 50);
+  /* Darkened to clear AA on light surfaces (was 64%, ~3.1:1). See issue #30. */
+  --color-tone-warning: oklch(52% 0.2 50);
 }
 
 /* -- Brand atmospheres ------------------------------------------------------ */

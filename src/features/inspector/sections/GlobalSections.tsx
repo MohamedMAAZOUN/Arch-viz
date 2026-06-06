@@ -11,10 +11,16 @@ import { useMemo, useState } from "react";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useViewStore } from "@/core/state/viewStore";
+import { VirtualList, VIRTUALIZE_THRESHOLD } from "@/features/inspector/VirtualList";
 import { ExportSection } from "@/features/inspector/sections/ExportSection";
 import { Section } from "@/features/inspector/sections/Section";
 
 import type { Element, ProjectDocument } from "@/core/schema/schema";
+
+// A search-result row is a single line plus its inter-row gap. Used to window
+// the list once it grows past the virtualization threshold.
+const SEARCH_ROW_HEIGHT = 44;
+const SEARCH_VIEWPORT_HEIGHT = 320;
 
 export default function GlobalSections() {
   const doc = useDocSnapshot();
@@ -98,11 +104,28 @@ function SearchPanel({ doc }: { doc: ProjectDocument }) {
   const [query, setQuery] = useState("");
   const select = useSelectionStore((s) => s.select);
 
+  // No cap: every match is returned and the list virtualizes past the
+  // threshold, so even a query that matches hundreds of elements stays cheap.
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q === "") return [];
-    return doc.elements.filter((e) => elementMatches(e, q)).slice(0, 25);
+    return doc.elements.filter((e) => elementMatches(e, q));
   }, [doc, query]);
+
+  const renderResult = (el: Element) => (
+    <button
+      type="button"
+      className="inspector-search-result"
+      onClick={() => {
+        select(el.id);
+      }}
+    >
+      <span className="inspector-search-result-name">{el.name}</span>
+      <span className="inspector-search-result-meta">
+        {el.type} · {el.id}
+      </span>
+    </button>
+  );
 
   return (
     <>
@@ -120,23 +143,19 @@ function SearchPanel({ doc }: { doc: ProjectDocument }) {
         <div className="inspector-empty-row">Type to search.</div>
       ) : results.length === 0 ? (
         <div className="inspector-empty-row">No matches.</div>
+      ) : results.length > VIRTUALIZE_THRESHOLD ? (
+        <VirtualList
+          items={results}
+          rowHeight={SEARCH_ROW_HEIGHT}
+          maxHeight={SEARCH_VIEWPORT_HEIGHT}
+          getKey={(el) => el.id}
+          renderRow={renderResult}
+          ariaLabel={`${String(results.length)} search results`}
+        />
       ) : (
         <ul className="inspector-list">
           {results.map((el) => (
-            <li key={el.id}>
-              <button
-                type="button"
-                className="inspector-search-result"
-                onClick={() => {
-                  select(el.id);
-                }}
-              >
-                <span className="inspector-search-result-name">{el.name}</span>
-                <span className="inspector-search-result-meta">
-                  {el.type} · {el.id}
-                </span>
-              </button>
-            </li>
+            <li key={el.id}>{renderResult(el)}</li>
           ))}
         </ul>
       )}
