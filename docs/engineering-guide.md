@@ -378,6 +378,23 @@ never blank after load.
 
 The Y.Doc internals never leak. If a feature needs an operation that doesn't exist, add a new operation — don't reach into the doc directly.
 
+### Reading the doc from React
+
+**`useDocSnapshot()` is the canonical hook for reading the current document in a
+component.** It subscribes to `DocStore` on mount, unsubscribes on unmount, and
+re-renders only when the document actually changes. Reach for it whenever a
+component needs the raw project state.
+
+Two thin wrappers build on it — use them instead of re-subscribing by hand:
+
+- **`useResolvedDoc()`** — the snapshot with inheritance/overrides resolved.
+  Prefer this when you need the *effective* element values, not the raw draft.
+- **`useDirty()`** — reactive `docStore.dirty()` flag; wired to the Save button.
+
+Do **not** add new ad-hoc `docStore.subscribe()` hooks for reading the doc; that
+fragments the subscription story (an earlier `useDoc` hook was removed for this
+reason). New derived views should compose `useDocSnapshot()`.
+
 ---
 
 ## 6. Styling

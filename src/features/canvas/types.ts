@@ -1,5 +1,5 @@
 // ============================================================================
-// Canvas types — the contract between useCanvasGraph and the Canvas wrapper
+// Canvas types — the contract between useLayoutedGraph and the Canvas wrapper
 // ============================================================================
 // These are OUR types. React Flow's Node/Edge live only inside Canvas.tsx.
 // ============================================================================
