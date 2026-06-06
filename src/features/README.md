@@ -25,20 +25,20 @@ root) and talk to each other **only** through `core/`.
 
 ## The features
 
-| Folder | What it does |
-|---|---|
-| `canvas/` | The diagram. **Only** file allowed to import `@xyflow/react`; owns camera, node/edge mapping, and the two-stage layout via `useLayoutedGraph`. |
-| `inspector/` | Right-side panel: per-element sections (properties, docs, annotations, dependencies, live status, export) and global/multi-select summaries. |
-| `topbar/` | Header: brand word, dirty/save status, settings entry. |
-| `layer-toggle/` | Business / architecture / engineering switch + display controls + Reorganize. |
-| `mvp-slider/` | Scrub through MVP versions; single vs overlay mode + legend. |
-| `element-editor/` | The "add element" palette (builds via `core/doc/authoring`). |
-| `tour/` | Guided-tour launcher + player (camera glides, dimming, captions). |
-| `file-loader/` | Load a project / pick a bundled example. |
-| `panels/` | Floating, draggable panel chrome. |
-| `settings/` | Theme / brand picker, example switcher. |
-| `notifications/` | Toast surface (`notificationStore`-driven). |
-| `shortcuts/` | Global keyboard shortcuts wiring. |
+| Folder            | What it does                                                                                                                                   |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `canvas/`         | The diagram. **Only** file allowed to import `@xyflow/react`; owns camera, node/edge mapping, and the two-stage layout via `useLayoutedGraph`. |
+| `inspector/`      | Right-side panel: per-element sections (properties, docs, annotations, dependencies, live status, export) and global/multi-select summaries.   |
+| `topbar/`         | Header: brand word, dirty/save status, settings entry.                                                                                         |
+| `layer-toggle/`   | Business / architecture / engineering switch + display controls + Reorganize.                                                                  |
+| `mvp-slider/`     | Scrub through MVP versions; single vs overlay mode + legend.                                                                                   |
+| `element-editor/` | The "add element" palette (builds via `core/doc/authoring`).                                                                                   |
+| `tour/`           | Guided-tour launcher + player (camera glides, dimming, captions).                                                                              |
+| `file-loader/`    | Load a project / pick a bundled example.                                                                                                       |
+| `panels/`         | Floating, draggable panel chrome.                                                                                                              |
+| `settings/`       | Theme / brand picker, example switcher.                                                                                                        |
+| `notifications/`  | Toast surface (`notificationStore`-driven).                                                                                                    |
+| `shortcuts/`      | Global keyboard shortcuts wiring.                                                                                                              |
 
 ## Adding a feature
 

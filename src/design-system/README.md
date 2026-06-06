@@ -18,13 +18,13 @@ No hex colors and no magic px/ms in component code — reference a token.
 
 ## Files
 
-| File | Role |
-|---|---|
-| `tokens.css` | **Source of truth** for every design token (`@theme`, CSS custom properties). Imported before any feature CSS. |
-| `tokens.ts` | JS mirror of the tokens that JS needs — Motion durations/easings, etc. Keep in sync with `tokens.css`. |
-| `theme.ts` | Theme + brand runtime: applies the persisted theme/brand to the document root (the anti-flash inline script in `index.html` runs the first apply before paint). |
-| `contrast.ts` | WCAG contrast helpers used to keep token pairings accessible. |
-| `contrast.test.ts` | Guards the token palette against contrast regressions. |
+| File               | Role                                                                                                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens.css`       | **Source of truth** for every design token (`@theme`, CSS custom properties). Imported before any feature CSS.                                                  |
+| `tokens.ts`        | JS mirror of the tokens that JS needs — Motion durations/easings, etc. Keep in sync with `tokens.css`.                                                          |
+| `theme.ts`         | Theme + brand runtime: applies the persisted theme/brand to the document root (the anti-flash inline script in `index.html` runs the first apply before paint). |
+| `contrast.ts`      | WCAG contrast helpers used to keep token pairings accessible.                                                                                                   |
+| `contrast.test.ts` | Guards the token palette against contrast regressions.                                                                                                          |
 
 ## Why two token files
 
