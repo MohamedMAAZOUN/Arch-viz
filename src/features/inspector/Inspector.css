@@ -852,6 +852,66 @@
   margin-bottom: var(--space-2);
 }
 
+/* -- Live link buttons (grafana / jira open in a new tab) ----------------- */
+
+.inspector-live-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.inspector-live-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-small);
+  color: var(--color-fg-default);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.inspector-live-link:hover {
+  border-color: var(--color-accent-base);
+  color: var(--color-accent-base);
+}
+
+/* -- Live-data opt-in (http sources gated until the user allows fetching) -- */
+
+.inspector-live-consent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.inspector-live-consent-text {
+  margin: 0;
+  font-size: var(--text-micro);
+  color: var(--color-fg-muted);
+}
+
+.inspector-live-toggle {
+  align-self: flex-start;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-small);
+  color: var(--color-accent-base);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.inspector-live-toggle:hover {
+  border-color: var(--color-accent-base);
+}
+
 /* -- Multi-selection summary (inspector for a box/shift selection) -------- */
 
 .inspector-multi-count {

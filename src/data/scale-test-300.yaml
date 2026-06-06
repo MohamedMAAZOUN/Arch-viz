@@ -544,8 +544,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_0_3_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-0-3-rps"
+        label: "svc_0_3_rps"
   - id: svc-00-04
     type: service
     name: Service 00-04
@@ -939,8 +939,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_2_6_rps
-        binding: metric
+        url: "https://grafana.example.com/d/svc-2-6-rps"
+        label: "svc_2_6_rps"
   - id: svc-02-07
     type: service
     name: Service 02-07
@@ -1421,8 +1421,8 @@ elements:
       tone: success
     dataSources:
       - kind: jira
-        jql: project=D6 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD6%20AND%20status%3DOpen"
+        label: "project=D6 AND status=Open"
   - id: svc-06-03
     type: service
     name: Service 06-03
@@ -1440,8 +1440,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: jira
-        jql: project=D6 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD6%20AND%20status%3DOpen"
+        label: "project=D6 AND status=Open"
   - id: db-06-00
     type: database
     name: Store 06-00
@@ -1627,8 +1627,8 @@ elements:
       tone: success
     dataSources:
       - kind: jira
-        jql: project=D8 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD8%20AND%20status%3DOpen"
+        label: "project=D8 AND status=Open"
   - id: svc-08-02
     type: service
     name: Service 08-02
@@ -1661,8 +1661,8 @@ elements:
       tone: success
     dataSources:
       - kind: jira
-        jql: project=D8 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD8%20AND%20status%3DOpen"
+        label: "project=D8 AND status=Open"
   - id: svc-08-04
     type: service
     name: Service 08-04
@@ -1725,8 +1725,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: jira
-        jql: project=D8 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD8%20AND%20status%3DOpen"
+        label: "project=D8 AND status=Open"
   - id: db-08-00
     type: database
     name: Store 08-00
@@ -1796,8 +1796,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_9_0_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-9-0-rps"
+        label: "svc_9_0_rps"
   - id: svc-09-01
     type: service
     name: Service 09-01
@@ -1883,8 +1883,8 @@ elements:
       tone: warning
     dataSources:
       - kind: grafana
-        query: svc_9_5_rps
-        binding: metric
+        url: "https://grafana.example.com/d/svc-9-5-rps"
+        label: "svc_9_5_rps"
   - id: svc-09-06
     type: service
     name: Service 09-06
@@ -2319,8 +2319,8 @@ elements:
       tone: critical
     dataSources:
       - kind: jira
-        jql: project=D12 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD12%20AND%20status%3DOpen"
+        label: "project=D12 AND status=Open"
   - id: svc-12-01
     type: service
     name: Service 12-01
@@ -2574,8 +2574,8 @@ elements:
       tone: success
     dataSources:
       - kind: grafana
-        query: svc_13_7_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-13-7-rps"
+        label: "svc_13_7_rps"
   - id: q-13-00
     type: queue
     name: Queue 13-00
@@ -2686,8 +2686,8 @@ elements:
       tone: muted
     dataSources:
       - kind: grafana
-        query: svc_14_2_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-14-2-rps"
+        label: "svc_14_2_rps"
   - id: svc-14-03
     type: service
     name: Service 14-03
@@ -2787,8 +2787,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: jira
-        jql: project=D15 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD15%20AND%20status%3DOpen"
+        label: "project=D15 AND status=Open"
   - id: svc-15-01
     type: service
     name: Service 15-01
@@ -2840,8 +2840,8 @@ elements:
       tone: muted
     dataSources:
       - kind: grafana
-        query: svc_15_3_rps
-        binding: metric
+        url: "https://grafana.example.com/d/svc-15-3-rps"
+        label: "svc_15_3_rps"
   - id: svc-15-04
     type: service
     name: Service 15-04
@@ -2997,8 +2997,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_16_2_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-16-2-rps"
+        label: "svc_16_2_rps"
   - id: svc-16-03
     type: service
     name: Service 16-03
@@ -3046,8 +3046,8 @@ elements:
       tone: muted
     dataSources:
       - kind: jira
-        jql: project=D16 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD16%20AND%20status%3DOpen"
+        label: "project=D16 AND status=Open"
   - id: svc-16-06
     type: service
     name: Service 16-06
@@ -3602,8 +3602,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: jira
-        jql: project=D20 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD20%20AND%20status%3DOpen"
+        label: "project=D20 AND status=Open"
   - id: svc-20-04
     type: service
     name: Service 20-04

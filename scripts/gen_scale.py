@@ -156,11 +156,14 @@ for d, did in enumerate(domain_ids):
         if random.random() < 0.20:
             kind = random.choice(["grafana", "jira", "http"])
             if kind == "grafana":
-                ds = [{"kind": "grafana", "query": f"svc_{d}_{s}_rps",
-                       "binding": random.choice(["metric", "status"])}]
+                # grafana/jira are link buttons (open a page), not polled live.
+                ds = [{"kind": "grafana",
+                       "url": f"https://grafana.example.com/d/svc-{d}-{s}-rps",
+                       "label": f"svc_{d}_{s}_rps"}]
             elif kind == "jira":
-                ds = [{"kind": "jira", "jql": f"project=D{d} AND status=Open",
-                       "binding": "badge"}]
+                ds = [{"kind": "jira",
+                       "url": f"https://jira.example.com/issues/?jql=project%3DD{d}%20AND%20status%3DOpen",
+                       "label": f"project=D{d} AND status=Open"}]
             else:
                 ds = [{"kind": "http",
                        "url": f"https://status.example.com/svc/{d}/{s}",

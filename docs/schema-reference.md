@@ -147,19 +147,25 @@ MVP-N when `introducedIn.order ≤ N` and (`removedIn` is unset or
 
 ### `dataSources[]` — live data
 
-Discriminated union on `kind`. Every source has a `binding` controlling how the
-value renders on the node.
+Discriminated union on `kind`. Two flavours: `http` is polled live; `grafana` /
+`jira` are link buttons that open a page in a new tab (nothing is fetched).
 
-`binding` (`DataBinding`): `status` · `badge` · `metric` · `label`.
+Every `url` must be a **public http(s) endpoint** (`SafeHttpUrl`): non-http(s)
+protocols and loopback / private / link-local / cloud-metadata hosts are
+rejected at parse time.
+
+`binding` (`DataBinding`, `http` only): `status` · `badge` · `metric` · `label`.
 
 | `kind` | Fields | Notes |
 |---|---|---|
-| `grafana` | `query: string` (≥ 1), `binding` | Goes through the proxy at `VITE_LIVE_PROXY_URL`; offline if unset. |
-| `jira` | `jql: string` (≥ 1), `binding` | Same proxy path. |
-| `http` | `url: <valid URL>`, `jsonPath?: string`, `binding` | Fetched directly from the browser. |
+| `grafana` | `url: SafeHttpUrl`, `label?: string` | Renders a button that opens the dashboard in a new tab. Not fetched. |
+| `jira` | `url: SafeHttpUrl`, `label?: string` | Renders a button that opens the board/filter in a new tab. Not fetched. |
+| `http` | `url: SafeHttpUrl`, `jsonPath?: string`, `binding` | Fetched directly from the browser — **only after the user opts in** per project. |
 
-Secrets live at the proxy, never in the bundle. Failures degrade to a stale
-marker, never a crash. See `docs/adr/0005-live-data.md`.
+`http` polling is off by default on every load (an untrusted document never
+auto-fetches); the inspector's Live status section has the opt-in. Failures
+degrade to a stale marker, never a crash. See `docs/adr/0005-live-data.md` and
+`docs/adr/0008-live-data-hardening.md`.
 
 ### `annotations[]`
 

@@ -71,13 +71,14 @@ export function ExpandToggle({
 // ---------------------------------------------------------------------------
 // LiveIndicator — compact live-data status dot + first value chip on a node.
 // ---------------------------------------------------------------------------
-// Subscribes (via useLiveData) to the element's data sources and renders a
+// Subscribes (via useLiveData) to the element's http data sources and renders a
 // status dot and, when present, the first metric/badge/label value. Renders
-// nothing when the element declares no data sources.
+// nothing when the element has no pollable sources or live data is opted out
+// (grafana/jira sources are link buttons in the inspector, never shown here).
 
 export function LiveIndicator({ element }: { element: Element }) {
   const live = useLiveData(element);
-  if (live.state === "idle") return null;
+  if (live.state === "idle" || live.state === "disabled") return null;
 
   const firstChip = live.chips[0];
   const title = liveTitle(live.state, live.error);
@@ -92,8 +93,6 @@ export function LiveIndicator({ element }: { element: Element }) {
 
 function liveTitle(state: string, error: string | null): string {
   switch (state) {
-    case "offline":
-      return "Live data: no proxy configured";
     case "loading":
       return "Live data: loading…";
     case "ok":

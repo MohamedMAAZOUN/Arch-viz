@@ -6,7 +6,7 @@ Groups and their children render as **nested containers** (domain → service �
 
 **Guided tours** play the project's `tours` as a focused, Prezi-style walkthrough: the camera glides between steps, non-highlighted nodes dim, and a caption explains each one. Pick a tour from the floating "Tours" pill; Space advances, arrows step, Esc exits. See `docs/adr/0004-tour-playback.md`.
 
-**Live data**: elements with `dataSources` show a live status dot / value. `http` sources are fetched directly; Grafana/Jira go through a proxy at `VITE_LIVE_PROXY_URL` (the token lives at the proxy, never in the bundle) — unset, they render "offline". Failures degrade to a stale marker, never a crash. See `docs/adr/0005-live-data.md`.
+**Live data**: elements with `dataSources` can show a live status dot / value. `http` sources are fetched directly in the browser, but **only after the user opts in** per project — a freshly loaded document never fetches anything on its own, and every URL is constrained to a public http(s) endpoint (no loopback/private/link-local hosts). Grafana/Jira sources render as **buttons that open the dashboard/board in a new tab** — nothing is fetched, so there is no token and no proxy. Failures degrade to a stale marker, never a crash. See `docs/adr/0005-live-data.md` and `docs/adr/0008-live-data-hardening.md`.
 
 **Export** (inspector → Export): **JSON** (round-trips through the parser), plus **PNG / SVG** of the visible graph at the current layer + MVP. See `docs/adr/0006-export.md`.
 
