@@ -11,8 +11,9 @@
 // ============================================================================
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
+import { useFocusTrap } from "@/core/a11y/useFocusTrap";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useTourStore } from "@/core/state/tourStore";
 import { duration, ease } from "@/design-system/tokens";
@@ -35,6 +36,11 @@ export default function TourPlayer() {
   const step = tour?.steps[stepIndex] ?? null;
   const stepCount = tour?.steps.length ?? 0;
   const isLast = stepCount > 0 && stepIndex >= stepCount - 1;
+
+  // Keep focus on the transport controls while the tour overlay is up, and
+  // restore it to the launcher when the tour exits (issue #29).
+  const playerRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(playerRef, tour !== null && step !== null);
 
   // Auto-advance while playing, using the step's own duration. Reduced motion
   // caps the dwell so a paused-looking tour doesn't sit too long.
@@ -82,7 +88,7 @@ export default function TourPlayer() {
   if (tour === null || step === null) return null;
 
   return (
-    <div className="tour-player" role="region" aria-label={`Tour: ${tour.name}`}>
+    <div className="tour-player" role="region" aria-label={`Tour: ${tour.name}`} ref={playerRef}>
       <button type="button" className="tour-exit" onClick={exit} aria-label="Exit tour">
         <span className="tour-exit-label">Exit</span>
         <span className="tour-exit-key">Esc</span>

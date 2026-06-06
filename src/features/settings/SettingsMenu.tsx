@@ -6,8 +6,9 @@
 // the X button.
 // ============================================================================
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { useFocusTrap } from "@/core/a11y/useFocusTrap";
 import { loadExampleById } from "@/core/doc/loadExampleById";
 import { notify } from "@/core/state/notificationStore";
 import { EXAMPLES } from "@/data/examples";
@@ -23,6 +24,11 @@ interface SettingsMenuProps {
 
 export default function SettingsMenu({ onClose }: SettingsMenuProps) {
   const [prefs, setPrefs] = useState(getPreferences);
+  const panelRef = useRef<HTMLElement>(null);
+
+  // Trap focus inside the dialog while it's open; restore it to the opener
+  // (the settings button) on close. See issue #29.
+  useFocusTrap(panelRef);
 
   // Sync to external changes (theme.ts fires events on setPreferences)
   useEffect(() => {
@@ -51,7 +57,13 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
   return (
     <>
       <div className="settings-scrim" onClick={onClose} aria-hidden />
-      <aside className="settings-panel" role="dialog" aria-label="Settings" aria-modal="true">
+      <aside
+        ref={panelRef}
+        className="settings-panel"
+        role="dialog"
+        aria-label="Settings"
+        aria-modal="true"
+      >
         <header className="settings-header">
           <div>
             <span className="settings-eyebrow">preferences</span>
