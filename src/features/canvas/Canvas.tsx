@@ -99,7 +99,7 @@ function CanvasInner() {
   const mvpMode = useViewStore((s) => s.mvpMode);
   const cursorMode = useViewStore((s) => s.cursorMode);
   const setCursorMode = useViewStore((s) => s.setCursorMode);
-  const placements = useLayoutedGraph(doc, currentLayer);
+  const { placements, isLaying } = useLayoutedGraph(doc, currentLayer);
 
   // Readability prefs (persisted). Each is independently toggleable in DISPLAY.
   const density = useCanvasPrefsStore((s) => s.density);
@@ -530,6 +530,17 @@ function CanvasInner() {
       ) : null}
 
       <CanvasStatus kind={canvasStatusKind(doc, resolved, nodes.length)} />
+
+      {/* Re-layout in progress while the previous graph is still on screen
+          (e.g. a layer switch). The full-screen "computing" state above covers
+          the first load; this unobtrusive corner pill covers the rest, so the
+          ELK wait at scale reads as intentional. See issue #25. */}
+      {isLaying && nodes.length > 0 ? (
+        <div className="canvas-layout-badge" role="status" aria-live="polite">
+          <span className="canvas-layout-dot" aria-hidden />
+          <span>Updating layout…</span>
+        </div>
+      ) : null}
     </div>
   );
 }
