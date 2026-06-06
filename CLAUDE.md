@@ -11,7 +11,7 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## Where to look
 
 - **Engineering rules**: `docs/engineering-guide.md` — the canonical standards. Read sections 1–6 before writing any code. Anti-patterns reference in § 17.
-- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Example in `src/data/example-project.yaml`.
+- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `src/data/example-project.yaml`.
 - **ADRs**: `docs/adr/` — historical decisions. Add a new ADR before any change that contradicts a rule.
 - **Design tokens**: `src/design-system/tokens.css` (single source of truth) and `src/design-system/tokens.ts` (JS mirror for Motion durations etc.).
 
@@ -152,11 +152,16 @@ pnpm build        # production build
 
 ## Live data & export
 
-- **Live data** (`src/core/live/`): elements with `dataSources` poll through one
-  boundary — `LiveDataClient` (`http` direct; `grafana`/`jira` via
-  `VITE_LIVE_PROXY_URL`, else offline — secrets never in the bundle). The
-  `useLiveData(element)` hook (backoff + stale/offline states) feeds the node
-  `LiveIndicator` and the inspector's Live status. See `docs/adr/0005-live-data.md`.
+- **Live data** (`src/core/live/`): only `http` `dataSources` are polled, through
+  one boundary — `LiveDataClient` (direct browser fetch). Polling is **opt-in per
+  project** (`viewStore.liveDataEnabled`, reset on every load) so an untrusted
+  imported document never auto-fetches; every URL must be a public http(s)
+  endpoint (`isPublicHttpUrl` in `@/lib/safeUrl`, enforced in the schema and
+  re-checked before fetch). `grafana`/`jira` sources are **link buttons** (open a
+  page in a new tab), never fetched — no proxy, no token. The
+  `useLiveData(element)` hook (backoff + stale states) feeds the node
+  `LiveIndicator` and the inspector's Live status. See
+  `docs/adr/0005-live-data.md` and `docs/adr/0008-live-data-hardening.md`.
 - **Export** (`src/core/export/`): JSON via `serializeProject` (round-trips);
   PNG/SVG via the Canvas-registered `canvasExporter` (lazy `html-to-image`,
   captures the visible graph at the current layer + MVP). UI in

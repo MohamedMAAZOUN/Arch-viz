@@ -43,4 +43,8 @@ export function loadProject(project: ProjectDocument): void {
   // Expand/collapse overrides belong to the previous project — drop them so the
   // new project starts from its layer-driven containment defaults.
   viewStore.clearGroupExpansion();
+
+  // Security: a freshly loaded project (possibly from an untrusted source) must
+  // not auto-fetch its http data sources until the user explicitly opts in.
+  viewStore.setLiveDataEnabled(false);
 }

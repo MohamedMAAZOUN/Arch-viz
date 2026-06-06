@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { liveDataClient } from "@/core/live/LiveDataClient";
 import { nextDelay } from "@/core/live/backoff";
+import { useViewStore } from "@/core/state/viewStore";
 
 import type { LiveDataClient } from "@/core/live/LiveDataClient";
 import type { LiveStatus, LiveValue } from "@/core/live/types";
@@ -22,7 +23,7 @@ import type { Element } from "@/core/schema/schema";
 const BASE_INTERVAL_MS = 20_000;
 const MAX_INTERVAL_MS = 5 * 60_000;
 
-export type LiveState = "idle" | "offline" | "loading" | "ok" | "stale" | "error";
+export type LiveState = "idle" | "disabled" | "loading" | "ok" | "stale" | "error";
 
 export interface LiveChip {
   binding: "metric" | "badge" | "label";
@@ -39,7 +40,7 @@ export interface LiveSnapshot {
 }
 
 const IDLE: LiveSnapshot = { state: "idle", status: null, chips: [], error: null };
-const OFFLINE: LiveSnapshot = { state: "offline", status: null, chips: [], error: null };
+const DISABLED: LiveSnapshot = { state: "disabled", status: null, chips: [], error: null };
 
 /**
  * Poll the element's data sources. `client` is injectable for tests; defaults
@@ -49,6 +50,8 @@ export function useLiveData(
   element: Element,
   client: LiveDataClient = liveDataClient,
 ): LiveSnapshot {
+  // Live polling is opt-in per project (reset on every load) — see viewStore.
+  const liveEnabled = useViewStore((s) => s.liveDataEnabled);
   const sources = element.dataSources ?? [];
   const configured = useMemo(
     () => sources.filter((s) => client.isConfigured(s)),
@@ -58,18 +61,20 @@ export function useLiveData(
   );
 
   const [snapshot, setSnapshot] = useState<LiveSnapshot>(() =>
-    sources.length === 0 ? IDLE : configured.length === 0 ? OFFLINE : { ...IDLE, state: "loading" },
+    configured.length === 0 ? IDLE : !liveEnabled ? DISABLED : { ...IDLE, state: "loading" },
   );
 
   const failuresRef = useRef(0);
 
   useEffect(() => {
-    if (sources.length === 0) {
+    // No pollable (http) sources → nothing to do (grafana/jira are link buttons).
+    if (configured.length === 0) {
       setSnapshot(IDLE);
       return;
     }
-    if (configured.length === 0) {
-      setSnapshot(OFFLINE);
+    // Awaiting the user's opt-in: don't fetch anything from this document.
+    if (!liveEnabled) {
+      setSnapshot(DISABLED);
       return;
     }
 
@@ -102,7 +107,7 @@ export function useLiveData(
       if (timer !== undefined) window.clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [element.id, configured.length, client]);
+  }, [element.id, configured.length, client, liveEnabled]);
 
   return snapshot;
 }

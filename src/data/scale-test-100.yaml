@@ -284,8 +284,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_0_4_rps
-        binding: status
+        url: "https://grafana.example.com/d/svc-0-4-rps"
+        label: "svc_0_4_rps"
   - id: svc-00-05
     type: service
     name: Service 00-05
@@ -678,8 +678,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: grafana
-        query: svc_2_6_rps
-        binding: metric
+        url: "https://grafana.example.com/d/svc-2-6-rps"
+        label: "svc_2_6_rps"
   - id: svc-02-07
     type: service
     name: Service 02-07
@@ -1160,8 +1160,8 @@ elements:
       tone: success
     dataSources:
       - kind: jira
-        jql: project=D6 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD6%20AND%20status%3DOpen"
+        label: "project=D6 AND status=Open"
   - id: svc-06-03
     type: service
     name: Service 06-03
@@ -1179,8 +1179,8 @@ elements:
       tone: neutral
     dataSources:
       - kind: jira
-        jql: project=D6 AND status=Open
-        binding: badge
+        url: "https://jira.example.com/issues/?jql=project%3DD6%20AND%20status%3DOpen"
+        label: "project=D6 AND status=Open"
   - id: db-06-00
     type: database
     name: Store 06-00

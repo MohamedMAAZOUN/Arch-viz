@@ -10,6 +10,8 @@
 
 import { z } from "zod";
 
+import { isPublicHttpUrl } from "@/lib/safeUrl";
+
 // ----------------------------------------------------------------------------
 // Primitives
 // ----------------------------------------------------------------------------
@@ -80,33 +82,55 @@ export type Lifecycle = z.infer<typeof Lifecycle>;
 // ----------------------------------------------------------------------------
 // Data sources (live data hooks — the killer feature)
 // ----------------------------------------------------------------------------
-// A node can subscribe to real data. The `binding` slot determines how the
-// value is rendered on the node. Limited set, predictable visuals.
+// Two flavours:
+//   - http   → polled live in the browser; the `binding` slot determines how
+//              the value renders on the node. Auto-polling is gated behind an
+//              explicit per-project user opt-in (see viewStore.liveDataEnabled).
+//   - grafana / jira → NOT fetched. They render as a clickable button that
+//              opens the dashboard / board in a new tab. Nothing is requested
+//              automatically, so there is no token to hold and no proxy to run.
+//
+// Every URL is constrained to a *public* http(s) endpoint (`SafeHttpUrl`):
+// loopback, private, link-local and cloud-metadata hosts are rejected at the
+// trust boundary so a shared document can't drive the viewer's browser at
+// internal services (client-side SSRF / CSRF).
 
 export const DataBinding = z.enum(["status", "badge", "metric", "label"]);
 export type DataBinding = z.infer<typeof DataBinding>;
 
+/** A public http(s) URL. Rejects javascript:/data:/file: and internal hosts. */
+export const SafeHttpUrl = z
+  .url()
+  .refine(isPublicHttpUrl, "must be a public http(s) URL (no internal/loopback/link-local hosts)");
+
 export const GrafanaSource = z.object({
   kind: z.literal("grafana"),
-  query: z.string().min(1),
-  binding: DataBinding,
+  /** Link to the Grafana dashboard/panel; opened in a new tab on click. */
+  url: SafeHttpUrl,
+  /** Optional button label (falls back to "Open Grafana"). */
+  label: z.string().min(1).optional(),
 });
 
 export const JiraSource = z.object({
   kind: z.literal("jira"),
-  jql: z.string().min(1),
-  binding: DataBinding,
+  /** Link to the Jira board/filter; opened in a new tab on click. */
+  url: SafeHttpUrl,
+  /** Optional button label (falls back to "Open Jira"). */
+  label: z.string().min(1).optional(),
 });
 
 export const HttpSource = z.object({
   kind: z.literal("http"),
-  url: z.url(),
+  url: SafeHttpUrl,
   jsonPath: z.string().optional(),
   binding: DataBinding,
 });
 
 export const DataSource = z.discriminatedUnion("kind", [GrafanaSource, JiraSource, HttpSource]);
 export type DataSource = z.infer<typeof DataSource>;
+
+/** A data source rendered as a link button rather than polled. */
+export type LinkDataSource = z.infer<typeof GrafanaSource> | z.infer<typeof JiraSource>;
 
 // ----------------------------------------------------------------------------
 // Annotations (freeform notes on an element)

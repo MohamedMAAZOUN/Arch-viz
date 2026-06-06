@@ -105,7 +105,7 @@ describe("combineLive", () => {
   });
 });
 
-// -- HttpLiveDataClient routing ----------------------------------------------
+// -- HttpLiveDataClient -------------------------------------------------------
 
 function jsonResponse(body: unknown, okFlag = true, status = 200): Response {
   // Minimal stand-in for Response — only the fields the client reads.
@@ -116,16 +116,12 @@ function jsonResponse(body: unknown, okFlag = true, status = 200): Response {
   } as unknown as Response;
 }
 
-function bodyString(init: RequestInit | undefined): string {
-  return typeof init?.body === "string" ? init.body : "";
-}
-
 describe("HttpLiveDataClient", () => {
   it("fetches http sources directly with jsonPath extraction", async () => {
     const fetchImpl = vi.fn((_input: string, _init?: RequestInit) =>
       Promise.resolve(jsonResponse({ data: { value: "healthy" } })),
     );
-    const client = new HttpLiveDataClient(null, fetchImpl);
+    const client = new HttpLiveDataClient(fetchImpl);
     const source: DataSource = {
       kind: "http",
       url: "https://example.com/health",
@@ -133,6 +129,7 @@ describe("HttpLiveDataClient", () => {
       binding: "status",
     };
 
+    expect(client.isConfigured(source)).toBe(true);
     const result = await client.fetchBinding(source);
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -141,34 +138,35 @@ describe("HttpLiveDataClient", () => {
     expect(fetchImpl).toHaveBeenCalledWith("https://example.com/health");
   });
 
-  it("treats grafana/jira as not configured without a proxy", async () => {
+  it("never polls grafana/jira — they are link buttons, not live sources", async () => {
     const fetchImpl = vi.fn((_input: string, _init?: RequestInit) =>
       Promise.resolve(jsonResponse({})),
     );
-    const client = new HttpLiveDataClient(null, fetchImpl);
-    const source: DataSource = { kind: "grafana", query: "up", binding: "status" };
+    const client = new HttpLiveDataClient(fetchImpl);
+    const grafana: DataSource = { kind: "grafana", url: "https://grafana.example.com/d/x" };
+    const jira: DataSource = { kind: "jira", url: "https://jira.example.com/issues" };
 
-    expect(client.isConfigured(source)).toBe(false);
-    const result = await client.fetchBinding(source);
-    expect(result.ok).toBe(false);
+    expect(client.isConfigured(grafana)).toBe(false);
+    expect(client.isConfigured(jira)).toBe(false);
+    expect((await client.fetchBinding(grafana)).ok).toBe(false);
+    expect((await client.fetchBinding(jira)).ok).toBe(false);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("routes grafana through the proxy when configured (no secrets sent)", async () => {
+  it("refuses to fetch a non-public URL even if one slips past the schema", async () => {
     const fetchImpl = vi.fn((_input: string, _init?: RequestInit) =>
-      Promise.resolve(jsonResponse({ value: 42 })),
+      Promise.resolve(jsonResponse({})),
     );
-    const client = new HttpLiveDataClient("https://proxy.example.com/live", fetchImpl);
-    const source: DataSource = { kind: "grafana", query: "gateway_rps", binding: "metric" };
+    const client = new HttpLiveDataClient(fetchImpl);
+    // Bypass the schema's SafeHttpUrl to simulate an unvalidated caller.
+    const source = {
+      kind: "http",
+      url: "http://169.254.169.254/latest/meta-data/",
+      binding: "status",
+    } as unknown as DataSource;
 
     const result = await client.fetchBinding(source);
-    expect(result.ok).toBe(true);
-    if (result.ok) expect(result.value).toEqual({ binding: "metric", value: 42 });
-
-    const call = fetchImpl.mock.calls[0];
-    expect(call?.[0]).toBe("https://proxy.example.com/live/grafana");
-    const body = bodyString(call?.[1]);
-    expect(body).toContain("gateway_rps");
-    expect(body).not.toContain("token");
+    expect(result.ok).toBe(false);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 });

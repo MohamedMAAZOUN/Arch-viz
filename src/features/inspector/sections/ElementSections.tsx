@@ -15,13 +15,16 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { useLiveData } from "@/core/live/useLiveData";
+import { useViewStore } from "@/core/state/viewStore";
 import { AnnotationsSection } from "@/features/inspector/sections/AnnotationsSection";
 import { DeleteElementButton } from "@/features/inspector/sections/DeleteElementButton";
 import { DocumentationSection } from "@/features/inspector/sections/DocumentationSection";
 import { EditableField } from "@/features/inspector/sections/EditableField";
 import { Section } from "@/features/inspector/sections/Section";
 
-import type { Connection, Element } from "@/core/schema/schema";
+import type { Connection, DataSource, Element, LinkDataSource } from "@/core/schema/schema";
+
+type HttpDataSource = Extract<DataSource, { kind: "http" }>;
 
 interface ElementSectionsProps {
   elementId: string;
@@ -174,8 +177,8 @@ export default function ElementSections({ elementId }: ElementSectionsProps) {
 // ---------------------------------------------------------------------------
 
 const LIVE_STATE_LABEL: Record<string, string> = {
-  idle: "no data sources",
-  offline: "offline — no proxy configured",
+  idle: "no live sources",
+  disabled: "off (not fetching)",
   loading: "connecting…",
   ok: "live",
   stale: "stale (last known)",
@@ -183,8 +186,11 @@ const LIVE_STATE_LABEL: Record<string, string> = {
 };
 
 function LiveStatusSection({ element }: { element: Element }) {
-  const live = useLiveData(element);
   const sources = element.dataSources ?? [];
+  const linkSources = sources.filter(
+    (s): s is LinkDataSource => s.kind === "grafana" || s.kind === "jira",
+  );
+  const httpSources = sources.filter((s): s is HttpDataSource => s.kind === "http");
 
   if (sources.length === 0) {
     return <div className="inspector-empty-row">No data sources configured.</div>;
@@ -192,16 +198,88 @@ function LiveStatusSection({ element }: { element: Element }) {
 
   return (
     <>
-      <div className="inspector-live-readout" data-state={live.state}>
-        <span className="live-dot" data-status={live.status ?? "unknown"} />
-        <span className="inspector-live-state">{LIVE_STATE_LABEL[live.state] ?? live.state}</span>
-        {live.chips.map((chip, i) => (
-          <span key={i} className="live-chip">
-            {chip.text}
-          </span>
-        ))}
-      </div>
-      {live.error !== null ? <div className="inspector-live-error">{live.error}</div> : null}
+      {linkSources.length > 0 ? (
+        <div className="inspector-live-links">
+          {linkSources.map((ds, i) => (
+            <a
+              key={i}
+              className="inspector-live-link"
+              href={ds.url}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {ds.label ?? (ds.kind === "grafana" ? "Open Grafana" : "Open Jira")} ↗
+            </a>
+          ))}
+        </div>
+      ) : null}
+      {httpSources.length > 0 ? <HttpLiveReadout element={element} sources={httpSources} /> : null}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HttpLiveReadout — opt-in gated live readout for http data sources
+// ---------------------------------------------------------------------------
+// Live polling is off by default for a freshly loaded project (which may have
+// come from an untrusted source). The user must explicitly enable it before the
+// browser fetches any http endpoint declared in the document.
+
+function HttpLiveReadout({
+  element,
+  sources,
+}: {
+  element: Element;
+  sources: readonly HttpDataSource[];
+}) {
+  const live = useLiveData(element);
+  const liveEnabled = useViewStore((s) => s.liveDataEnabled);
+  const setLiveDataEnabled = useViewStore((s) => s.setLiveDataEnabled);
+
+  return (
+    <>
+      {liveEnabled ? (
+        <>
+          <div className="inspector-live-readout" data-state={live.state}>
+            <span className="live-dot" data-status={live.status ?? "unknown"} />
+            <span className="inspector-live-state">
+              {LIVE_STATE_LABEL[live.state] ?? live.state}
+            </span>
+            {live.chips.map((chip, i) => (
+              <span key={i} className="live-chip">
+                {chip.text}
+              </span>
+            ))}
+          </div>
+          {live.error !== null ? <div className="inspector-live-error">{live.error}</div> : null}
+          <button
+            type="button"
+            className="inspector-live-toggle"
+            onClick={() => {
+              setLiveDataEnabled(false);
+            }}
+          >
+            Stop live data
+          </button>
+        </>
+      ) : (
+        <div className="inspector-live-consent">
+          <p className="inspector-live-consent-text">
+            This project can fetch {sources.length} external endpoint
+            {sources.length === 1 ? "" : "s"} from your browser. Only enable it for projects you
+            trust.
+          </p>
+          <button
+            type="button"
+            className="inspector-live-toggle"
+            onClick={() => {
+              setLiveDataEnabled(true);
+            }}
+          >
+            Enable live data
+          </button>
+        </div>
+      )}
       <ul className="inspector-list">
         {sources.map((ds, i) => (
           <li key={i} className="inspector-list-row">

@@ -112,12 +112,13 @@ elements:
           properties:
             description: "Product browsing, search, and ML-driven recommendations."
     dataSources:                       # live data hooks — the killer feature
+      # grafana/jira render as buttons that open the dashboard/board in a new tab
       - kind: grafana
-        query: "up{service='catalog'}"
-        binding: status                # → colored status dot on the node
+        url: "https://grafana.example.com/d/catalog/catalog-service"
+        label: "Catalog dashboard"
       - kind: jira
-        jql: "project=CAT AND status=Open"
-        binding: badge                 # → numeric badge
+        url: "https://jira.example.com/issues/?jql=project%3DCAT%20AND%20status%3DOpen"
+        label: "Open CAT issues"
     style:
       tone: critical                   # this service is high-importance
 

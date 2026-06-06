@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted · May 31, 2026
+Accepted · May 31, 2026 — **partially superseded by ADR-0008** (June 6, 2026):
+the Grafana/Jira proxy transport is removed (they are now link buttons) and
+`http` polling is gated behind an explicit per-project opt-in with URL
+allowlisting. The boundary/wrapping principles below still hold.
 
 ## Context
 

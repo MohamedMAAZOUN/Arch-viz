@@ -49,6 +49,15 @@ export interface ViewState {
    */
   groupExpansion: Readonly<Record<string, boolean>>;
 
+  /**
+   * Whether the user has opted in to live (http) data polling for the currently
+   * loaded project. Defaults to `false` and is reset on every project load:
+   * a freshly opened document (which may have come from an untrusted source)
+   * must never fetch its `http` data sources until the user explicitly allows
+   * it. Grafana/Jira link buttons are unaffected — they only navigate on click.
+   */
+  liveDataEnabled: boolean;
+
   setLayer: (layer: LayerId) => void;
   setMvp: (mvp: MvpRef) => void;
   setMvpMode: (mode: MvpMode) => void;
@@ -59,6 +68,8 @@ export interface ViewState {
    *  so a bulk change is a single store update and one re-layout. */
   setGroupExpansionMany: (entries: Readonly<Record<string, boolean>>) => void;
   clearGroupExpansion: () => void;
+  /** Opt in / out of live (http) data polling for the current project. */
+  setLiveDataEnabled: (enabled: boolean) => void;
 }
 
 export const useViewStore = create<ViewState>((set) => ({
@@ -68,6 +79,7 @@ export const useViewStore = create<ViewState>((set) => ({
   cursorMode: "pan",
   viewport: { x: 0, y: 0, zoom: 1 },
   groupExpansion: {},
+  liveDataEnabled: false,
 
   setLayer: (currentLayer) => {
     set({ currentLayer });
@@ -96,5 +108,8 @@ export const useViewStore = create<ViewState>((set) => ({
   },
   clearGroupExpansion: () => {
     set({ groupExpansion: {} });
+  },
+  setLiveDataEnabled: (liveDataEnabled) => {
+    set({ liveDataEnabled });
   },
 }));

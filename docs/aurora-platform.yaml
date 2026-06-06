@@ -216,8 +216,8 @@ elements:
   parent: platform-domain
   dataSources:
   - kind: grafana
-    query: gateway_rps
-    binding: metric
+    url: "https://grafana.example.com/d/gateway/gateway-rps"
+    label: "Gateway RPS"
   style:
     tone: critical
 - id: auth-service
@@ -321,8 +321,8 @@ elements:
   parent: payments-domain
   dataSources:
   - kind: jira
-    jql: project=PAY AND status=Open
-    binding: badge
+    url: "https://jira.example.com/issues/?jql=project%3DPAY%20AND%20status%3DOpen"
+    label: "Open PAY issues"
 - id: settlement-service
   type: service
   name: Settlement Service
@@ -455,8 +455,8 @@ elements:
   parent: intelligence-domain
   dataSources:
   - kind: grafana
-    query: fraud_score_p99
-    binding: metric
+    url: "https://grafana.example.com/d/fraud/fraud-score-p99"
+    label: "Fraud score p99"
   style:
     tone: warning
 - id: risk-service
@@ -592,8 +592,8 @@ elements:
   parent: platform-domain
   dataSources:
   - kind: grafana
-    query: up
-    binding: status
+    url: "https://grafana.example.com/d/platform/uptime"
+    label: "Uptime"
 - id: email-provider
   type: external
   name: Email Provider
