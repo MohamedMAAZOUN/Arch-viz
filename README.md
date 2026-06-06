@@ -10,6 +10,21 @@ Groups and their children render as **nested containers** (domain → service �
 
 **Export** (inspector → Export): **JSON** (round-trips through the parser), plus **PNG / SVG** of the visible graph at the current layer + MVP. See `docs/adr/0006-export.md`.
 
+## Preview
+
+The same platform, read across layers — collapse detail at the business layer,
+expand it at engineering:
+
+| Business | Architecture | Engineering |
+|---|---|---|
+| ![Business layer](docs/media/layer-business.png) | ![Architecture layer](docs/media/layer-architecture.png) | ![Engineering layer](docs/media/layer-engineering.png) |
+
+<!-- ![Walkthrough — layer toggle + MVP scrub](docs/media/walkthrough.gif) -->
+
+> _Screenshots are generated locally from the running app — see
+> [`docs/media/README.md`](docs/media/README.md) for the one-command capture
+> script. They may be absent until first generated._
+
 ## Quickstart
 
 ```bash
@@ -61,8 +76,10 @@ Full rules live in `docs/engineering-guide.md`. Read it before contributing.
 ## Key documents
 
 - `docs/engineering-guide.md` — the full coding standard
+- `docs/schema-reference.md` — prose reference for every schema field, enum, and invariant
 - `docs/schema-example.yaml` — the schema in action on a small e-commerce example
 - `docs/adr/` — architecture decision records
+- `src/core/README.md`, `src/features/README.md`, `src/design-system/README.md` — per-folder orientation
 
 ## Tech stack (locked in via the dependency study)
 

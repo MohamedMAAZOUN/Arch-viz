@@ -11,7 +11,7 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## Where to look
 
 - **Engineering rules**: `docs/engineering-guide.md` — the canonical standards. Read sections 1–6 before writing any code. Anti-patterns reference in § 17.
-- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Example in `src/data/example-project.yaml`.
+- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `src/data/example-project.yaml`.
 - **ADRs**: `docs/adr/` — historical decisions. Add a new ADR before any change that contradicts a rule.
 - **Design tokens**: `src/design-system/tokens.css` (single source of truth) and `src/design-system/tokens.ts` (JS mirror for Motion durations etc.).
 
