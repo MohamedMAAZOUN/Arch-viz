@@ -23,6 +23,19 @@ export const duration = {
 
 export type DurationKey = keyof typeof duration;
 
+/**
+ * Durations in SECONDS — Motion's `transition.duration` field wants seconds, not
+ * ms. Prefer this over `duration.x / 1000` at call sites so the conversion lives
+ * in exactly one place. Derived from `duration` so the two never drift.
+ */
+export const durationSec = {
+  instant: duration.instant / 1000,
+  fast: duration.fast / 1000,
+  base: duration.base / 1000,
+  slow: duration.slow / 1000,
+  cinematic: duration.cinematic / 1000,
+} as const;
+
 /** Cubic-bezier easings as tuples — direct input to Motion's `ease` field. */
 export const ease = {
   out: [0.16, 1, 0.3, 1] as [number, number, number, number],
@@ -43,6 +56,8 @@ export const spring = {
   bouncy: { type: "spring", stiffness: 220, damping: 12, mass: 0.6 },
   /** Slow, cinematic — tour camera moves. */
   cinema: { type: "spring", stiffness: 60, damping: 22, mass: 1.4 },
+  /** Snappy, high-stiffness — shared-element panel morphs (pill ↔ panel). */
+  snappy: { type: "spring", stiffness: 420, damping: 38 },
 } as const;
 
 // -- Z-index ladder ----------------------------------------------------------

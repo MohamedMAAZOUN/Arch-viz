@@ -71,7 +71,11 @@ interface RawArchitecture {
   elements?: unknown[];
 }
 
-function buildEntry(path: string, load: () => Promise<string>, yamlText: string): ArchitectureEntry {
+function buildEntry(
+  path: string,
+  load: () => Promise<string>,
+  yamlText: string,
+): ArchitectureEntry {
   const id = idFromPath(path);
   let raw: RawArchitecture = {};
   try {

@@ -80,11 +80,12 @@ arch-vis/
 │   ├── main.tsx                  # entry point — does ONE thing: render <App/>
 │   ├── App.tsx                   # top-level layout: topbar, canvas, inspector
 │   │
-│   ├── design-system/            # tokens, theme runtime — already exists
-│   │   ├── tokens.css
-│   │   ├── tokens.ts
-│   │   ├── theme.ts
-│   │   └── primitives/           # shadcn/ui components (themed)
+│   ├── design-system/            # tokens, theme runtime, contract test
+│   │   ├── tokens.css            # source of truth for all design tokens
+│   │   ├── tokens.ts            # JS mirror (Motion durations, z, breakpoints)
+│   │   ├── theme.ts             # theme/brand runtime
+│   │   ├── contrast.ts          # WCAG contrast helpers (+ contrast.test.ts)
+│   │   └── tokens.contract.test.ts  # guardrail: undefined tokens, raw colors, drift
 │   │
 │   ├── core/                     # cross-cutting infrastructure
 │   │   ├── schema/               # Zod definitions, parsing, validation
@@ -399,62 +400,90 @@ reason). New derived views should compose `useDocSnapshot()`.
 
 ## 6. Styling
 
-### The single rule
+### The model (one component → one co-located CSS file)
 
-**Theming travels through CSS variables. Layout, spacing, and structure travel through Tailwind utilities.**
+Each component has a sibling `.css` file (e.g. `TopBar.tsx` ↔ `TopBar.css`),
+imported at the top of the component. **Everything visual flows through design
+tokens** — CSS custom properties defined in `src/design-system/tokens.css`:
 
-If a property should change based on theme or brand (any color, certain shadows, certain borders) → CSS variable: `var(--color-bg-2)`.
+- **Color, shadow, border color** → `var(--color-…)`, `var(--elevation-N)`.
+- **Spacing & layout** → plain CSS (flex/grid) using `var(--space-*)`. We do
+  **not** use Tailwind utility classes; Tailwind v4 is present only to power the
+  `@theme` block that registers the tokens.
+- **Radius / type / sizing / motion / z-index** → the matching token family
+  (`--radius-*`, `--text-*`, `--size-*`, `--duration-*`/`--ease-*`, `--z-*`).
 
-If a property is structural (padding, gap, grid, flexbox) → Tailwind utility: `p-4`, `gap-3`, `grid-cols-2`.
+`tokens.css` is the **only** file that authors raw color. See
+[ADR 0012](./adr/0012-design-system-enforcement.md).
 
 ### Concrete examples
 
-```tsx
-// ✓ Good — colors via tokens, layout via Tailwind
-<div className="flex gap-3 p-4 rounded-md"
-     style={{
-       background: "var(--color-bg-2)",
-       border: "1px solid var(--color-border-default)",
-     }}>
+```css
+/* MyThing.css — ✓ Good: tokens for color, spacing, sizing, radius */
+.mything {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
 
-// ✗ Bad — hardcoded hex, breaks theming
-<div className="flex gap-3 p-4 rounded-md bg-[#1a1a2e]">
-
-// ✗ Bad — magic spacing values
-<div className="flex" style={{ gap: "13px", padding: "21px" }}>
+/* ✗ Bad — raw color (breaks theming, fails the contract test) */
+.mything {
+  background: oklch(22% 0.026 250);
+  color: #e8e8f0;
+}
 ```
 
-### Component composition
+```tsx
+// Component: import the co-located CSS, style via className.
+import "@/features/my-feature/MyThing.css";
+```
 
-- **shadcn/ui primitives are the default starting point** for buttons, inputs, dialogs, tabs, accordions. They're already themed against our tokens.
-- **Don't duplicate primitives**. If shadcn doesn't have what you need, extend a primitive rather than building a new one.
-- **Variants via discriminated props**, not boolean flags:
+Inline `style={{}}` is only for **dynamic, data-driven** values (a position
+computed at runtime, an MVP color from the document) — never for static styling.
 
-  ```tsx
-  type ButtonProps = { variant: "primary" | "secondary" | "ghost"; ... };
-  // not: { isPrimary?: boolean; isSecondary?: boolean; isGhost?: boolean }
-  ```
+### Component variants
 
-### What's forbidden in component code
+Variants via discriminated props, not boolean flags, surfaced as a
+`data-variant` attribute the CSS keys off:
 
-- Hex colors (`#FFAA00`)
-- RGB/RGBA literals (`rgb(255, 170, 0)`)
-- Magic numeric pixels for spacing (`padding: 13px`)
-- Inline `transition: 200ms` — use `var(--duration-base)`
-- Inline `z-index: 999` — use `var(--z-...)`
-- Per-component shadows — use `var(--elevation-N)`
+```tsx
+type ButtonProps = { variant: "primary" | "secondary" | "ghost" };
+// not: { isPrimary?: boolean; isSecondary?: boolean; isGhost?: boolean }
+```
+
+### What's forbidden in component CSS
+
+- Hex colors (`#FFAA00`) and raw color functions (`oklch(…)`, `rgb(…)`) — use a
+  `var(--color-…)` token. (`color-mix(in oklch, var(--token) …)` is fine.)
+- `var(--token, fallback)` — a fallback hides a missing/misspelled token. Reference
+  the token directly so the contract test can verify it exists.
+- Inline `transition: 200ms` — use `var(--duration-base)`.
+- Inline `z-index: 999` — use `var(--z-…)`.
+- Per-component shadows — use `var(--elevation-N)`.
+- A *repeated* control dimension as a literal — add/use a `--size-*` token.
+  (One-off structural hairlines like `1px`/`2px` borders may stay literal.)
+
+This is enforced by `src/design-system/tokens.contract.test.ts`, which fails CI on
+undefined tokens, raw colors outside `tokens.css`, and `tokens.ts`↔`tokens.css`
+drift.
 
 ### Motion
 
-Always import durations from `design-system/tokens.ts`, not raw milliseconds:
+Durations and easings come from `design-system/tokens.ts`, never raw numbers. Use
+`durationSec` (seconds, for Motion's `transition.duration`) so no call site
+hand-writes `/ 1000`:
 
 ```ts
-import { duration, ease, spring } from "@/design-system/tokens";
+import { durationSec, ease, spring } from "@/design-system/tokens";
 
 <motion.div
   animate={{ opacity: 1 }}
-  transition={{ duration: duration.base / 1000, ease: ease.out }}
+  transition={{ duration: durationSec.base, ease: ease.out }}
 />
+// springs: transition={spring.snappy}
 ```
 
 `prefers-reduced-motion` is respected automatically through token zeroing. Don't add a parallel reduced-motion check.

@@ -20,7 +20,7 @@
 import { Handle, Position } from "@xyflow/react";
 import { motion } from "motion/react";
 
-import { duration, ease } from "@/design-system/tokens";
+import { durationSec, ease } from "@/design-system/tokens";
 import {
   ElementTypeBadge,
   ExpandToggle,
@@ -72,7 +72,7 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
         style={(tinted ? { ["--overlay-tint"]: introducedColor } : {}) as MotionStyle}
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: duration.slow / 1000, ease: ease.out }}
+        transition={{ duration: durationSec.slow, ease: ease.out }}
       >
         <div className="element-node-row">
           <ElementTypeBadge type={element.type} />

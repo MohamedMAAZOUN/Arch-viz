@@ -143,7 +143,9 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
             aria-expanded
             aria-controls="archpicker-list"
             aria-activedescendant={
-              matches[active] !== undefined ? `archpicker-opt-${matches[active].entry.id}` : undefined
+              matches[active] !== undefined
+                ? `archpicker-opt-${matches[active].entry.id}`
+                : undefined
             }
             autoComplete="off"
             spellCheck={false}
@@ -155,9 +157,7 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
           {entries === null ? (
             <li className="archpicker-empty">Loading architectures…</li>
           ) : matches.length === 0 ? (
-            <li className="archpicker-empty">
-              No architectures match “{query}”.
-            </li>
+            <li className="archpicker-empty">No architectures match “{query}”.</li>
           ) : (
             matches.map((m, i) => (
               <li key={m.entry.id} role="presentation">

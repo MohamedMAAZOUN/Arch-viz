@@ -5,7 +5,7 @@
 .settings-scrim {
   position: fixed;
   inset: 0;
-  background: oklch(0% 0 0 / 0.4);
+  background: var(--color-scrim);
   backdrop-filter: blur(var(--blur-soft));
   z-index: var(--z-dialog);
   animation: settings-scrim-in var(--duration-base) var(--ease-out);
@@ -74,8 +74,8 @@
 }
 
 .settings-close {
-  width: 32px;
-  height: 32px;
+  width: var(--size-control-md);
+  height: var(--size-control-md);
   border-radius: var(--radius-pill);
   font-size: 22px;
   color: var(--color-fg-muted);
@@ -158,11 +158,11 @@
 }
 
 .settings-swatch--neon {
-  background: linear-gradient(135deg, oklch(75% 0.18 220) 0%, oklch(70% 0.2 295) 100%);
+  background: linear-gradient(135deg, var(--brand-neon-from) 0%, var(--brand-neon-to) 100%);
 }
 
 .settings-swatch--michelin {
-  background: linear-gradient(135deg, oklch(60% 0.2 260) 0%, oklch(86% 0.18 95) 100%);
+  background: linear-gradient(135deg, var(--brand-michelin-from) 0%, var(--brand-michelin-to) 100%);
 }
 
 /* -- Footer ---------------------------------------------------------------- */
@@ -175,4 +175,3 @@
   color: var(--color-fg-faint);
   letter-spacing: var(--tracking-wide);
 }
-

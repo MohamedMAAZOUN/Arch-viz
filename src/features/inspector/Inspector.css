@@ -613,8 +613,8 @@
 }
 
 .inspector-close {
-  width: 28px;
-  height: 28px;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
   display: grid;
   place-items: center;
   border-radius: var(--radius-pill);

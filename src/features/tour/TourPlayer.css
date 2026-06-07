@@ -117,8 +117,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--size-control-md);
+  height: var(--size-control-md);
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   background: transparent;

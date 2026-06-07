@@ -7,7 +7,7 @@ around.
 - **Source of truth:** `src/core/schema/schema.ts` (Zod). If this doc and the
   code ever disagree, the code wins — fix this doc.
 - **Worked example:** `docs/schema-example.yaml` (small e-commerce) and
-  `src/data/aurora-platform.yaml` (realistic, 42 elements).
+  `architectures/aurora-platform.yaml` (realistic, 42 elements).
 - **How it's loaded:** the YAML on disk is parsed **once** at the trust boundary
   (`parseProjectDocument`). If validation fails, the file is **rejected whole** —
   never partially loaded. Everything downstream treats the model as trusted.

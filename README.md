@@ -10,6 +10,8 @@ Groups and their children render as **nested containers** (domain → service �
 
 **Export** (inspector → Export): **JSON** (round-trips through the parser), plus **PNG / SVG** of the visible graph at the current layer + MVP. See `docs/adr/0006-export.md`.
 
+**Switching architectures**: every `*.yaml` in the repo-root [`architectures/`](architectures/) folder is bundled automatically — drop a file in and it appears. Open the switcher with **⌘K / Ctrl-K** (or click the project name in the header) and search by architecture name **or** by the names of the nodes inside. See `docs/adr/0013-architecture-catalog.md`.
+
 ## Preview
 
 The same platform, read across layers — collapse detail at the business layer,
@@ -46,19 +48,22 @@ pnpm format       # Prettier write
 ## Repository tour
 
 ```
+architectures/           # bundled *.yaml projects — auto-discovered, ⌘K switcher
 src/
 ├── main.tsx              # entry point — boots theme, persistence, App
 ├── App.tsx               # top-level layout (golden ratio split)
-├── design-system/        # tokens, theme runtime, primitives
+├── design-system/        # tokens (tokens.css/.ts), theme runtime, contract test
 ├── core/                 # cross-cutting infrastructure
 │   ├── schema/           # Zod definitions, parse (only trust boundary)
 │   ├── doc/              # Yjs source of truth (only yjs importer)
 │   ├── state/            # Zustand stores (view, selection)
 │   ├── layout/           # ELK wrapper (only elkjs importer)
 │   └── errors/           # Result type
+├── data/                 # architecture catalog loader (architectures.ts)
 └── features/             # user-visible capabilities
     ├── canvas/           # React Flow wrapper (only xyflow importer)
     ├── inspector/        # right-side panel with 8 sections
+    ├── architecture-picker/  # ⌘K searchable architecture switcher
     ├── settings/         # settings menu (theme/brand picker)
     └── topbar/           # header with brand-word + status + settings
 ```

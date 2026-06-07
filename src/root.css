@@ -35,12 +35,8 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   overflow: hidden; /* the app manages its own scrolling */
-  background-image: radial-gradient(
-      circle at 12% 18%,
-      oklch(28% 0.1 260 / 0.4) 0%,
-      transparent 45%
-    ),
-    radial-gradient(circle at 88% 80%, oklch(35% 0.1 95 / 0.22) 0%, transparent 50%);
+  /* The brand-specific background atmosphere (radial gradients) is owned by the
+   * [data-brand] rules in tokens.css — see "Brand atmospheres" there. */
   transition: background var(--duration-slow) var(--ease-out);
 }
 

@@ -41,7 +41,7 @@
   --xy-controls-button-color-hover: var(--color-fg-default);
   --xy-controls-button-border-color: var(--color-border-subtle);
   --xy-minimap-background-color: var(--color-bg-2);
-  --xy-minimap-mask-background-color: oklch(0% 0 0 / 0.4);
+  --xy-minimap-mask-background-color: var(--color-scrim);
   --xy-minimap-mask-stroke-color: var(--color-accent-base);
   --xy-edge-stroke: var(--color-fg-faint);
   --xy-edge-stroke-selected: var(--color-accent-base);

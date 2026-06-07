@@ -106,6 +106,16 @@
   --radius-pill: 999rem;
 
   /* --------------------------------------------------------------------------
+   * Control sizing — interactive target dimensions reused across the app.
+   * Centralized so icon buttons, close buttons, and status dots stay uniform.
+   * -------------------------------------------------------------------------- */
+
+  --size-control-xs: 1.25rem; /* 20px — kbd caps, tiny chips   */
+  --size-control-sm: 1.75rem; /* 28px — icon buttons          */
+  --size-control-md: 2rem; /* 32px — close buttons, segments  */
+  --size-dot: 0.375rem; /* 6px — status / selection dots    */
+
+  /* --------------------------------------------------------------------------
    * Color — Dark mode (default)
    * --------------------------------------------------------------------------
    * Deep ink-blue undertone (hue 250) instead of generic neutral grey.
@@ -132,6 +142,19 @@
   --color-accent-soft: oklch(75% 0.18 220 / 0.15);
   --color-accent-glow: oklch(75% 0.18 220 / 0.4);
   --color-accent-fg-on: oklch(15% 0.02 220); /* fg when on accent   */
+
+  /* Overlays — the backdrop behind every modal/popover, and the inner top
+   * highlight on raised panels. Centralized so all scrims read identically. */
+  --color-scrim: oklch(0% 0 0 / 0.4);
+  --color-inset-highlight: oklch(100% 0 0 / 0.06);
+
+  /* Brand reference swatches — FIXED previews of each brand, independent of the
+   * active theme/brand. Consumed ONLY by the brand picker swatches; live UI must
+   * use --color-accent-* (which tracks the active brand) instead. */
+  --brand-neon-from: oklch(75% 0.18 220);
+  --brand-neon-to: oklch(70% 0.2 295);
+  --brand-michelin-from: oklch(60% 0.2 260);
+  --brand-michelin-to: oklch(86% 0.18 95);
 
   /* Tone tokens — match the schema's `style.tone` enum exactly. */
   --color-tone-neutral: oklch(75% 0.06 240);
