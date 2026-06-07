@@ -130,9 +130,31 @@
   max-width: 240px;
 }
 
+.topbar-project-btn {
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background var(--duration-fast) var(--ease-out);
+}
+
+.topbar-project-btn:hover {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-3);
+}
+
+.topbar-project-btn:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 2px;
+}
+
+.topbar-project-chevron {
+  flex-shrink: 0;
+  color: var(--color-fg-faint);
+}
+
 .topbar-project-dot {
-  width: 6px;
-  height: 6px;
+  width: var(--size-dot);
+  height: var(--size-dot);
   border-radius: 50%;
   background: var(--color-tone-success);
   box-shadow: 0 0 6px color-mix(in oklch, var(--color-tone-success) 60%, transparent);
@@ -158,8 +180,8 @@
 }
 
 .topbar-icon-btn {
-  width: 28px;
-  height: 28px;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
   display: grid;
   place-items: center;
   color: var(--color-fg-muted);
@@ -189,8 +211,8 @@
 
 .topbar-dirty-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: var(--size-dot);
+  height: var(--size-dot);
   border-radius: 50%;
   background: var(--color-accent-base);
   box-shadow: 0 0 8px color-mix(in oklch, var(--color-accent-base) 50%, transparent);

@@ -16,7 +16,7 @@ import { useEffect, useRef } from "react";
 import { useFocusTrap } from "@/core/a11y/useFocusTrap";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useTourStore } from "@/core/state/tourStore";
-import { duration, ease } from "@/design-system/tokens";
+import { durationSec, ease } from "@/design-system/tokens";
 import { prefersReducedMotion } from "@/lib/prefersReducedMotion";
 
 import "@/features/tour/TourPlayer.css";
@@ -102,7 +102,7 @@ export default function TourPlayer() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: duration.base / 1000, ease: ease.out }}
+            transition={{ duration: durationSec.base, ease: ease.out }}
           >
             <div className="tour-caption-eyebrow">
               {tour.name} · {stepIndex + 1}/{stepCount}

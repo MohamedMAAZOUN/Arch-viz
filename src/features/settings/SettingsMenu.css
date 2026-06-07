@@ -5,7 +5,7 @@
 .settings-scrim {
   position: fixed;
   inset: 0;
-  background: oklch(0% 0 0 / 0.4);
+  background: var(--color-scrim);
   backdrop-filter: blur(var(--blur-soft));
   z-index: var(--z-dialog);
   animation: settings-scrim-in var(--duration-base) var(--ease-out);
@@ -74,10 +74,10 @@
 }
 
 .settings-close {
-  width: 32px;
-  height: 32px;
+  width: var(--size-control-md);
+  height: var(--size-control-md);
   border-radius: var(--radius-pill);
-  font-size: 22px;
+  font-size: var(--text-heading);
   color: var(--color-fg-muted);
   display: grid;
   place-items: center;
@@ -158,11 +158,11 @@
 }
 
 .settings-swatch--neon {
-  background: linear-gradient(135deg, oklch(75% 0.18 220) 0%, oklch(70% 0.2 295) 100%);
+  background: linear-gradient(135deg, var(--brand-neon-from) 0%, var(--brand-neon-to) 100%);
 }
 
 .settings-swatch--michelin {
-  background: linear-gradient(135deg, oklch(60% 0.2 260) 0%, oklch(86% 0.18 95) 100%);
+  background: linear-gradient(135deg, var(--brand-michelin-from) 0%, var(--brand-michelin-to) 100%);
 }
 
 /* -- Footer ---------------------------------------------------------------- */
@@ -174,59 +174,4 @@
   font-size: var(--text-micro);
   color: var(--color-fg-faint);
   letter-spacing: var(--tracking-wide);
-}
-
-/* -- Example project list ---------------------------------------------- */
-
-.settings-example-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.settings-example-row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--space-3);
-  background: var(--color-bg-3);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-  text-align: left;
-  transition:
-    background var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
-}
-
-.settings-example-row:hover {
-  background: var(--color-bg-2);
-  border-color: var(--color-accent-base);
-  transform: translateY(-1px);
-}
-
-.settings-example-main {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.settings-example-name {
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-base);
-  color: var(--color-fg-default);
-}
-
-.settings-example-size {
-  font-family: var(--font-mono);
-  font-size: var(--text-micro);
-  color: var(--color-fg-faint);
-  white-space: nowrap;
-}
-
-.settings-example-desc {
-  font-size: var(--text-small);
-  color: var(--color-fg-muted);
-  line-height: var(--leading-snug);
 }

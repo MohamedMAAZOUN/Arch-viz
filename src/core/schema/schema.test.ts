@@ -14,7 +14,7 @@ import { err, ok } from "@/core/errors";
 import { parseProjectYaml } from "@/core/schema/parse";
 
 const EXAMPLE_PATH = resolve(__dirname, "../../../docs/schema-example.yaml");
-const BUNDLED_EXAMPLE_PATH = resolve(__dirname, "../../data/example-project.yaml");
+const BUNDLED_EXAMPLE_PATH = resolve(__dirname, "../../../architectures/example-project.yaml");
 
 describe("schema", () => {
   it("validates the example YAML", () => {

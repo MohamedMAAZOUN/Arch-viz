@@ -16,6 +16,7 @@ import { useDirty } from "@/core/doc/useDirty";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useUndoRedoState } from "@/core/doc/useUndoRedoState";
 import { notify } from "@/core/state/notificationStore";
+import ArchitecturePicker from "@/features/architecture-picker/ArchitecturePicker";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
 import SettingsMenu from "@/features/settings/SettingsMenu";
@@ -24,6 +25,7 @@ import "@/features/topbar/TopBar.css";
 
 export default function TopBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const doc = useDocSnapshot();
   const { canUndo, canRedo } = useUndoRedoState();
@@ -61,6 +63,20 @@ export default function TopBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc, saving]);
 
+  // Ctrl/Cmd+K opens the architecture switcher (command-palette style).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isModifier = e.metaKey !== e.ctrlKey;
+      if (!isModifier || e.key.toLowerCase() !== "k") return;
+      e.preventDefault();
+      setPickerOpen((open) => !open);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
   return (
     <>
       <header className="topbar">
@@ -72,12 +88,26 @@ export default function TopBar() {
         </div>
 
         <div className="topbar-center">
-          {doc !== null ? (
-            <div className="topbar-project">
-              <span className="topbar-project-dot" />
-              <span className="topbar-project-name">{doc.project.name}</span>
-            </div>
-          ) : null}
+          <button
+            type="button"
+            className="topbar-project topbar-project-btn"
+            onClick={() => {
+              setPickerOpen(true);
+            }}
+            aria-haspopup="dialog"
+            aria-expanded={pickerOpen}
+            title="Switch architecture (Ctrl/Cmd+K)"
+          >
+            {doc !== null ? (
+              <>
+                <span className="topbar-project-dot" />
+                <span className="topbar-project-name">{doc.project.name}</span>
+              </>
+            ) : (
+              <span className="topbar-project-name">Open architecture</span>
+            )}
+            <ChevronIcon />
+          </button>
         </div>
 
         <div className="topbar-actions">
@@ -153,7 +183,34 @@ export default function TopBar() {
           }}
         />
       ) : null}
+
+      {pickerOpen ? (
+        <ArchitecturePicker
+          onClose={() => {
+            setPickerOpen(false);
+          }}
+        />
+      ) : null}
     </>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg
+      className="topbar-project-chevron"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   );
 }
 

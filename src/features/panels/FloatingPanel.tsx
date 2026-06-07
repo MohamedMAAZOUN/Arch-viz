@@ -13,6 +13,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useEffect, useRef } from "react";
 
 import { useUiStore } from "@/core/state/uiStore";
+import { durationSec, ease, spring } from "@/design-system/tokens";
 
 import type { PanelId } from "@/core/state/uiStore";
 import type { Transition } from "motion/react";
@@ -90,9 +91,7 @@ export default function FloatingPanel({
     };
   }, [dismissable, closePanel, id]);
 
-  const transition: Transition = reduceMotion
-    ? { duration: 0 }
-    : { type: "spring", stiffness: 420, damping: 38 };
+  const transition: Transition = reduceMotion ? { duration: 0 } : spring.snappy;
 
   // During the shared-element morph the pill (icon included) scales up toward
   // the panel's box, which otherwise reads as the icon "ballooning" before the
@@ -104,15 +103,15 @@ export default function FloatingPanel({
     ? transition
     : {
         ...transition,
-        opacity: { duration: 0.18, ease: "easeOut" },
-        filter: { duration: 0.24, ease: "easeOut" },
+        opacity: { duration: durationSec.fast, ease: ease.out },
+        filter: { duration: durationSec.base, ease: ease.out },
       };
   const contentMotion = reduceMotion
     ? {}
     : {
         initial: { filter: BLUR },
         animate: { filter: "blur(0px)" },
-        transition: { filter: { duration: 0.26, ease: "easeOut" } } as Transition,
+        transition: { filter: { duration: durationSec.base, ease: ease.out } } as Transition,
       };
 
   return (

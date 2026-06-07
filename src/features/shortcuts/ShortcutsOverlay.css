@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-6);
-  background: oklch(0% 0 0 / 0.4);
+  background: var(--color-scrim);
   backdrop-filter: blur(var(--blur-soft));
   z-index: var(--z-dialog);
   animation: shortcuts-scrim-in var(--duration-base) var(--ease-out);
@@ -65,8 +65,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
   background: var(--color-bg-3);

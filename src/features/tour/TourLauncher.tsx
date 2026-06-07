@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useTourStore } from "@/core/state/tourStore";
-import { duration, ease } from "@/design-system/tokens";
+import { durationSec, ease } from "@/design-system/tokens";
 
 import "@/features/tour/TourLauncher.css";
 
@@ -69,7 +69,7 @@ export default function TourLauncher() {
             initial={{ opacity: 0, y: -6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
-            transition={{ duration: duration.fast / 1000, ease: ease.out }}
+            transition={{ duration: durationSec.fast, ease: ease.out }}
           >
             {tours.map((tour) => (
               <li key={tour.id} role="none">

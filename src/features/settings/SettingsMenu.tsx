@@ -9,9 +9,6 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useFocusTrap } from "@/core/a11y/useFocusTrap";
-import { loadExampleById } from "@/core/doc/loadExampleById";
-import { notify } from "@/core/state/notificationStore";
-import { EXAMPLES } from "@/data/examples";
 import { getPreferences, onChange, setPreferences } from "@/design-system/theme";
 
 import type { Brand, Theme } from "@/design-system/theme";
@@ -132,41 +129,6 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
             >
               Light
             </SegmentButton>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <h3 className="settings-section-title">Example projects</h3>
-          <p className="settings-section-desc">
-            Load a bundled example. This replaces the current project.
-          </p>
-          <div className="settings-example-list">
-            {EXAMPLES.map((ex) => (
-              <button
-                key={ex.id}
-                type="button"
-                className="settings-example-row"
-                onClick={() => {
-                  void loadExampleById(ex.id).then((result) => {
-                    if (!result.ok) {
-                      notify({
-                        level: "error",
-                        title: `Couldn't load “${ex.name}”`,
-                        detail: result.error,
-                      });
-                      return;
-                    }
-                    onClose();
-                  });
-                }}
-              >
-                <span className="settings-example-main">
-                  <span className="settings-example-name">{ex.name}</span>
-                  <span className="settings-example-size">{ex.size}</span>
-                </span>
-                <span className="settings-example-desc">{ex.description}</span>
-              </button>
-            ))}
           </div>
         </section>
 

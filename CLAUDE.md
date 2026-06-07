@@ -11,9 +11,10 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## Where to look
 
 - **Engineering rules**: `docs/engineering-guide.md` — the canonical standards. Read sections 1–6 before writing any code. Anti-patterns reference in § 17.
-- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `src/data/example-project.yaml`.
+- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `architectures/example-project.yaml`.
 - **ADRs**: `docs/adr/` — historical decisions. Add a new ADR before any change that contradicts a rule.
-- **Design tokens**: `src/design-system/tokens.css` (single source of truth) and `src/design-system/tokens.ts` (JS mirror for Motion durations etc.).
+- **Design tokens**: `src/design-system/tokens.css` (single source of truth) and `src/design-system/tokens.ts` (JS mirror for Motion durations, z, breakpoints — use `durationSec`/`ease`/`spring` for Motion). **Styling model**: one component → one co-located `.css` file; all color/spacing/sizing/motion via `var(--…)` tokens; layout is plain CSS (flex/grid), **not** Tailwind utilities (Tailwind is only for `@theme`). `tokens.css` is the only place raw color is authored. Enforced by `src/design-system/tokens.contract.test.ts`. See `docs/adr/0012-design-system-enforcement.md`.
+- **Bundled architectures**: every `*.yaml` in the repo-root `architectures/` folder is auto-discovered (`src/data/architectures.ts`, `import.meta.glob`) and listed in the ⌘K switcher (`features/architecture-picker`). Drop a file in = it appears; no registry. Default seed is `architectures/example-project.yaml`. See `docs/adr/0013-architecture-catalog.md`.
 
 ## The five non-negotiable principles
 
@@ -100,7 +101,7 @@ Cross-feature communication flows through `core/state` and `core/doc`.
 2. Add a glyph case in `src/features/canvas/nodes/NodeParts.tsx` → `ElementGlyph` (shared by `ElementNode` and `GroupNode`).
 3. Add tone-aware styles in `ElementNode.css` if it has special visual treatment.
 4. Update `src/core/schema/schema.test.ts` to cover the new type.
-5. Add an instance to `src/data/example-project.yaml` so manual QA covers it.
+5. Add an instance to `architectures/example-project.yaml` so manual QA covers it.
 6. Bump `$schemaVersion` if the change isn't backward-compatible.
 7. Update `NODE_DIMENSIONS` in `src/features/canvas/types.ts` if the new type needs different dimensions.
 8. The exhaustive switches in `Canvas.tsx` (`isAnimatedEdge`, `edgeStroke`) will produce compile errors if the new type also introduces a new `ConnectionType` — fix those too.
@@ -109,7 +110,7 @@ Cross-feature communication flows through `core/state` and `core/doc`.
 
 1. New folder under `src/features/<feature-name>/`.
 2. One component per file. Default export is the component.
-3. Co-locate the CSS file. Theming via CSS variables, layout via Tailwind utilities.
+3. Co-locate a `.css` file. All color/spacing/sizing/motion via `var(--…)` tokens; layout is plain CSS (flex/grid), not Tailwind utilities. Never author raw color outside `tokens.css`.
 4. Mount the feature from `App.tsx` or another feature's composition root — never reach across siblings.
 5. Cross-feature communication via `core/state` selectors or `core/doc` hooks.
 

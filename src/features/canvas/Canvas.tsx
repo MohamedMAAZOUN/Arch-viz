@@ -317,7 +317,7 @@ function CanvasInner() {
 
   useEffect(() => {
     if (fitOnFirstLayout.current && nodes.length > 0 && flowRef.current !== null) {
-      void flowRef.current.fitView({ duration: 400, padding: 0.2 });
+      void flowRef.current.fitView({ duration: duration.slow, padding: 0.2 });
       fitOnFirstLayout.current = false;
     }
   }, [nodes.length]);

@@ -51,10 +51,22 @@ Never swallow errors silently with `catch {}`.
 
 ## Styling
 
-- Theming travels through CSS variables (`var(--color-bg-2)`).
-- Layout/spacing travel through Tailwind utilities.
-- Motion durations and easings come from `src/design-system/tokens.ts`, not raw `200ms`.
-- The `prefers-reduced-motion` zeroing happens at the token layer — don't add per-component handling.
+- **One component → one co-located `.css` file.** Style via `className`; reserve
+  inline `style={{}}` for dynamic, data-driven values only.
+- **Everything visual goes through design tokens** (CSS custom properties in
+  `src/design-system/tokens.css`): color, spacing (`var(--space-*)`), sizing
+  (`var(--size-*)`), radius, elevation, motion, z-index.
+- **Layout is plain CSS (flex/grid), NOT Tailwind utilities.** There are no
+  Tailwind utility classes in this repo; Tailwind v4 exists only for the `@theme`
+  block. Do not add `p-4`/`gap-3`-style classes.
+- **`tokens.css` is the only place raw color is authored.** Never write a hex or
+  `oklch()`/`rgb()` literal in component CSS — use a `var(--color-…)` token. Never
+  use `var(--token, fallback)`.
+- Motion durations/easings come from `src/design-system/tokens.ts` (`durationSec`,
+  `ease`, `spring`), not raw numbers. `prefers-reduced-motion` zeroing happens at
+  the token layer — don't add per-component handling.
+- Enforced by `src/design-system/tokens.contract.test.ts` (runs in CI). See
+  `docs/adr/0012-design-system-enforcement.md`.
 
 ## Commits & PRs
 
@@ -69,8 +81,10 @@ The schema already contains types for these features, which may make them look r
 
 - Monaco YAML editor
 - Multiplayer (Yjs is wired; needs a sync server)
-- Tour mode playback / video export of MVP transitions
-- Live data hooks (`DataSource`, `GrafanaSource`, `JiraSource`, `HttpSource` in the schema)
+- Video export of MVP transitions; PDF export (PNG/SVG already ship)
+- A live-data proxy/backend (the http client ships; the proxy is a deploy concern)
+
+> Tour playback (ADR 0004) and live data (ADR 0005/0008) are already implemented — no longer deferred.
 
 ## When you don't know something
 

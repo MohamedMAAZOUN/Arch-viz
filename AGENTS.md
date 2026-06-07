@@ -46,22 +46,23 @@ Every rule below descends from one of these. When rules conflict, reason from th
 - **State tiers** — document data → Yjs (via `docStore`); view/UI state → Zustand stores in `src/core/state/`; component-local → `useState`.
 - **Loading a project** — always call `loadProject(project)` from `@/core/doc/loadProject`. It loads the doc AND resets view state so the canvas is never blank.
 - **Schema first** — anything that requires schema changes must update `src/core/schema/schema.ts` (including tests in `schema.test.ts`) before the UI.
-- **Theming** — colors and motion via design tokens (CSS variables in `tokens.css`, JS mirror in `tokens.ts`). Never hex literals, never magic ms.
+- **Styling** — one component → one co-located `.css` file. All color/spacing/sizing/motion via `var(--…)` design tokens (`tokens.css` is the only place raw color is authored; JS mirror in `tokens.ts` — use `durationSec`/`ease`/`spring`). Layout is plain CSS (flex/grid), **not** Tailwind utilities. No hex/`oklch()` literals, no `var(--token, fallback)`. Enforced by `tokens.contract.test.ts`; see `docs/adr/0012-design-system-enforcement.md`.
 - **`useEffect`** is for syncing with external systems only. Never derive state from any reactive value in an effect — use `useMemo` or compute at call sites.
 - **Error handling** — expected failures (bad input, parse errors) return `Result<T, E>` from `@/core/errors`. Programming errors throw. Never `catch {}` silently.
 
 ## Repo map
 
 ```
+architectures/            # bundled *.yaml projects, auto-discovered (⌘K switcher)
 src/
 ├── App.tsx                # top-level composition
 ├── main.tsx               # entry point
-├── bootstrap.ts           # loads example on startup
+├── bootstrap.ts           # loads the default architecture on startup
 ├── core/                  # cross-cutting: schema, doc, state, layout, errors
-├── design-system/         # tokens, theme runtime
+├── design-system/         # tokens (tokens.css/.ts), theme runtime, contract test
 ├── features/              # user-visible features (canvas, inspector, ...)
 ├── lib/                   # pure utilities
-└── data/                  # bundled example YAML
+└── data/                  # architecture catalog loader (architectures.ts)
 
 docs/
 ├── engineering-guide.md   # canonical standards (read this)
@@ -83,8 +84,11 @@ even though the schema already contains types for some of them:
 
 - Monaco YAML editor (plain textarea is sufficient for now)
 - Multiplayer (Yjs is wired; needs a sync server)
-- Tour mode playback / video export of MVP transitions
-- Live data hooks (Grafana / Jira / HTTP `DataSource` fetching)
+- Video export of MVP transitions; PDF export (PNG/SVG already ship)
+- A live-data proxy/backend (the http client ships; the proxy is a deploy concern)
+
+> Note: guided **tour playback** (ADR 0004) and **live data** (ADR 0005/0008) are
+> already implemented — they are no longer deferred.
 
 ## When uncertain
 

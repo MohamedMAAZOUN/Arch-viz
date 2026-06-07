@@ -31,6 +31,7 @@
   --font-mono: "JetBrains Mono", "JetBrains Mono Variable", ui-monospace, monospace;
   --font-display: "Geist", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
 
+  --text-nano: 0.625rem; /* 10px — canvas edge/graph labels */
   --text-micro: 0.6875rem; /* 11px — badges, data labels   */
   --text-small: 0.75rem; /* 12px — secondary text         */
   --text-base: 0.875rem; /* 14px — body, default UI       */
@@ -106,6 +107,16 @@
   --radius-pill: 999rem;
 
   /* --------------------------------------------------------------------------
+   * Control sizing — interactive target dimensions reused across the app.
+   * Centralized so icon buttons, close buttons, and status dots stay uniform.
+   * -------------------------------------------------------------------------- */
+
+  --size-control-xs: 1.25rem; /* 20px — kbd caps, tiny chips   */
+  --size-control-sm: 1.75rem; /* 28px — icon buttons          */
+  --size-control-md: 2rem; /* 32px — close buttons, segments  */
+  --size-dot: 0.375rem; /* 6px — status / selection dots    */
+
+  /* --------------------------------------------------------------------------
    * Color — Dark mode (default)
    * --------------------------------------------------------------------------
    * Deep ink-blue undertone (hue 250) instead of generic neutral grey.
@@ -132,6 +143,19 @@
   --color-accent-soft: oklch(75% 0.18 220 / 0.15);
   --color-accent-glow: oklch(75% 0.18 220 / 0.4);
   --color-accent-fg-on: oklch(15% 0.02 220); /* fg when on accent   */
+
+  /* Overlays — the backdrop behind every modal/popover, and the inner top
+   * highlight on raised panels. Centralized so all scrims read identically. */
+  --color-scrim: oklch(0% 0 0 / 0.4);
+  --color-inset-highlight: oklch(100% 0 0 / 0.06);
+
+  /* Brand reference swatches — FIXED previews of each brand, independent of the
+   * active theme/brand. Consumed ONLY by the brand picker swatches; live UI must
+   * use --color-accent-* (which tracks the active brand) instead. */
+  --brand-neon-from: oklch(75% 0.18 220);
+  --brand-neon-to: oklch(70% 0.2 295);
+  --brand-michelin-from: oklch(60% 0.2 260);
+  --brand-michelin-to: oklch(86% 0.18 95);
 
   /* Tone tokens — match the schema's `style.tone` enum exactly. */
   --color-tone-neutral: oklch(75% 0.06 240);
@@ -180,6 +204,12 @@
   /* Selection glow — the "this thing is selected on the canvas" effect */
   --elevation-glow: 0 0 0 2px var(--color-accent-base), 0 0 32px var(--color-accent-glow);
 
+  /* Focus ring — the reusable input/control focus affordance. Geometry +
+   * color in one token so every field rings identically. */
+  --elevation-focus: 0 0 0 3px color-mix(in oklch, var(--color-accent-base) 25%, transparent);
+  --elevation-focus-critical: 0 0 0 3px
+    color-mix(in oklch, var(--color-tone-critical) 25%, transparent);
+
   /* --------------------------------------------------------------------------
    * Motion — the timing & easing vocabulary, in seconds for CSS.
    * The TypeScript token file mirrors these as numbers in ms for Motion lib.
@@ -191,6 +221,12 @@
   --duration-slow: 450ms; /* MVP scrub, layout reshuffle            */
   --duration-cinematic: 800ms; /* tour camera moves, hero transitions    */
 
+  /* Ambient loop timings — for infinite keyframe animations (spinners, status
+   * pulses). Separate from the UI-transition scale; zeroed under reduced motion. */
+  --duration-spin: 0.8s; /* indeterminate spinner                  */
+  --duration-pulse: 1.2s; /* attention pulse                       */
+  --duration-pulse-slow: 1.4s; /* live-data heartbeat              */
+
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* pleasant decelerate    */
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* symmetric              */
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1); /* material's "emphasized" */
@@ -201,6 +237,7 @@
    * -------------------------------------------------------------------------- */
 
   --z-canvas: 0;
+  --z-canvas-overlay: 5; /* canvas-local badges between canvas and controls */
   --z-canvas-controls: 10;
   --z-inspector: 20;
   --z-topbar: 30;
@@ -424,5 +461,8 @@
     --duration-base: 0ms;
     --duration-slow: 0ms;
     --duration-cinematic: 0ms;
+    --duration-spin: 0ms;
+    --duration-pulse: 0ms;
+    --duration-pulse-slow: 0ms;
   }
 }

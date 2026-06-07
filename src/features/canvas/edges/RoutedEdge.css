@@ -20,8 +20,8 @@
   border: 1px solid var(--color-border-subtle);
   color: var(--color-fg-muted);
   font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.4;
+  font-size: var(--text-nano);
+  line-height: var(--leading-snug);
   white-space: nowrap;
   box-shadow: var(--elevation-1);
   /* Above edges, below nodes — readable without covering cards. */
