@@ -5,10 +5,10 @@
 // the schema trust boundary; load goes through the loadProject action.
 // ============================================================================
 
+import exampleYaml from "../../../architectures/example-project.yaml?raw";
 import { loadProject } from "@/core/doc/loadProject";
 import { parseProjectYaml } from "@/core/schema/parse";
 import { notify } from "@/core/state/notificationStore";
-import exampleYaml from "@/data/example-project.yaml?raw";
 
 interface LoadExampleButtonProps {
   variant?: "primary" | "secondary";

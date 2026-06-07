@@ -1,0 +1,217 @@
+/* ============================================================================
+ * ArchitecturePicker.css — command-palette switcher
+ * ============================================================================ */
+
+.archpicker-scrim {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.4);
+  backdrop-filter: blur(var(--blur-soft));
+  z-index: var(--z-dialog);
+  animation: archpicker-scrim-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes archpicker-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.archpicker {
+  position: fixed;
+  top: 12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 92vw);
+  max-height: 70vh;
+  background: var(--color-bg-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--elevation-4);
+  z-index: calc(var(--z-dialog) + 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: archpicker-in var(--duration-base) var(--ease-out);
+}
+
+@keyframes archpicker-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* -- Search ---------------------------------------------------------------- */
+
+.archpicker-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.archpicker-search-icon {
+  color: var(--color-fg-faint);
+  flex-shrink: 0;
+}
+
+.archpicker-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-fg-default);
+  font-size: var(--text-body);
+  font-family: inherit;
+}
+
+.archpicker-input::placeholder {
+  color: var(--color-fg-faint);
+}
+
+/* -- List ------------------------------------------------------------------ */
+
+.archpicker-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.archpicker-empty {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--color-fg-faint);
+  font-size: var(--text-small);
+}
+
+.archpicker-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  text-align: left;
+  padding: var(--space-3) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md, 10px);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-fg-default);
+}
+
+.archpicker-row[data-active="true"] {
+  background: var(--color-bg-3, var(--color-border-subtle));
+}
+
+.archpicker-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.archpicker-row-name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-medium, 500);
+  font-size: var(--text-body);
+}
+
+.archpicker-current {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-accent-fg, var(--color-fg-faint));
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-2);
+}
+
+.archpicker-row-count {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+}
+
+.archpicker-row-desc {
+  font-size: var(--text-small);
+  color: var(--color-fg-muted, var(--color-fg-faint));
+  line-height: var(--leading-snug, 1.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.archpicker-row-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.archpicker-row-nodes-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-fg-faint);
+  margin-right: var(--space-1);
+}
+
+.archpicker-chip {
+  font-size: var(--text-micro);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-1, var(--color-border-subtle));
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-fg-default);
+}
+
+.archpicker-chip--more {
+  color: var(--color-fg-faint);
+}
+
+/* -- Footer ---------------------------------------------------------------- */
+
+.archpicker-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-micro);
+  color: var(--color-fg-faint);
+}
+
+.archpicker-footer-hint {
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+
+.archpicker-kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1;
+  padding: 2px 5px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm, 5px);
+  background: var(--color-bg-1, transparent);
+  color: var(--color-fg-faint);
+}

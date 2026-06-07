@@ -10,10 +10,10 @@
 // v1.5 will replace the example seed with a file picker + drag-drop zone.
 // ============================================================================
 
+import exampleYaml from "../architectures/example-project.yaml?raw";
 import { docStore } from "@/core/doc/DocStore";
 import { parseProjectYaml } from "@/core/schema/parse";
 import { useViewStore } from "@/core/state/viewStore";
-import exampleYaml from "@/data/example-project.yaml?raw";
 
 export function bootstrapInitialProject(): void {
   // A non-null doc here means persistence restored a draft — keep it. Only seed

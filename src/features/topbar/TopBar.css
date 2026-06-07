@@ -130,6 +130,28 @@
   max-width: 240px;
 }
 
+.topbar-project-btn {
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast, 120ms) var(--ease-out),
+    background var(--duration-fast, 120ms) var(--ease-out);
+}
+
+.topbar-project-btn:hover {
+  border-color: var(--color-border-default);
+  background: var(--color-bg-3, var(--color-bg-2));
+}
+
+.topbar-project-btn:focus-visible {
+  outline: 2px solid var(--color-accent-fg, var(--color-border-default));
+  outline-offset: 2px;
+}
+
+.topbar-project-chevron {
+  flex-shrink: 0;
+  color: var(--color-fg-faint);
+}
+
 .topbar-project-dot {
   width: 6px;
   height: 6px;
