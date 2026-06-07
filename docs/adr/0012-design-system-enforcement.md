@@ -55,8 +55,19 @@ New tokens added so nothing is hand-duplicated:
 1. **Every `var(--token)` referenced in any CSS is defined** (catches typos and
    deleted tokens — the class of bug above).
 2. **No raw color literals outside `tokens.css`** (`oklch()`, `rgb()`, hex, …).
-3. **`tokens.ts` mirrors `tokens.css`** for durations, z-index, breakpoints, and
+3. **Typography uses tokens** — `font-size` (→ `--text-*`, or contextual `em`/`%`),
+   `font-weight` (→ `--weight-*`), `line-height` (→ `--leading-*`),
+   `letter-spacing` (→ `--tracking-*`).
+4. **`border-radius` uses `--radius-*`** (or a full-round `50%`/pill literal).
+5. **`animation`/`transition` timings use `--duration-*`** — no raw `ms`/`s`.
+6. **`z-index` uses the `--z-*` ladder** (or a tiny local stack value).
+7. **`tokens.ts` mirrors `tokens.css`** for durations, z-index, breakpoints, and
    the MVP palette — the values that must live in both worlds.
+
+**Deliberately left literal** (documented, not magic): sub-`--space-1` hairline
+spacing (`1px`/`2px`/`3px`), border *widths*, and effect-shadow *geometry* (glow
+blur radii) whose only token-worthy part — color — already is a token. The reused
+focus-ring shape is tokenized as `--elevation-focus`.
 
 We chose a vitest contract over stylelint deliberately: it needs no extra
 dependency, lives beside the system it guards, and already runs in CI. The test

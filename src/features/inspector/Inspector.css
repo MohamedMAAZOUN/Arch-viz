@@ -670,7 +670,7 @@
 
 .inspector-search-input:focus {
   border-color: var(--color-accent-base);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent-base) 25%, transparent);
+  box-shadow: var(--elevation-focus);
 }
 
 .inspector-search-result {

@@ -333,7 +333,7 @@
 
 /* Loading: gentle pulse. */
 .live-indicator[data-state="loading"] .live-dot {
-  animation: live-pulse 1.4s ease-in-out infinite;
+  animation: live-pulse var(--duration-pulse-slow) ease-in-out infinite;
 }
 
 @keyframes live-pulse {

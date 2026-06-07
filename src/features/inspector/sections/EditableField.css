@@ -56,7 +56,7 @@
   font: inherit;
   color: var(--color-fg-default);
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent-base) 25%, transparent);
+  box-shadow: var(--elevation-focus);
 }
 
 .editable-field-input[data-variant="name"] {
@@ -80,7 +80,7 @@
 
 .editable-field-input[data-invalid="true"] {
   border-color: var(--color-tone-critical);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-tone-critical) 25%, transparent);
+  box-shadow: var(--elevation-focus-critical);
 }
 
 .editable-field-error {

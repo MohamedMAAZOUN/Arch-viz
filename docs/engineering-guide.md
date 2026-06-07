@@ -467,8 +467,10 @@ type ButtonProps = { variant: "primary" | "secondary" | "ghost" };
   (One-off structural hairlines like `1px`/`2px` borders may stay literal.)
 
 This is enforced by `src/design-system/tokens.contract.test.ts`, which fails CI on
-undefined tokens, raw colors outside `tokens.css`, and `tokens.ts`↔`tokens.css`
-drift.
+undefined tokens; raw colors, and font-size/weight, line-height, letter-spacing,
+border-radius, animation/transition timing, and z-index literals outside
+`tokens.css`; and `tokens.ts`↔`tokens.css` drift. (Sub-`--space-1` hairlines,
+border widths, and effect-shadow geometry are the documented exceptions.)
 
 ### Motion
 

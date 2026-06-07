@@ -26,13 +26,13 @@ color**; everywhere else, color is a `var(--color-…)` token. Never use
 
 ## Files
 
-| File                       | Role                                                                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `tokens.css`               | **Source of truth** for every design token (`@theme` + theme/brand overrides). Imported before any feature CSS.    |
-| `tokens.ts`                | JS mirror of tokens JS needs — Motion durations (`duration`, `durationSec`), `ease`, `spring`, `z`, `breakpoint`.  |
-| `theme.ts`                 | Theme + brand runtime: applies/persists the choice; anti-flash inline script in `index.html` runs the first apply. |
-| `contrast.ts` / `.test.ts` | WCAG contrast helpers + a test guarding token pairings against contrast regressions.                               |
-| `tokens.contract.test.ts`  | **Guardrail.** Fails CI on undefined tokens, raw colors outside `tokens.css`, and `tokens.ts`↔`tokens.css` drift. |
+| File                       | Role                                                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens.css`               | **Source of truth** for every design token (`@theme` + theme/brand overrides). Imported before any feature CSS.                                                     |
+| `tokens.ts`                | JS mirror of tokens JS needs — Motion durations (`duration`, `durationSec`), `ease`, `spring`, `z`, `breakpoint`.                                                   |
+| `theme.ts`                 | Theme + brand runtime: applies/persists the choice; anti-flash inline script in `index.html` runs the first apply.                                                  |
+| `contrast.ts` / `.test.ts` | WCAG contrast helpers + a test guarding token pairings against contrast regressions.                                                                                |
+| `tokens.contract.test.ts`  | **Guardrail.** Fails CI on undefined tokens; raw colors, font/line/letter/radius/timing/z-index literals outside `tokens.css`; and `tokens.ts`↔`tokens.css` drift. |
 
 ## Motion
 
