@@ -9,12 +9,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useFocusTrap } from "@/core/a11y/useFocusTrap";
-import { loadArchitectureById } from "@/core/doc/loadArchitectureById";
-import { notify } from "@/core/state/notificationStore";
-import { getArchitectureIndex } from "@/data/architectures";
 import { getPreferences, onChange, setPreferences } from "@/design-system/theme";
 
-import type { ArchitectureEntry } from "@/data/architectures";
 import type { Brand, Theme } from "@/design-system/theme";
 
 import "@/features/settings/SettingsMenu.css";
@@ -25,19 +21,7 @@ interface SettingsMenuProps {
 
 export default function SettingsMenu({ onClose }: SettingsMenuProps) {
   const [prefs, setPrefs] = useState(getPreferences);
-  const [architectures, setArchitectures] = useState<ArchitectureEntry[] | null>(null);
   const panelRef = useRef<HTMLElement>(null);
-
-  // Load the auto-discovered architecture catalog (shared with the ⌘K picker).
-  useEffect(() => {
-    let alive = true;
-    void getArchitectureIndex().then((result) => {
-      if (alive) setArchitectures(result);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   // Trap focus inside the dialog while it's open; restore it to the opener
   // (the settings button) on close. See issue #29.
@@ -145,48 +129,6 @@ export default function SettingsMenu({ onClose }: SettingsMenuProps) {
             >
               Light
             </SegmentButton>
-          </div>
-        </section>
-
-        <section className="settings-section">
-          <h3 className="settings-section-title">Architectures</h3>
-          <p className="settings-section-desc">
-            Open a bundled architecture (replaces the current project). Press{" "}
-            <kbd className="settings-kbd">⌘K</kbd> anywhere to search by name or node.
-          </p>
-          <div className="settings-example-list">
-            {architectures === null ? (
-              <span className="settings-section-desc">Loading…</span>
-            ) : (
-              architectures.map((arch) => (
-                <button
-                  key={arch.id}
-                  type="button"
-                  className="settings-example-row"
-                  onClick={() => {
-                    void loadArchitectureById(arch.id).then((result) => {
-                      if (!result.ok) {
-                        notify({
-                          level: "error",
-                          title: `Couldn't load “${arch.name}”`,
-                          detail: result.error,
-                        });
-                        return;
-                      }
-                      onClose();
-                    });
-                  }}
-                >
-                  <span className="settings-example-main">
-                    <span className="settings-example-name">{arch.name}</span>
-                    <span className="settings-example-size">{arch.elementCount} nodes</span>
-                  </span>
-                  {arch.description !== undefined ? (
-                    <span className="settings-example-desc">{arch.description}</span>
-                  ) : null}
-                </button>
-              ))
-            )}
           </div>
         </section>
 
