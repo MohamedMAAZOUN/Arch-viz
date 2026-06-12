@@ -168,11 +168,21 @@ pnpm build        # production build
   captures the visible graph at the current layer + MVP). UI in
   `inspector/sections/ExportSection`. See `docs/adr/0006-export.md`.
 
-## Things deferred to v1.5+
+## Backend roadmap (planned — ADR 0014)
 
-- Monaco YAML editor (currently a plain textarea is good enough when needed)
-- Multiplayer (Yjs is wired, just needs a sync server)
-- Video export of MVP transitions; PDF export (after PNG)
-- A live-data proxy/backend (the client is ready; the proxy is a deploy concern)
+A backend is planned and designed: Node 20 + Fastify + Drizzle + Postgres +
+Hocuspocus, pnpm-workspace monorepo (`apps/web`, `apps/server`,
+`packages/schema`), dual auth (local + ForgeRock OIDC with lazy user
+creation), guest mode preserved, owner/viewer/editor sharing, append-only
+commit snapshots, multiplayer via Yjs sync. See `docs/adr/0014-backend.md`
+and GitHub issues #53–#69 (milestones 0–5, dependency-ordered). Formerly
+deferred items now live on that roadmap: multiplayer (#65), collaborative
+annotations (#67), Monaco YAML editor (#68), video export of MVP transitions
+(#69).
 
-Don't build these without confirming with the user. They're explicitly deferred.
+**Cancelled, not deferred**: the live-data proxy. `grafana`/`jira` data
+sources are link buttons permanently; only the existing opt-in client-side
+`http` polling fetches anything.
+
+Still genuinely deferred (don't build without confirming): PDF export
+(after PNG).

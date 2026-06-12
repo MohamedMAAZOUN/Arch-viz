@@ -73,6 +73,13 @@ The Zod schema in `schema.ts` is the contract. UI shapes itself to the schema, n
 
 We organize by **feature**, not by technical layer. A "feature" is a user-visible capability of the tool (canvas, inspector, mvp-slider, tours, brand-picker). Cross-cutting concerns live in `core/`.
 
+> **Planned (ADR 0014, issue #54):** the repository becomes a pnpm workspace —
+> `apps/web` (everything below, unchanged), `apps/server` (Fastify + Drizzle +
+> Hocuspocus backend), and `packages/schema` (the Zod schemas extracted from
+> `src/core/schema`, shared by both apps so client and server validate with the
+> same contract). The layout below describes the web app and remains accurate
+> inside `apps/web` after the move. This section is rewritten as part of #54.
+
 ```
 arch-vis/
 ├── public/                       # static assets (favicon, robots.txt)
