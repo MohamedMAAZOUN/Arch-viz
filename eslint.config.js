@@ -34,7 +34,11 @@ export default tseslint.config(
       parserOptions: {
         // One workspace, three tsconfigs (apps/web, apps/server,
         // packages/schema) — projectService picks the right one per file.
-        projectService: true,
+        // vitest.config.ts is excluded from the web tsconfig (to avoid a
+        // TS2769 false-positive on the `test:` key) but still needs linting.
+        projectService: {
+          allowDefaultProject: ["apps/web/vitest.config.ts"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -174,6 +178,27 @@ export default tseslint.config(
     },
   },
 
+  // Server: the database driver enters through exactly one module
+  // (apps/server/src/db/ — the server-side analogue of the web wrapper rules).
+  {
+    files: ["apps/server/src/**/*.ts"],
+    ignores: ["apps/server/src/db/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["drizzle-orm", "drizzle-orm/*", "postgres"],
+              message:
+                "Import the database only via apps/server/src/db (the AppDb boundary). Route handlers never touch the driver.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // Test files: relax some rules
   {
     files: ["**/*.test.{ts,tsx}", "apps/web/tests/**"],
@@ -181,5 +206,12 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
     },
+  },
+
+  // vitest.config.ts lives outside the web tsconfig (to avoid a TS2769 false-
+  // positive on the `test:` key), so type-checked rules can't run on it.
+  {
+    files: ["apps/web/vitest.config.ts"],
+    extends: [tseslint.configs.disableTypeChecked],
   },
 );
