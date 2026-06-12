@@ -10,7 +10,65 @@ overrides:
 importers:
 
   .:
+    devDependencies:
+      '@eslint/js':
+        specifier: 9.18.0
+        version: 9.18.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: 8.20.0
+        version: 8.20.0(@typescript-eslint/parser@8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3))(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
+      '@typescript-eslint/parser':
+        specifier: 8.20.0
+        version: 8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
+      eslint:
+        specifier: 9.18.0
+        version: 9.18.0(jiti@2.7.0)
+      eslint-import-resolver-typescript:
+        specifier: 3.7.0
+        version: 3.7.0(eslint-plugin-import-x@4.6.1(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3))(eslint@9.18.0(jiti@2.7.0))
+      eslint-plugin-import-x:
+        specifier: 4.6.1
+        version: 4.6.1(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
+      eslint-plugin-react-hooks:
+        specifier: 5.1.0
+        version: 5.1.0(eslint@9.18.0(jiti@2.7.0))
+      eslint-plugin-react-refresh:
+        specifier: 0.4.18
+        version: 0.4.18(eslint@9.18.0(jiti@2.7.0))
+      husky:
+        specifier: 9.1.7
+        version: 9.1.7
+      lint-staged:
+        specifier: 15.3.0
+        version: 15.3.0
+      prettier:
+        specifier: 3.4.2
+        version: 3.4.2
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+      typescript-eslint:
+        specifier: 8.20.0
+        version: 8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
+
+  apps/server:
     dependencies:
+      '@arch-vis/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.5
+        version: 22.10.5
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
+
+  apps/web:
+    dependencies:
+      '@arch-vis/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
       '@xyflow/react':
         specifier: 12.10.2
         version: 12.10.2(@types/react@19.0.7)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -38,9 +96,6 @@ importers:
       yjs:
         specifier: 13.6.30
         version: 13.6.30
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
       zustand:
         specifier: 5.0.13
         version: 5.0.13(@types/react@19.0.7)(react@19.2.0)(use-sync-external-store@1.6.0(react@19.2.0))
@@ -66,54 +121,40 @@ importers:
       '@types/react-dom':
         specifier: 19.0.3
         version: 19.0.3(@types/react@19.0.7)
-      '@typescript-eslint/eslint-plugin':
-        specifier: 8.20.0
-        version: 8.20.0(@typescript-eslint/parser@8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3))(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
-      '@typescript-eslint/parser':
-        specifier: 8.20.0
-        version: 8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
       '@vitejs/plugin-react':
         specifier: 4.3.4
         version: 4.3.4(vite@6.0.7(@types/node@22.10.5)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.6.1))
-      eslint:
-        specifier: 9.18.0
-        version: 9.18.0(jiti@2.7.0)
-      eslint-import-resolver-typescript:
-        specifier: 3.7.0
-        version: 3.7.0(eslint-plugin-import-x@4.6.1(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3))(eslint@9.18.0(jiti@2.7.0))
-      eslint-plugin-import-x:
-        specifier: 4.6.1
-        version: 4.6.1(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
-      eslint-plugin-react-hooks:
-        specifier: 5.1.0
-        version: 5.1.0(eslint@9.18.0(jiti@2.7.0))
-      eslint-plugin-react-refresh:
-        specifier: 0.4.18
-        version: 0.4.18(eslint@9.18.0(jiti@2.7.0))
-      husky:
-        specifier: 9.1.7
-        version: 9.1.7
       jsdom:
         specifier: 26.0.0
         version: 26.0.0
-      lint-staged:
-        specifier: 15.3.0
-        version: 15.3.0
-      prettier:
-        specifier: 3.4.2
-        version: 3.4.2
       tailwindcss:
         specifier: 4.3.0
         version: 4.3.0
       typescript:
         specifier: 5.7.3
         version: 5.7.3
-      typescript-eslint:
-        specifier: 8.20.0
-        version: 8.20.0(eslint@9.18.0(jiti@2.7.0))(typescript@5.7.3)
       vite:
         specifier: 6.0.7
         version: 6.0.7(@types/node@22.10.5)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.6.1)
+      vitest:
+        specifier: 2.1.8
+        version: 2.1.8(@types/node@22.10.5)(jiti@2.7.0)(jsdom@26.0.0)(lightningcss@1.32.0)(yaml@2.6.1)
+
+  packages/schema:
+    dependencies:
+      yaml:
+        specifier: 2.6.1
+        version: 2.6.1
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.5
+        version: 22.10.5
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
       vitest:
         specifier: 2.1.8
         version: 2.1.8(@types/node@22.10.5)(jiti@2.7.0)(jsdom@26.0.0)(lightningcss@1.32.0)(yaml@2.6.1)

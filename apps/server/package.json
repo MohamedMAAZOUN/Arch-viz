@@ -1,0 +1,17 @@
+{
+  "name": "@arch-vis/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Architecture Visualizer backend — Fastify + Drizzle + Postgres + Hocuspocus (ADR 0014). Scaffold only; filled by issues #55+.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@arch-vis/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "typescript": "5.7.3"
+  }
+}

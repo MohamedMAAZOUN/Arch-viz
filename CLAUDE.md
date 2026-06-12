@@ -4,17 +4,17 @@ This file is the entry point for Claude Code working in this repository. Read it
 
 ## Project shape
 
-**arch-vis** — a layered, time-aware platform diagramming tool. Frontend-only SPA. The user loads a YAML project describing elements (services, databases, etc.) and connections; the app renders the graph and lets them browse it across business / architecture / engineering layers and scrub through MVP versions over time.
+**arch-vis** — a layered, time-aware platform diagramming tool. pnpm-workspace monorepo: `apps/web` (the SPA), `apps/server` (backend scaffold, ADR 0014), `packages/schema` (the shared Zod contract). The user loads a YAML project describing elements (services, databases, etc.) and connections; the app renders the graph and lets them browse it across business / architecture / engineering layers and scrub through MVP versions over time.
 
 Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @theme) · React Flow 12 (`@xyflow/react`) · Yjs 13 (draft state + undo/redo + IndexedDB persistence) · ELK.js (auto-layout, runs in a Web Worker) · Motion 12 · Zustand 5 · Zod 4.
 
 ## Where to look
 
 - **Engineering rules**: `docs/engineering-guide.md` — the canonical standards. Read sections 1–6 before writing any code. Anti-patterns reference in § 17.
-- **Schema**: `src/core/schema/schema.ts` — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `architectures/example-project.yaml`.
+- **Schema**: `packages/schema/src/schema.ts` (`@arch-vis/schema`) — single source of truth for the project document shape. Prose reference (every field/enum/invariant) in `docs/schema-reference.md`; example in `architectures/example-project.yaml`.
 - **ADRs**: `docs/adr/` — historical decisions. Add a new ADR before any change that contradicts a rule.
-- **Design tokens**: `src/design-system/tokens.css` (single source of truth) and `src/design-system/tokens.ts` (JS mirror for Motion durations, z, breakpoints — use `durationSec`/`ease`/`spring` for Motion). **Styling model**: one component → one co-located `.css` file; all color/spacing/sizing/motion via `var(--…)` tokens; layout is plain CSS (flex/grid), **not** Tailwind utilities (Tailwind is only for `@theme`). `tokens.css` is the only place raw color is authored. Enforced by `src/design-system/tokens.contract.test.ts`. See `docs/adr/0012-design-system-enforcement.md`.
-- **Bundled architectures**: every `*.yaml` in the repo-root `architectures/` folder is auto-discovered (`src/data/architectures.ts`, `import.meta.glob`) and listed in the ⌘K switcher (`features/architecture-picker`). Drop a file in = it appears; no registry. Default seed is `architectures/example-project.yaml`. See `docs/adr/0013-architecture-catalog.md`.
+- **Design tokens**: `apps/web/src/design-system/tokens.css` (single source of truth) and `apps/web/src/design-system/tokens.ts` (JS mirror for Motion durations, z, breakpoints — use `durationSec`/`ease`/`spring` for Motion). **Styling model**: one component → one co-located `.css` file; all color/spacing/sizing/motion via `var(--…)` tokens; layout is plain CSS (flex/grid), **not** Tailwind utilities (Tailwind is only for `@theme`). `tokens.css` is the only place raw color is authored. Enforced by `apps/web/src/design-system/tokens.contract.test.ts`. See `docs/adr/0012-design-system-enforcement.md`.
+- **Bundled architectures**: every `*.yaml` in the repo-root `architectures/` folder is auto-discovered (`apps/web/src/data/architectures.ts`, `import.meta.glob`) and listed in the ⌘K switcher (`features/architecture-picker`). Drop a file in = it appears; no registry. Default seed is `architectures/example-project.yaml`. See `docs/adr/0013-architecture-catalog.md`.
 
 ## The five non-negotiable principles
 
@@ -26,8 +26,8 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 
 ## State tiers — getting this wrong is the #1 bug source
 
-- **Document state** → `Y.Doc` via `docStore` operations. Touch `yjs` only in `src/core/doc/DocStore.ts`.
-- **View state** (layer, MVP, MVP mode, **cursor/pan-vs-select tool**, selection, viewport, **group expand/collapse**, **tour playback**) → Zustand stores in `src/core/state/`.
+- **Document state** → `Y.Doc` via `docStore` operations. Touch `yjs` only in `apps/web/src/core/doc/DocStore.ts`.
+- **View state** (layer, MVP, MVP mode, **cursor/pan-vs-select tool**, selection, viewport, **group expand/collapse**, **tour playback**) → Zustand stores in `apps/web/src/core/state/`.
 - **Component-local state** → `useState`.
 
 ### Guided tours (playback)
@@ -83,32 +83,41 @@ For React, use the hooks: `useDocSnapshot()`, `useResolvedDoc()`, `useUndoRedoSt
 ## Folder rules
 
 ```
-src/
-├── core/         # cross-cutting. CANNOT import from features/
-├── design-system/
-├── features/     # user-visible features. CANNOT import from sibling features/
-├── lib/          # pure utilities, no React, no state
-└── data/         # bundled data (example YAML)
+packages/
+└── schema/       # @arch-vis/schema — Zod schema, parse, Result, safeUrl.
+                  # Shared by web and server. No React/DOM (enforced by tsconfig).
+apps/
+├── server/       # backend (scaffold — filled by issues #55+, ADR 0014)
+└── web/src/
+    ├── core/         # cross-cutting. CANNOT import from features/
+    ├── design-system/
+    ├── features/     # user-visible features. CANNOT import from sibling features/
+    ├── lib/          # pure utilities, no React, no state
+    └── data/         # bundled data (example YAML)
 ```
 
 Cross-feature communication flows through `core/state` and `core/doc`.
+`Result`/`ok`/`err`/`unwrap` come from `@arch-vis/schema`, re-exported through
+`@/core/errors` (which adds `assertNever`); web code keeps importing
+`@/core/errors`. The schema and `parseProjectYaml` are imported directly from
+`@arch-vis/schema`.
 
 ## Common operations
 
 ### Add a new element type to the schema
 
-1. Update the `ElementType` enum and `Element` discriminated union in `src/core/schema/schema.ts`.
-2. Add a glyph case in `src/features/canvas/nodes/NodeParts.tsx` → `ElementGlyph` (shared by `ElementNode` and `GroupNode`).
+1. Update the `ElementType` enum and `Element` discriminated union in `packages/schema/src/schema.ts`.
+2. Add a glyph case in `apps/web/src/features/canvas/nodes/NodeParts.tsx` → `ElementGlyph` (shared by `ElementNode` and `GroupNode`).
 3. Add tone-aware styles in `ElementNode.css` if it has special visual treatment.
-4. Update `src/core/schema/schema.test.ts` to cover the new type.
+4. Update `packages/schema/src/schema.test.ts` to cover the new type.
 5. Add an instance to `architectures/example-project.yaml` so manual QA covers it.
 6. Bump `$schemaVersion` if the change isn't backward-compatible.
-7. Update `NODE_DIMENSIONS` in `src/features/canvas/types.ts` if the new type needs different dimensions.
+7. Update `NODE_DIMENSIONS` in `apps/web/src/features/canvas/types.ts` if the new type needs different dimensions.
 8. The exhaustive switches in `Canvas.tsx` (`isAnimatedEdge`, `edgeStroke`) will produce compile errors if the new type also introduces a new `ConnectionType` — fix those too.
 
 ### Add a new feature
 
-1. New folder under `src/features/<feature-name>/`.
+1. New folder under `apps/web/src/features/<feature-name>/`.
 2. One component per file. Default export is the component.
 3. Co-locate a `.css` file. All color/spacing/sizing/motion via `var(--…)` tokens; layout is plain CSS (flex/grid), not Tailwind utilities. Never author raw color outside `tokens.css`.
 4. Mount the feature from `App.tsx` or another feature's composition root — never reach across siblings.
@@ -116,12 +125,15 @@ Cross-feature communication flows through `core/state` and `core/doc`.
 
 ### Run the toolchain
 
+All commands run at the workspace root and fan out to every package
+(`pnpm -r`); `dev`/`test` target `@arch-vis/web`.
+
 ```bash
 pnpm dev          # http://localhost:5173
-pnpm typecheck    # zero errors required
+pnpm typecheck    # zero errors required (web + server + schema)
 pnpm lint         # zero errors required
-pnpm test         # vitest watch
-pnpm test:run     # one-shot for CI
+pnpm test         # vitest watch (web)
+pnpm test:run     # one-shot for CI (all packages)
 pnpm build        # production build
 ```
 
@@ -153,7 +165,7 @@ pnpm build        # production build
 
 ## Live data & export
 
-- **Live data** (`src/core/live/`): only `http` `dataSources` are polled, through
+- **Live data** (`apps/web/src/core/live/`): only `http` `dataSources` are polled, through
   one boundary — `LiveDataClient` (direct browser fetch). Polling is **opt-in per
   project** (`viewStore.liveDataEnabled`, reset on every load) so an untrusted
   imported document never auto-fetches; every URL must be a public http(s)
@@ -163,7 +175,7 @@ pnpm build        # production build
   `useLiveData(element)` hook (backoff + stale states) feeds the node
   `LiveIndicator` and the inspector's Live status. See
   `docs/adr/0005-live-data.md` and `docs/adr/0008-live-data-hardening.md`.
-- **Export** (`src/core/export/`): JSON via `serializeProject` (round-trips);
+- **Export** (`apps/web/src/core/export/`): JSON via `serializeProject` (round-trips);
   PNG/SVG via the Canvas-registered `canvasExporter` (lazy `html-to-image`,
   captures the visible graph at the current layer + MVP). UI in
   `inspector/sections/ExportSection`. See `docs/adr/0006-export.md`.

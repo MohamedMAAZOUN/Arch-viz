@@ -48,11 +48,11 @@ jobs:
       # matching base path. Derived from the repo name so it stays correct if
       # the repo is renamed.
       - name: Build
-        run: pnpm build --base "/${{ github.event.repository.name }}/"
+        run: pnpm --filter @arch-vis/web build --base "/${{ github.event.repository.name }}/"
 
       # SPA fallback: serve index.html for unknown paths (deep links, refresh).
       - name: Add SPA 404 fallback
-        run: cp dist/index.html dist/404.html
+        run: cp apps/web/dist/index.html apps/web/dist/404.html
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -60,7 +60,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: apps/web/dist
 
   deploy:
     name: Deploy

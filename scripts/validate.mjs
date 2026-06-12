@@ -2,7 +2,7 @@
 // Usage: npx vite-node scripts/validate.mjs <path-to-yaml>
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
-import { ProjectDocument } from "../src/core/schema/schema.ts";
+import { ProjectDocument } from "../packages/schema/src/schema.ts";
 
 const file = process.argv[2];
 if (!file) {
