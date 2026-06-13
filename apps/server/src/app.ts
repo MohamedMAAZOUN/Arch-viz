@@ -31,10 +31,7 @@ const HealthResponse = z.object({
   db: z.enum(["up", "down"]),
 });
 
-export async function buildApp(
-  config: AppConfig,
-  db: HealthProbe,
-): Promise<FastifyInstance> {
+export async function buildApp(config: AppConfig, db: HealthProbe): Promise<FastifyInstance> {
   const app = Fastify({
     logger: config.env !== "test",
   }).withTypeProvider<ZodTypeProvider>();
@@ -49,14 +46,10 @@ export async function buildApp(
     timeWindow: "1 minute",
   });
 
-  app.get(
-    "/healthz",
-    { schema: { response: { 200: HealthResponse } } },
-    async () => ({
-      status: "ok" as const,
-      db: (await db.ping()) ? ("up" as const) : ("down" as const),
-    }),
-  );
+  app.get("/healthz", { schema: { response: { 200: HealthResponse } } }, async () => ({
+    status: "ok" as const,
+    db: (await db.ping()) ? ("up" as const) : ("down" as const),
+  }));
 
   return app;
 }

@@ -41,7 +41,12 @@ describe("loadConfig", () => {
     const result = loadConfig({ ...VALID_ENV, AUTH_OIDC_ENABLED: "true" });
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    for (const key of ["OIDC_ISSUER_URL", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET", "OIDC_REDIRECT_URI"]) {
+    for (const key of [
+      "OIDC_ISSUER_URL",
+      "OIDC_CLIENT_ID",
+      "OIDC_CLIENT_SECRET",
+      "OIDC_REDIRECT_URI",
+    ]) {
       expect(result.error).toContain(key);
     }
   });

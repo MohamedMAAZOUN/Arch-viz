@@ -77,7 +77,9 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): R
   if (e.AUTH_OIDC_ENABLED) {
     const oidc = OidcFieldsSchema.safeParse(env);
     if (!oidc.success) {
-      return err(`OIDC is enabled but required fields are missing:\n${z.prettifyError(oidc.error)}`);
+      return err(
+        `OIDC is enabled but required fields are missing:\n${z.prettifyError(oidc.error)}`,
+      );
     }
     const o = oidc.data;
     return ok({
