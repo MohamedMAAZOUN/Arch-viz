@@ -10,6 +10,7 @@
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
 import { createDb } from "./db";
+import { createDrizzleRepository } from "./db/repository";
 
 const config = loadConfig(process.env);
 if (!config.ok) {
@@ -18,7 +19,8 @@ if (!config.ok) {
 }
 
 const db = createDb(config.value.databaseUrl);
-const app = await buildApp(config.value, db);
+const repo = createDrizzleRepository(db);
+const app = await buildApp(config.value, { db, repo });
 
 let shuttingDown = false;
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
