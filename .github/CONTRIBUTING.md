@@ -22,19 +22,23 @@ Node ≥ 20, pnpm ≥ 9.
 2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs` each enter through exactly one file (Canvas.tsx, ElkLayoutEngine.ts / layout.worker.ts, DocStore.ts / persistence.ts). ESLint enforces this with `no-restricted-imports`. Don't suppress it.
 3. **Render is a pure function** — `render(committedDoc, draftDoc, viewState) → DOM`. No reads from `localStorage`, `Date.now()`, or globals inside render paths.
 4. **Boundaries validate** — Zod at every entrypoint (file load, future API, URL params). Trusted thereafter.
-5. **Schema is law** — UI shapes itself to the schema, never the other way around. New feature → update `src/core/schema/schema.ts` first, then the UI.
+5. **Schema is law** — UI shapes itself to the schema, never the other way around. New feature → update `packages/schema/src/schema.ts` (`@arch-vis/schema`) first, then the UI.
 
 Full rules: **[`docs/engineering-guide.md`](../docs/engineering-guide.md)**. Read it before contributing anything beyond a typo fix.
 
 ## Repository structure
 
 ```
-src/
-├── core/         # cross-cutting infrastructure (schema, doc, state, layout, errors)
-├── design-system/# tokens, theme runtime, primitives
-├── features/     # user-visible capabilities (canvas, inspector, mvp-slider, ...)
-├── lib/          # tiny pure utilities (no React, no state)
-└── data/         # bundled example data
+packages/
+└── schema/       # @arch-vis/schema — shared Zod contract (schema, parse, Result, safeUrl)
+apps/
+├── server/       # backend (scaffold — ADR 0014, issues #55+)
+└── web/src/
+    ├── core/         # cross-cutting infrastructure (doc, state, layout, errors)
+    ├── design-system/# tokens, theme runtime, primitives
+    ├── features/     # user-visible capabilities (canvas, inspector, mvp-slider, ...)
+    ├── lib/          # tiny pure utilities (no React, no state)
+    └── data/         # bundled example data
 ```
 
 `core/` cannot import from `features/`. `features/` cannot import from sibling `features/`. Cross-feature communication goes through `core/state` and `core/doc`.

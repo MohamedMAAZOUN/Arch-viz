@@ -4,7 +4,7 @@ The complete, field-by-field reference for an arch-vis project document. The
 schema is **law**: the UI shapes itself to this document, never the other way
 around.
 
-- **Source of truth:** `src/core/schema/schema.ts` (Zod). If this doc and the
+- **Source of truth:** `packages/schema/src/schema.ts` (Zod, exported as `@arch-vis/schema`). If this doc and the
   code ever disagree, the code wins — fix this doc.
 - **Worked example:** `docs/schema-example.yaml` (small e-commerce) and
   `architectures/aurora-platform.yaml` (realistic, 42 elements).
@@ -287,4 +287,4 @@ Write YAML, then let the app validate it — the parser is the contract, and its
 error messages name the offending path. Start from `docs/schema-example.yaml`,
 keep ids kebab-case, declare every MVP you reference in a lifecycle, and remember
 the two differing `minLayer` defaults above. When in doubt, the precise rule is
-in `src/core/schema/schema.ts`.
+in `packages/schema/src/schema.ts`.

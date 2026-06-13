@@ -12,7 +12,14 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", "coverage", "playwright-report", "eslint.config.js", "scripts"],
+    ignores: [
+      "**/dist",
+      "**/node_modules",
+      "**/coverage",
+      "**/playwright-report",
+      "eslint.config.js",
+      "scripts",
+    ],
   },
 
   // Base TypeScript rules
@@ -25,7 +32,13 @@ export default tseslint.config(
       ecmaVersion: 2022,
       sourceType: "module",
       parserOptions: {
-        project: "./tsconfig.json",
+        // One workspace, three tsconfigs (apps/web, apps/server,
+        // packages/schema) — projectService picks the right one per file.
+        // vitest.config.ts is excluded from the web tsconfig (to avoid a
+        // TS2769 false-positive on the `test:` key) but still needs linting.
+        projectService: {
+          allowDefaultProject: ["apps/web/vitest.config.ts"],
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -40,7 +53,11 @@ export default tseslint.config(
       "import-x/resolver-next": [
         createTypeScriptImportResolver({
           alwaysTryTypes: true,
-          project: "./tsconfig.json",
+          project: [
+            "./apps/web/tsconfig.json",
+            "./apps/server/tsconfig.json",
+            "./packages/schema/tsconfig.json",
+          ],
         }),
       ],
     },
@@ -85,11 +102,11 @@ export default tseslint.config(
   // Principle 2 from the engineering guide: external libraries enter through
   // exactly ONE wrapper file. Imports from anywhere else are blocked.
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["apps/web/src/**/*.{ts,tsx}"],
     ignores: [
-      "src/features/canvas/Canvas.tsx",
-      "src/features/canvas/nodes/**",
-      "src/features/canvas/edges/**",
+      "apps/web/src/features/canvas/Canvas.tsx",
+      "apps/web/src/features/canvas/nodes/**",
+      "apps/web/src/features/canvas/edges/**",
     ],
     rules: {
       "no-restricted-imports": [
@@ -99,7 +116,7 @@ export default tseslint.config(
             {
               name: "@xyflow/react",
               message:
-                "Import React Flow only from src/features/canvas/Canvas.tsx. Application code consumes the Canvas wrapper.",
+                "Import React Flow only from apps/web/src/features/canvas/Canvas.tsx. Application code consumes the Canvas wrapper.",
             },
           ],
         },
@@ -107,10 +124,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["apps/web/src/**/*.{ts,tsx}"],
     ignores: [
-      "src/core/layout/ElkLayoutEngine.ts",
-      "src/core/layout/layout.worker.ts",
+      "apps/web/src/core/layout/ElkLayoutEngine.ts",
+      "apps/web/src/core/layout/layout.worker.ts",
     ],
     rules: {
       "no-restricted-imports": [
@@ -120,7 +137,7 @@ export default tseslint.config(
             {
               name: "elkjs",
               message:
-                "Import elkjs only from src/core/layout/ElkLayoutEngine.ts or layout.worker.ts.",
+                "Import elkjs only from apps/web/src/core/layout/ElkLayoutEngine.ts or layout.worker.ts.",
             },
             {
               name: "elkjs/lib/elk.bundled.js",
@@ -130,7 +147,7 @@ export default tseslint.config(
             {
               name: "elkjs/lib/elk-api.js",
               message:
-                "Import elk-api only from src/core/layout/layout.worker.ts.",
+                "Import elk-api only from apps/web/src/core/layout/layout.worker.ts.",
             },
           ],
         },
@@ -138,8 +155,8 @@ export default tseslint.config(
     },
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/core/doc/DocStore.ts", "src/core/doc/persistence.ts"],
+    files: ["apps/web/src/**/*.{ts,tsx}"],
+    ignores: ["apps/web/src/core/doc/DocStore.ts", "apps/web/src/core/doc/persistence.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -148,12 +165,33 @@ export default tseslint.config(
             {
               name: "yjs",
               message:
-                "Import yjs only from src/core/doc/DocStore.ts. Application code consumes DocStore operations.",
+                "Import yjs only from apps/web/src/core/doc/DocStore.ts. Application code consumes DocStore operations.",
             },
             {
               name: "y-indexeddb",
               message:
-                "Import y-indexeddb only from src/core/doc/persistence.ts.",
+                "Import y-indexeddb only from apps/web/src/core/doc/persistence.ts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // Server: the database driver enters through exactly one module
+  // (apps/server/src/db/ — the server-side analogue of the web wrapper rules).
+  {
+    files: ["apps/server/src/**/*.ts"],
+    ignores: ["apps/server/src/db/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["drizzle-orm", "drizzle-orm/*", "postgres"],
+              message:
+                "Import the database only via apps/server/src/db (the AppDb boundary). Route handlers never touch the driver.",
             },
           ],
         },
@@ -163,10 +201,17 @@ export default tseslint.config(
 
   // Test files: relax some rules
   {
-    files: ["**/*.test.{ts,tsx}", "tests/**"],
+    files: ["**/*.test.{ts,tsx}", "apps/web/tests/**"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
     },
+  },
+
+  // vitest.config.ts lives outside the web tsconfig (to avoid a TS2769 false-
+  // positive on the `test:` key), so type-checked rules can't run on it.
+  {
+    files: ["apps/web/vitest.config.ts"],
+    extends: [tseslint.configs.disableTypeChecked],
   },
 );

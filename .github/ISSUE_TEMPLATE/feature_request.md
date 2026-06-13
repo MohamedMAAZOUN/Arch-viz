@@ -15,7 +15,7 @@ labels: ["feature"]
 
 ## Schema impact
 
-<!-- Does this require changes to src/core/schema/schema.ts?
+<!-- Does this require changes to packages/schema/src/schema.ts?
      If yes, sketch the new/modified fields. -->
 
 ## Alternatives considered

@@ -73,71 +73,74 @@ The Zod schema in `schema.ts` is the contract. UI shapes itself to the schema, n
 
 We organize by **feature**, not by technical layer. A "feature" is a user-visible capability of the tool (canvas, inspector, mvp-slider, tours, brand-picker). Cross-cutting concerns live in `core/`.
 
+The repository is a **pnpm workspace** (ADR 0014): `apps/web` is the SPA,
+`apps/server` is the backend (scaffold — filled by issues #55+), and
+`packages/schema` is the shared contract — the Zod project-document schema,
+the YAML parser, the `Result` type, and the `safeUrl` guard. The schema
+package is consumed by both apps so client and server validate with the same
+code; it has **no React/DOM dependency**, enforced by its tsconfig (`lib`
+contains no DOM).
+
 ```
-arch-vis/
-├── public/                       # static assets (favicon, robots.txt)
-├── src/
-│   ├── main.tsx                  # entry point — does ONE thing: render <App/>
-│   ├── App.tsx                   # top-level layout: topbar, canvas, inspector
-│   │
-│   ├── design-system/            # tokens, theme runtime, contract test
-│   │   ├── tokens.css            # source of truth for all design tokens
-│   │   ├── tokens.ts            # JS mirror (Motion durations, z, breakpoints)
-│   │   ├── theme.ts             # theme/brand runtime
-│   │   ├── contrast.ts          # WCAG contrast helpers (+ contrast.test.ts)
-│   │   └── tokens.contract.test.ts  # guardrail: undefined tokens, raw colors, drift
-│   │
-│   ├── core/                     # cross-cutting infrastructure
-│   │   ├── schema/               # Zod definitions, parsing, validation
-│   │   │   ├── schema.ts
-│   │   │   └── parse.ts
-│   │   ├── doc/                  # the Yjs source of truth + draft mgmt
-│   │   │   ├── DocStore.ts       # ONLY file that imports yjs
-│   │   │   ├── resolve.ts        # effective-state-at-(layer, mvp) function
-│   │   │   └── persistence.ts    # file save/load + IndexedDB (ONLY file that imports y-indexeddb)
-│   │   ├── state/                # Zustand stores (view state, not doc state)
-│   │   │   ├── viewStore.ts
-│   │   │   └── selectionStore.ts
-│   │   ├── layout/               # ELK wrapper
-│   │   │   ├── LayoutEngine.ts   # interface
-│   │   │   ├── ElkLayoutEngine.ts# ONLY file that imports elkjs
-│   │   │   └── layout.worker.ts  # the web worker
-│   │   └── errors/               # Result type, assertNever
-│   │       ├── index.ts          # public surface: Result, ok, err, unwrap, assertNever
-│   │       └── result.ts         # Result discriminated union + helpers
-│   │
-│   ├── features/                 # user-visible capabilities
-│   │   ├── canvas/               # React Flow wrapper + node renderers
-│   │   │   ├── Canvas.tsx        # ONLY file that imports @xyflow/react
-│   │   │   ├── nodes/            # per-type node components
-│   │   │   ├── edges/            # per-type edge components
-│   │   │   └── viewport.ts
-│   │   ├── inspector/            # right-side panel
-│   │   │   ├── Inspector.tsx
-│   │   │   └── sections/         # one file per inspector section
-│   │   ├── mvp-slider/
-│   │   ├── layer-toggle/
-│   │   ├── tour/
-│   │   ├── settings/             # the settings menu (theme/brand picker lives here)
-│   │   └── topbar/
-│   │
-│   ├── lib/                      # tiny pure utilities (no React, no state)
-│   │   ├── id.ts
-│   │   ├── arr.ts
-│   │   └── debounce.ts
-│   │
-│   └── types/                    # ambient TS types only — not type definitions
-│
-├── tests/                        # E2E (Playwright)
+arch-vis/                          # workspace root: eslint, prettier, husky, CI
+├── pnpm-workspace.yaml
+├── package.json                  # root scripts fan out via `pnpm -r`
+├── architectures/                # bundled *.yaml projects (auto-discovered)
+├── scripts/                      # repo tooling (validate.mjs, screenshots)
 ├── docs/
 │   ├── adr/                      # architecture decision records
-│   ├── schema-v1.0.0.yaml        # the example schema (already produced)
 │   └── ...
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-├── eslint.config.js
-└── README.md
+│
+├── packages/
+│   └── schema/                   # @arch-vis/schema — the shared contract
+│       └── src/
+│           ├── index.ts          # public surface
+│           ├── schema.ts         # Zod definitions ("schema is law")
+│           ├── parse.ts          # YAML → validated ProjectDocument
+│           ├── result.ts         # Result<T, E> + ok/err/unwrap
+│           └── safeUrl.ts        # public-http(s)-only URL guard
+│
+└── apps/
+    ├── server/                   # @arch-vis/server — backend (ADR 0014)
+    │   └── src/                  # scaffold only until #55+
+    │
+    └── web/                      # @arch-vis/web — the SPA
+        ├── index.html
+        ├── vite.config.ts
+        ├── playwright.config.ts
+        ├── tests/                # E2E (Playwright)
+        └── src/
+            ├── main.tsx          # entry point — does ONE thing: render <App/>
+            ├── App.tsx           # top-level layout: topbar, canvas, inspector
+            │
+            ├── design-system/    # tokens, theme runtime, contract test
+            │   ├── tokens.css    # source of truth for all design tokens
+            │   ├── tokens.ts     # JS mirror (Motion durations, z, breakpoints)
+            │   ├── theme.ts      # theme/brand runtime
+            │   ├── contrast.ts   # WCAG contrast helpers (+ contrast.test.ts)
+            │   └── tokens.contract.test.ts  # guardrail: undefined tokens, raw colors
+            │
+            ├── core/             # cross-cutting infrastructure
+            │   ├── doc/          # the Yjs source of truth + draft mgmt
+            │   │   ├── DocStore.ts       # ONLY file that imports yjs
+            │   │   ├── resolve.ts        # effective-state-at-(layer, mvp) function
+            │   │   └── persistence.ts    # file save/load + IndexedDB (ONLY file that imports y-indexeddb)
+            │   ├── state/        # Zustand stores (view state, not doc state)
+            │   ├── layout/       # ELK wrapper
+            │   │   ├── ElkLayoutEngine.ts # ONLY file that imports elkjs
+            │   │   └── layout.worker.ts   # the web worker
+            │   └── errors/       # re-exports Result from @arch-vis/schema + assertNever
+            │
+            ├── features/         # user-visible capabilities
+            │   ├── canvas/       # React Flow wrapper + node renderers
+            │   │   └── Canvas.tsx # ONLY file that imports @xyflow/react
+            │   ├── inspector/    # right-side panel
+            │   ├── mvp-slider/ · layer-toggle/ · tour/ · settings/ · topbar/ · …
+            │   └── …
+            │
+            ├── lib/              # tiny pure utilities (no React, no state)
+            ├── data/             # architecture catalog loader
+            └── types/            # ambient TS types only
 ```
 
 ### Rules
@@ -147,6 +150,7 @@ arch-vis/
 - **`core/` modules cannot import from `features/`**. The dependency arrow always points inward.
 - **`features/` modules can import from `core/`, `design-system/`, and `lib/`** — but not from sibling features.
 - **`lib/` is for pure utilities only**. No React, no Zustand, no Yjs. If it imports any of those, it belongs in `core/`.
+- **The document contract lives in `packages/schema`** (`@arch-vis/schema`): schema, parser, `Result`, `safeUrl`. Web code imports the schema/parser from `@arch-vis/schema` directly; `Result` helpers keep flowing through `@/core/errors` (which re-exports them and adds `assertNever`). The package must never import React or DOM types — both apps depend on it.
 - **Cross-feature communication goes through `core/state`**, never through direct imports.
 
 ---
@@ -184,7 +188,7 @@ We target strict TypeScript. Every escape hatch is a written exception, not a ha
 
   ```ts
   // ✓ Good
-  import type { Element } from "@/core/schema/schema";
+  import type { Element } from "@arch-vis/schema";
 
   // ✗ Bad — drifts from the schema
   type Element = { id: string; type: string; ... };
@@ -540,7 +544,7 @@ import { motion } from "motion/react";
 import { useViewStore } from "@/core/state/viewStore";
 import { DocStore } from "@/core/doc/DocStore";
 
-import type { ElementId } from "@/core/schema/schema";
+import type { ElementId } from "@arch-vis/schema";
 
 // 2. Module-level types
 type LocalProps = { ... };

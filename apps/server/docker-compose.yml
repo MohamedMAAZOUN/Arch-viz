@@ -1,0 +1,23 @@
+# Local development Postgres (ADR 0014).
+#   docker compose up -d        # start
+#   pnpm db:migrate             # apply migrations
+#   pnpm dev                    # boot the server against it
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: arch_vis
+      POSTGRES_PASSWORD: arch_vis
+      POSTGRES_DB: arch_vis
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arch_vis -d arch_vis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

@@ -95,7 +95,7 @@ Full rules live in `docs/engineering-guide.md`. Read it before contributing.
 | Doc | `yjs` + `y-indexeddb` | `src/core/doc/DocStore.ts`, `persistence.ts` |
 | Motion | `motion` | direct use; no wrapper needed |
 | State | `zustand` | direct use; pattern enforced |
-| Schema | `zod` v4 | `src/core/schema/schema.ts` |
+| Schema | `zod` v4 | `packages/schema/src/schema.ts` |
 | Styling | `tailwindcss` v4 + tokens | `src/design-system/tokens.css` |
 
 Monaco editor is deferred to v1.5. v1 uses a `<textarea>` + Zod validation for YAML edit.

@@ -38,14 +38,14 @@ Every rule below descends from one of these. When rules conflict, reason from th
 - **`readonly`** on function parameters, array fields, and return types wherever it's accurate.
 - **Exhaustive switches** — when switching on a discriminated union, add `default: return assertNever(x)` from `@/core/errors` so new variants cause a compile error, not a silent gap.
 - **Wrapper rule** — these libraries enter through exactly one file each:
-  - `@xyflow/react` → `src/features/canvas/Canvas.tsx` (+ node components in `src/features/canvas/nodes/`)
-  - `elkjs` → `src/core/layout/ElkLayoutEngine.ts` and `src/core/layout/layout.worker.ts`
-  - `yjs` → `src/core/doc/DocStore.ts`
-  - `y-indexeddb` → `src/core/doc/persistence.ts`
+  - `@xyflow/react` → `apps/web/src/features/canvas/Canvas.tsx` (+ node components in `apps/web/src/features/canvas/nodes/`)
+  - `elkjs` → `apps/web/src/core/layout/ElkLayoutEngine.ts` and `apps/web/src/core/layout/layout.worker.ts`
+  - `yjs` → `apps/web/src/core/doc/DocStore.ts`
+  - `y-indexeddb` → `apps/web/src/core/doc/persistence.ts`
   - ESLint enforces this via `no-restricted-imports`. Do not suppress.
-- **State tiers** — document data → Yjs (via `docStore`); view/UI state → Zustand stores in `src/core/state/`; component-local → `useState`.
+- **State tiers** — document data → Yjs (via `docStore`); view/UI state → Zustand stores in `apps/web/src/core/state/`; component-local → `useState`.
 - **Loading a project** — always call `loadProject(project)` from `@/core/doc/loadProject`. It loads the doc AND resets view state so the canvas is never blank.
-- **Schema first** — anything that requires schema changes must update `src/core/schema/schema.ts` (including tests in `schema.test.ts`) before the UI.
+- **Schema first** — anything that requires schema changes must update `packages/schema/src/schema.ts` (including tests in `schema.test.ts`) before the UI.
 - **Styling** — one component → one co-located `.css` file. All color/spacing/sizing/motion via `var(--…)` design tokens (`tokens.css` is the only place raw color is authored; JS mirror in `tokens.ts` — use `durationSec`/`ease`/`spring`). Layout is plain CSS (flex/grid), **not** Tailwind utilities. No hex/`oklch()` literals, no `var(--token, fallback)`. Enforced by `tokens.contract.test.ts`; see `docs/adr/0012-design-system-enforcement.md`.
 - **`useEffect`** is for syncing with external systems only. Never derive state from any reactive value in an effect — use `useMemo` or compute at call sites.
 - **Error handling** — expected failures (bad input, parse errors) return `Result<T, E>` from `@/core/errors`. Programming errors throw. Never `catch {}` silently.
@@ -53,16 +53,22 @@ Every rule below descends from one of these. When rules conflict, reason from th
 ## Repo map
 
 ```
-architectures/            # bundled *.yaml projects, auto-discovered (⌘K switcher)
-src/
-├── App.tsx                # top-level composition
-├── main.tsx               # entry point
-├── bootstrap.ts           # loads the default architecture on startup
-├── core/                  # cross-cutting: schema, doc, state, layout, errors
-├── design-system/         # tokens (tokens.css/.ts), theme runtime, contract test
-├── features/              # user-visible features (canvas, inspector, ...)
-├── lib/                   # pure utilities
-└── data/                  # architecture catalog loader (architectures.ts)
+architectures/             # bundled *.yaml projects, auto-discovered (⌘K switcher)
+packages/
+└── schema/                # @arch-vis/schema — Zod schema + parser + Result + safeUrl
+                           # (shared contract; no React/DOM — see ADR 0014)
+apps/
+├── server/                # backend scaffold (Fastify + Drizzle + Postgres, issues #55+)
+└── web/
+    └── src/
+        ├── App.tsx        # top-level composition
+        ├── main.tsx       # entry point
+        ├── bootstrap.ts   # loads the default architecture on startup
+        ├── core/          # cross-cutting: doc, state, layout, errors, live, export
+        ├── design-system/ # tokens (tokens.css/.ts), theme runtime, contract test
+        ├── features/      # user-visible features (canvas, inspector, ...)
+        ├── lib/           # pure utilities
+        └── data/          # architecture catalog loader (architectures.ts)
 
 docs/
 ├── engineering-guide.md   # canonical standards (read this)
