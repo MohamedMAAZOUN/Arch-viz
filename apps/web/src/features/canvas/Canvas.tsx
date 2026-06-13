@@ -103,6 +103,24 @@ function CanvasInner() {
   const setCursorMode = useViewStore((s) => s.setCursorMode);
   const { placements, isLaying } = useLayoutedGraph(doc, currentLayer);
 
+  // Animate node repositioning ONLY across a real layout change — an ELK
+  // relayout (layer switch / expand-collapse), a persisted drag, or
+  // "Reorganize" clearing overrides. `placements` is a memoized map whose
+  // reference changes on exactly those events and NOT on the hover/selection
+  // rebuilds that leave every position untouched. Opening the transition window
+  // only here is what stops nested group children from sliding (and blinking)
+  // on hover — see the data-animate-layout note in Canvas.css.
+  const [animateLayout, setAnimateLayout] = useState(false);
+  useEffect(() => {
+    setAnimateLayout(true);
+    const timer = window.setTimeout(() => {
+      setAnimateLayout(false);
+    }, duration.slow);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [placements]);
+
   // Readability prefs (persisted). Each is independently toggleable in DISPLAY.
   const density = useCanvasPrefsStore((s) => s.density);
   const edgeLabels = useCanvasPrefsStore((s) => s.edgeLabels);
@@ -512,6 +530,7 @@ function CanvasInner() {
       data-lock-alert={lockHint.visible}
       data-density={density}
       data-lod={lod}
+      data-animate-layout={animateLayout}
       ref={canvasRef}
       role="application"
       aria-label="Architecture diagram"

@@ -332,9 +332,18 @@
  * which snaps nodes back to their auto-layout spots). Both paths just update
  * node.position on existing nodes, so this single rule covers them. Honors
  * reduced-motion: --duration-slow zeroes out under the tokens' media query.
- * Disabled mid-drag so dragging stays 1:1. */
+ * Disabled mid-drag so dragging stays 1:1.
+ *
+ * CRITICAL: the transition is gated behind data-animate-layout, set true ONLY
+ * for the brief window after a genuine layout change (see Canvas.tsx). Hover-
+ * and selection-driven rebuilds recreate the nodes array WITHOUT moving any
+ * node; during those, React Flow still briefly re-projects nested children
+ * through their parent, and a standing transform-transition would animate that
+ * re-projection as a slide from the group's origin — walking the node out from
+ * under the pointer and ping-ponging mouseenter/leave into a blink loop. Gating
+ * keeps the reorganize/layer-switch glide while killing the hover blink. */
 
-.canvas .react-flow__node {
+.canvas[data-animate-layout="true"] .react-flow__node {
   transition: transform var(--duration-slow) var(--ease-out);
 }
 
