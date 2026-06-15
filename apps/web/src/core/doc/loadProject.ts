@@ -12,6 +12,7 @@
 // ============================================================================
 
 import { docStore } from "@/core/doc/DocStore";
+import { useProjectContextStore } from "@/core/state/projectContextStore";
 import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
 
@@ -19,6 +20,11 @@ import type { ProjectDocument } from "@arch-vis/schema";
 
 export function loadProject(project: ProjectDocument): void {
   docStore.load(project);
+
+  // A freshly loaded document is local-only by default. The server load paths
+  // (openServerProject / restore) re-establish their context right after this
+  // call; every other path (bundled, file, drag-drop) stays local-only.
+  useProjectContextStore.getState().setServerProject(null);
 
   // A tour belongs to the project that was open — leave any active playback.
   useTourStore.getState().exit();

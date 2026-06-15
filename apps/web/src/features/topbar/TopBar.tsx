@@ -15,36 +15,69 @@ import { docStore } from "@/core/doc/DocStore";
 import { useDirty } from "@/core/doc/useDirty";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useUndoRedoState } from "@/core/doc/useUndoRedoState";
+import { saveProject, type SaveOutcome } from "@/core/project/saveProject";
 import { notify } from "@/core/state/notificationStore";
+import { useProjectContextStore } from "@/core/state/projectContextStore";
 import ArchitecturePicker from "@/features/architecture-picker/ArchitecturePicker";
 import UserChip from "@/features/auth/UserChip";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
 import SettingsMenu from "@/features/settings/SettingsMenu";
+import VersionHistoryDialog from "@/features/version-history/VersionHistoryDialog";
 
 import "@/features/topbar/TopBar.css";
+
+function reportSave(outcome: SaveOutcome): void {
+  switch (outcome.kind) {
+    case "committed":
+      notify({ level: "success", title: "Saved", detail: `Committed version ${String(outcome.version)}.` });
+      return;
+    case "created":
+      notify({ level: "success", title: "Saved to server", detail: "Created a new server project from your draft." });
+      return;
+    case "read-only":
+      notify({ level: "info", title: "Read-only", detail: "You have viewer access — ask the owner for edit rights." });
+      return;
+    case "error":
+      notify({ level: "error", title: "Save failed", detail: outcome.message });
+      return;
+    case "needs-auth":
+    case "noop":
+      // needs-auth: the login/expiry prompt is already open. noop: nothing to do.
+      return;
+  }
+}
 
 export default function TopBar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const doc = useDocSnapshot();
   const { canUndo, canRedo } = useUndoRedoState();
   const dirty = useDirty();
+  const server = useProjectContextStore((s) => s.server);
 
   const handleSave = () => {
     if (doc === null || saving) return;
     setSaving(true);
-    void saveToCurrentFile()
-      .then((result) => {
-        if (!result.ok && !result.cancelled) {
-          notify({ level: "error", title: "Save failed", detail: result.error });
-        }
-      })
+    void saveProject()
+      .then(reportSave)
       .finally(() => {
         setSaving(false);
       });
   };
+
+  const handleDownload = () => {
+    if (doc === null) return;
+    void saveToCurrentFile().then((result) => {
+      if (!result.ok && !result.cancelled) {
+        notify({ level: "error", title: "Download failed", detail: result.error });
+      }
+    });
+  };
+
+  const saveLabel = saving ? "saving…" : server !== null ? (dirty ? "save" : "saved") : "save to server";
 
   // Ctrl/Cmd+S keyboard shortcut. Skip when typing in inputs/textareas.
   useEffect(() => {
@@ -129,13 +162,42 @@ export default function TopBar() {
             onClick={handleSave}
             disabled={doc === null || saving}
             aria-label="Save"
-            title={dirty ? "Save changes (Ctrl/Cmd+S)" : "Nothing to save"}
+            title={
+              server !== null
+                ? dirty
+                  ? "Commit a snapshot to the server (Ctrl/Cmd+S)"
+                  : "Up to date with the server"
+                : "Save this project to the server (Ctrl/Cmd+S)"
+            }
           >
             <SaveIcon />
             <span>
-              {saving ? "saving…" : dirty ? "save" : "saved"}
+              {saveLabel}
               {dirty ? <span className="topbar-dirty-dot" aria-hidden /> : null}
             </span>
+          </button>
+          {server !== null ? (
+            <button
+              type="button"
+              className="topbar-icon-btn"
+              onClick={() => {
+                setHistoryOpen(true);
+              }}
+              aria-label="Version history"
+              title="Version history"
+            >
+              <HistoryIcon />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="topbar-icon-btn"
+            onClick={handleDownload}
+            disabled={doc === null}
+            aria-label="Download a .yaml copy"
+            title="Download a .yaml copy"
+          >
+            <DownloadIcon />
           </button>
           <div className="topbar-undo-group">
             <button
@@ -193,7 +255,55 @@ export default function TopBar() {
           }}
         />
       ) : null}
+
+      {historyOpen ? (
+        <VersionHistoryDialog
+          onClose={() => {
+            setHistoryOpen(false);
+          }}
+        />
+      ) : null}
     </>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 3v5h5" />
+      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+      <path d="M12 7v5l4 2" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
   );
 }
 

@@ -96,6 +96,35 @@
   font-size: var(--text-small);
 }
 
+.archpicker-section {
+  margin: var(--space-3) var(--space-3) var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-fg-faint);
+}
+
+.archpicker-badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-nano);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.archpicker-badge--server {
+  color: var(--color-accent-base);
+  border-color: var(--color-accent-base);
+}
+
+.archpicker-badge--local {
+  color: var(--color-fg-faint);
+}
+
 .archpicker-row {
   display: flex;
   flex-direction: column;

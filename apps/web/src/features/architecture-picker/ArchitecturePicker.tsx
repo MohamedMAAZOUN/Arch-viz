@@ -1,10 +1,14 @@
 // ============================================================================
-// ArchitecturePicker — searchable switcher for bundled architectures
+// ArchitecturePicker — searchable switcher merging two catalog sources
 // ============================================================================
-// A command-palette-style overlay for choosing which architecture to open. It
-// lists everything auto-discovered from the architectures/ folder and searches
-// on BOTH the architecture name and the names of the nodes inside it — so
-// typing "redis" finds every architecture that contains a node named Redis.
+// A command-palette overlay for choosing what to open. It merges:
+//   • server projects from GET /projects (your own + shared + public), and
+//   • bundled architectures auto-discovered from the architectures/ folder —
+//     the offline seed/fallback (ADR 0013, demoted by ADR 0014).
+// Server and bundled entries are visually distinguished and the list still
+// searches bundled architecture names AND the names of the nodes inside.
+// When the server is unreachable the picker degrades gracefully to bundled
+// architectures only.
 //
 // Opened from the project pill in the TopBar and via the ⌘K / Ctrl-K shortcut.
 // Keyboard: ↑/↓ to move, Enter to open, Esc to close.
@@ -13,9 +17,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useFocusTrap } from "@/core/a11y/useFocusTrap";
-import { loadArchitectureById } from "@/core/doc/loadArchitectureById";
+import { projectsApi, type ServerProject } from "@/core/api/projects";
 import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
+import { openBundledArchitecture, openServerProject } from "@/core/project/openProject";
 import { notify } from "@/core/state/notificationStore";
+import { useProjectContextStore } from "@/core/state/projectContextStore";
 import { getArchitectureIndex } from "@/data/architectures";
 
 import type { ArchitectureEntry } from "@/data/architectures";
@@ -26,41 +32,46 @@ interface ArchitecturePickerProps {
   onClose: () => void;
 }
 
-interface Match {
-  entry: ArchitectureEntry;
-  /** Node names that matched the query — shown so the hit is explained. */
-  matchedNodes: string[];
-}
+/** A flat, keyboard-navigable item from either source. */
+type PickerItem =
+  | { readonly kind: "server"; readonly project: ServerProject }
+  | { readonly kind: "bundled"; readonly entry: ArchitectureEntry; readonly matchedNodes: string[] };
+
+const itemId = (item: PickerItem): string =>
+  item.kind === "server" ? `server-${item.project.id}` : `bundled-${item.entry.id}`;
 
 export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps) {
   const [query, setQuery] = useState("");
   const [entries, setEntries] = useState<ArchitectureEntry[] | null>(null);
+  const [serverProjects, setServerProjects] = useState<readonly ServerProject[]>([]);
   const [active, setActive] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const doc = useDocSnapshot();
   const currentName = doc?.project.name;
+  const openServerId = useProjectContextStore((s) => s.server?.id ?? null);
 
   useFocusTrap(panelRef);
 
-  // Build (and cache) the searchable index on first open. The picker shows a
-  // loading row until it resolves.
+  // Build the bundled index and fetch server projects in parallel on open. A
+  // server failure is silent — bundled architectures still render.
   useEffect(() => {
     let alive = true;
     void getArchitectureIndex().then((result) => {
       if (alive) setEntries(result);
+    });
+    void projectsApi.list().then((result) => {
+      if (alive && result.ok) setServerProjects(result.value);
     });
     return () => {
       alive = false;
     };
   }, []);
 
-  // Autofocus the search field on open.
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // Close on Esc (when the input isn't going to handle it itself).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -71,32 +82,35 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
     };
   }, [onClose]);
 
-  const matches = useMemo<Match[]>(() => {
-    if (entries === null) return [];
+  const items = useMemo<PickerItem[]>(() => {
     const q = query.trim().toLowerCase();
-    if (q === "") return entries.map((entry) => ({ entry, matchedNodes: [] }));
-    const out: Match[] = [];
-    for (const entry of entries) {
+    const out: PickerItem[] = [];
+    for (const project of serverProjects) {
+      if (q === "" || project.name.toLowerCase().includes(q)) out.push({ kind: "server", project });
+    }
+    for (const entry of entries ?? []) {
+      if (q === "") {
+        out.push({ kind: "bundled", entry, matchedNodes: [] });
+        continue;
+      }
       const nameHit = entry.name.toLowerCase().includes(q);
       const matchedNodes = entry.nodeNames.filter((n) => n.toLowerCase().includes(q));
-      if (nameHit || matchedNodes.length > 0) out.push({ entry, matchedNodes });
+      if (nameHit || matchedNodes.length > 0) out.push({ kind: "bundled", entry, matchedNodes });
     }
     return out;
-  }, [entries, query]);
+  }, [entries, serverProjects, query]);
 
-  // Reset the highlighted row whenever the result set changes.
   useEffect(() => {
     setActive(0);
-  }, [query, entries]);
+  }, [query, entries, serverProjects]);
 
-  const select = (entry: ArchitectureEntry) => {
-    void loadArchitectureById(entry.id).then((result) => {
+  const select = (item: PickerItem) => {
+    const action =
+      item.kind === "server" ? openServerProject(item.project.id) : openBundledArchitecture(item.entry.id);
+    const name = item.kind === "server" ? item.project.name : item.entry.name;
+    void action.then((result) => {
       if (!result.ok) {
-        notify({
-          level: "error",
-          title: `Couldn't load “${entry.name}”`,
-          detail: result.error,
-        });
+        notify({ level: "error", title: `Couldn't load “${name}”`, detail: result.error });
         return;
       }
       onClose();
@@ -106,16 +120,19 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
   const onInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActive((i) => Math.min(i + 1, matches.length - 1));
+      setActive((i) => Math.min(i + 1, items.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActive((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      const m = matches[active];
-      if (m !== undefined) select(m.entry);
+      const item = items[active];
+      if (item !== undefined) select(item);
     }
   };
+
+  const loading = entries === null;
+  const activeItem = items[active];
 
   return (
     <>
@@ -133,7 +150,7 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
             ref={inputRef}
             type="text"
             className="archpicker-input"
-            placeholder="Search architectures and nodes…"
+            placeholder="Search projects, architectures and nodes…"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -142,11 +159,7 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
             role="combobox"
             aria-expanded
             aria-controls="archpicker-list"
-            aria-activedescendant={
-              matches[active] !== undefined
-                ? `archpicker-opt-${matches[active].entry.id}`
-                : undefined
-            }
+            aria-activedescendant={activeItem !== undefined ? `archpicker-opt-${itemId(activeItem)}` : undefined}
             autoComplete="off"
             spellCheck={false}
           />
@@ -154,26 +167,39 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
         </div>
 
         <ul id="archpicker-list" role="listbox" className="archpicker-list">
-          {entries === null ? (
-            <li className="archpicker-empty">Loading architectures…</li>
-          ) : matches.length === 0 ? (
-            <li className="archpicker-empty">No architectures match “{query}”.</li>
+          {loading ? (
+            <li className="archpicker-empty">Loading…</li>
+          ) : items.length === 0 ? (
+            <li className="archpicker-empty">Nothing matches “{query}”.</li>
           ) : (
-            matches.map((m, i) => (
-              <li key={m.entry.id} role="presentation">
-                <PickerRow
-                  match={m}
-                  active={i === active}
-                  current={m.entry.name === currentName}
-                  onActivate={() => {
-                    setActive(i);
-                  }}
-                  onSelect={() => {
-                    select(m.entry);
-                  }}
-                />
-              </li>
-            ))
+            items.map((item, i) => {
+              const prev = items[i - 1];
+              const showHeader = i === 0 || prev?.kind !== item.kind;
+              const current =
+                item.kind === "server"
+                  ? item.project.id === openServerId
+                  : openServerId === null && item.entry.name === currentName;
+              return (
+                <li key={itemId(item)} role="presentation">
+                  {showHeader ? (
+                    <p className="archpicker-section" aria-hidden>
+                      {item.kind === "server" ? "Your projects" : "Bundled architectures"}
+                    </p>
+                  ) : null}
+                  <PickerRow
+                    item={item}
+                    active={i === active}
+                    current={current}
+                    onActivate={() => {
+                      setActive(i);
+                    }}
+                    onSelect={() => {
+                      select(item);
+                    }}
+                  />
+                </li>
+              );
+            })
           )}
         </ul>
 
@@ -185,9 +211,7 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
           <span>
             <kbd className="archpicker-kbd">↵</kbd> to open
           </span>
-          <span className="archpicker-footer-hint">
-            searches names and nodes · drop a .yaml in /architectures
-          </span>
+          <span className="archpicker-footer-hint">server + bundled · ⌘K</span>
         </footer>
       </div>
     </>
@@ -199,26 +223,27 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
 // ---------------------------------------------------------------------------
 
 interface PickerRowProps {
-  match: Match;
+  item: PickerItem;
   active: boolean;
   current: boolean;
   onActivate: () => void;
   onSelect: () => void;
 }
 
-function PickerRow({ match, active, current, onActivate, onSelect }: PickerRowProps) {
-  const { entry, matchedNodes } = match;
+function PickerRow({ item, active, current, onActivate, onSelect }: PickerRowProps) {
   const ref = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (active) ref.current?.scrollIntoView({ block: "nearest" });
   }, [active]);
 
+  const name = item.kind === "server" ? item.project.name : item.entry.name;
+
   return (
     <button
       ref={ref}
       type="button"
-      id={`archpicker-opt-${entry.id}`}
+      id={`archpicker-opt-${itemId(item)}`}
       role="option"
       aria-selected={active}
       className="archpicker-row"
@@ -229,26 +254,33 @@ function PickerRow({ match, active, current, onActivate, onSelect }: PickerRowPr
     >
       <span className="archpicker-row-head">
         <span className="archpicker-row-name">
-          {entry.name}
+          {name}
+          <span
+            className={`archpicker-badge ${item.kind === "server" ? "archpicker-badge--server" : "archpicker-badge--local"}`}
+          >
+            {item.kind === "server" ? "server" : "local"}
+          </span>
           {current ? <span className="archpicker-current">current</span> : null}
         </span>
-        <span className="archpicker-row-count">{entry.elementCount} nodes</span>
+        {item.kind === "bundled" ? (
+          <span className="archpicker-row-count">{item.entry.elementCount} nodes</span>
+        ) : null}
       </span>
-      {entry.description !== undefined ? (
-        <span className="archpicker-row-desc">{entry.description}</span>
+
+      {item.kind === "bundled" && item.entry.description !== undefined ? (
+        <span className="archpicker-row-desc">{item.entry.description}</span>
       ) : null}
-      {matchedNodes.length > 0 ? (
+
+      {item.kind === "bundled" && item.matchedNodes.length > 0 ? (
         <span className="archpicker-row-nodes">
           <span className="archpicker-row-nodes-label">matches</span>
-          {matchedNodes.slice(0, 6).map((n) => (
+          {item.matchedNodes.slice(0, 6).map((n) => (
             <span key={n} className="archpicker-chip">
               {n}
             </span>
           ))}
-          {matchedNodes.length > 6 ? (
-            <span className="archpicker-chip archpicker-chip--more">
-              +{matchedNodes.length - 6}
-            </span>
+          {item.matchedNodes.length > 6 ? (
+            <span className="archpicker-chip archpicker-chip--more">+{item.matchedNodes.length - 6}</span>
           ) : null}
         </span>
       ) : null}

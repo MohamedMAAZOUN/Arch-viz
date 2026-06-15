@@ -10,6 +10,7 @@ import { useDeleteSelectedShortcut } from "@/core/doc/useDeleteSelectedShortcut"
 import { useUndoRedoShortcuts } from "@/core/doc/useUndoRedoShortcuts";
 import AuthMount from "@/features/auth/AuthMount";
 import Canvas from "@/features/canvas/Canvas";
+import DraftImportOffer from "@/features/draft-import/DraftImportOffer";
 import AddElementMenu from "@/features/element-editor/AddElementMenu";
 import FileLoader from "@/features/file-loader/FileLoader";
 import MvpOverlayLegend from "@/features/mvp-slider/MvpOverlayLegend";
@@ -39,6 +40,7 @@ export default function App() {
         <NotificationHost />
         <ShortcutsOverlay />
         <AuthMount />
+        <DraftImportOffer />
       </div>
     </FileLoader>
   );
