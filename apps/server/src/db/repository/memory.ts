@@ -105,6 +105,10 @@ export function createMemoryRepository(): Repository {
         if (row) users.set(id, { ...row, status });
         return Promise.resolve();
       },
+      list: () =>
+        Promise.resolve(
+          [...users.values()].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        ),
     },
 
     localCredentials: {
@@ -175,6 +179,12 @@ export function createMemoryRepository(): Repository {
         auditRows.push(row);
         return Promise.resolve(row);
       },
+      list: (target) =>
+        Promise.resolve(
+          [...auditRows]
+            .filter((r) => target === undefined || r.target === target)
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+        ),
     },
 
     projects: {
@@ -192,10 +202,38 @@ export function createMemoryRepository(): Repository {
       },
       findById: (id) => Promise.resolve(projectRows.get(id) ?? null),
       listPublic: () => Promise.resolve([...projectRows.values()].filter((p) => p.isPublic)),
+      listForUser: (userId) => {
+        const memberOf = new Set(
+          memberRows.filter((m) => m.userId === userId).map((m) => m.projectId),
+        );
+        return Promise.resolve(
+          [...projectRows.values()].filter((p) => p.ownerId === userId || memberOf.has(p.id)),
+        );
+      },
+      rename: (id, name) => {
+        const row = projectRows.get(id);
+        if (!row) return Promise.resolve(null);
+        const next: ProjectRow = { ...row, name, updatedAt: new Date() };
+        projectRows.set(id, next);
+        return Promise.resolve(next);
+      },
+      delete: (id) => {
+        projectRows.delete(id);
+        for (let i = memberRows.length - 1; i >= 0; i -= 1) {
+          if (memberRows[i]?.projectId === id) memberRows.splice(i, 1);
+        }
+        for (let i = snapshotRows.length - 1; i >= 0; i -= 1) {
+          if (snapshotRows[i]?.projectId === id) snapshotRows.splice(i, 1);
+        }
+        return Promise.resolve();
+      },
     },
 
     projectMembers: {
       add: (input) => {
+        if (memberRows.some((m) => m.projectId === input.projectId && m.userId === input.userId)) {
+          throw new Error(`project_members_pkey violation`);
+        }
         const row: ProjectMemberRow = { ...input, createdAt: new Date() };
         memberRows.push(row);
         return Promise.resolve(row);
@@ -206,6 +244,17 @@ export function createMemoryRepository(): Repository {
         ),
       listForProject: (projectId) =>
         Promise.resolve(memberRows.filter((m) => m.projectId === projectId)),
+      updateRole: (projectId, userId, role) => {
+        const row = memberRows.find((m) => m.projectId === projectId && m.userId === userId);
+        if (!row) return Promise.resolve(null);
+        row.role = role;
+        return Promise.resolve(row);
+      },
+      remove: (projectId, userId) => {
+        const idx = memberRows.findIndex((m) => m.projectId === projectId && m.userId === userId);
+        if (idx >= 0) memberRows.splice(idx, 1);
+        return Promise.resolve();
+      },
     },
 
     snapshots: {

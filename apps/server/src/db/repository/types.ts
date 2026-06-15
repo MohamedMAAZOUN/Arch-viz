@@ -49,6 +49,8 @@ export interface UsersRepo {
    */
   recordLogin(id: string, at: Date): Promise<UserRow | null>;
   setStatus(id: string, status: UserStatus): Promise<void>;
+  /** Every user, newest first — the admin console listing (#59). */
+  list(): Promise<readonly UserRow[]>;
 }
 
 export interface LocalCredentialsRepo {
@@ -97,18 +99,27 @@ export interface AuditEntryInput {
 
 export interface AuditLogRepo {
   record(entry: AuditEntryInput): Promise<AuditLogRow>;
+  /** Audit trail newest first. Optionally narrowed to one target. */
+  list(target?: string): Promise<readonly AuditLogRow[]>;
 }
 
 export interface ProjectsRepo {
   create(input: { name: string; ownerId: string; isPublic?: boolean }): Promise<ProjectRow>;
   findById(id: string): Promise<ProjectRow | null>;
   listPublic(): Promise<readonly ProjectRow[]>;
+  /** Projects a user can reach by ownership or membership (#60 authed list). */
+  listForUser(userId: string): Promise<readonly ProjectRow[]>;
+  /** Rename (and bump `updated_at`); returns the fresh row or null if absent. */
+  rename(id: string, name: string): Promise<ProjectRow | null>;
+  delete(id: string): Promise<void>;
 }
 
 export interface ProjectMembersRepo {
   add(input: { projectId: string; userId: string; role: MemberRole }): Promise<ProjectMemberRow>;
   find(projectId: string, userId: string): Promise<ProjectMemberRow | null>;
   listForProject(projectId: string): Promise<readonly ProjectMemberRow[]>;
+  updateRole(projectId: string, userId: string, role: MemberRole): Promise<ProjectMemberRow | null>;
+  remove(projectId: string, userId: string): Promise<void>;
 }
 
 /** Append-only. No update, no delete — by design (ADR 0014). */

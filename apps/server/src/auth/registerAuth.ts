@@ -18,8 +18,8 @@ import { SESSION_COOKIE } from "./cookies";
 import { resolveSessionUser } from "./guard";
 import { createLocalAuthProvider } from "./local/provider";
 import { createOidcAuthProvider } from "./oidc/provider";
-import { isRequestOriginAllowed } from "./origin";
 import { PublicUser, toPublicUser } from "./publicUser";
+import { addOriginGuard } from "../http/csrf";
 
 import type { AuthContext, AuthProvider } from "./types";
 import type { FastifyInstance } from "fastify";
@@ -41,18 +41,7 @@ export async function registerAuth(app: FastifyInstance, ctx: AuthContext): Prom
   await app.register(
     async (scope) => {
       // CSRF: reject state-changing auth requests from a disallowed origin.
-      scope.addHook("onRequest", async (req, reply) => {
-        if (
-          !isRequestOriginAllowed({
-            method: req.method,
-            origin: req.headers.origin,
-            referer: req.headers.referer,
-            allowedOrigins: ctx.config.security.allowedOrigins,
-          })
-        ) {
-          return reply.code(403).send({ error: "origin_not_allowed" });
-        }
-      });
+      addOriginGuard(scope, ctx.config.security.allowedOrigins);
 
       const r = scope.withTypeProvider<ZodTypeProvider>();
 
