@@ -17,6 +17,7 @@ import { useDocSnapshot } from "@/core/doc/useDocSnapshot";
 import { useUndoRedoState } from "@/core/doc/useUndoRedoState";
 import { notify } from "@/core/state/notificationStore";
 import ArchitecturePicker from "@/features/architecture-picker/ArchitecturePicker";
+import UserChip from "@/features/auth/UserChip";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
 import SettingsMenu from "@/features/settings/SettingsMenu";
@@ -173,6 +174,7 @@ export default function TopBar() {
             <SettingsIcon />
             <span>settings</span>
           </button>
+          <UserChip />
         </div>
       </header>
 

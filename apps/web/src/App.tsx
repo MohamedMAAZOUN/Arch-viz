@@ -8,6 +8,7 @@
 
 import { useDeleteSelectedShortcut } from "@/core/doc/useDeleteSelectedShortcut";
 import { useUndoRedoShortcuts } from "@/core/doc/useUndoRedoShortcuts";
+import AuthMount from "@/features/auth/AuthMount";
 import Canvas from "@/features/canvas/Canvas";
 import AddElementMenu from "@/features/element-editor/AddElementMenu";
 import FileLoader from "@/features/file-loader/FileLoader";
@@ -37,6 +38,7 @@ export default function App() {
         </main>
         <NotificationHost />
         <ShortcutsOverlay />
+        <AuthMount />
       </div>
     </FileLoader>
   );

@@ -16,6 +16,7 @@ import { createRoot } from "react-dom/client";
 import App from "@/App";
 import { bootstrapInitialProject } from "@/bootstrap";
 import { initDraftPersistence } from "@/core/doc/persistence";
+import { useSessionStore } from "@/core/state/sessionStore";
 import { init as initTheme } from "@/design-system/theme";
 
 import "@/design-system/tokens.css";
@@ -38,6 +39,10 @@ async function start(): Promise<void> {
   }
 
   bootstrapInitialProject();
+
+  // Resolve the session in the background (guest by default). The canvas never
+  // waits on it — guest mode is the resting state (ADR 0014).
+  void useSessionStore.getState().init();
 
   root.render(
     <StrictMode>
