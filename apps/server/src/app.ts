@@ -22,8 +22,10 @@ import {
 } from "fastify-type-provider-zod";
 import { z } from "zod";
 
+import { registerAdmin } from "./admin/registerAdmin";
 import { createAuthContext } from "./auth/context";
 import { registerAuth } from "./auth/registerAuth";
+import { registerProjects } from "./projects/registerProjects";
 
 import type { Clock } from "./auth/clock";
 import type { AppConfig } from "./config";
@@ -69,6 +71,8 @@ export async function buildApp(config: AppConfig, deps: BuildAppDeps): Promise<F
 
   const authContext = createAuthContext(config, deps.repo, deps.clock);
   await registerAuth(app, authContext);
+  await registerProjects(app, authContext);
+  await registerAdmin(app, authContext);
 
   return app;
 }

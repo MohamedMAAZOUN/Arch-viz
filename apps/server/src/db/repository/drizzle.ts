@@ -85,6 +85,9 @@ export function createDrizzleRepository(db: AppDb): Repository {
       async setStatus(id, status) {
         await orm.update(users).set({ status }).where(eq(users.id, id));
       },
+      async list() {
+        return orm.select().from(users).orderBy(desc(users.createdAt));
+      },
     },
 
     localCredentials: {
@@ -177,6 +180,13 @@ export function createDrizzleRepository(db: AppDb): Repository {
           .returning();
         return only(rows, "audit log");
       },
+      async list(target) {
+        const query = orm.select().from(auditLog);
+        const rows = target
+          ? await query.where(eq(auditLog.target, target)).orderBy(desc(auditLog.createdAt))
+          : await query.orderBy(desc(auditLog.createdAt));
+        return rows;
+      },
     },
 
     projects: {
@@ -193,6 +203,30 @@ export function createDrizzleRepository(db: AppDb): Repository {
       },
       async listPublic() {
         return orm.select().from(projects).where(eq(projects.isPublic, true));
+      },
+      async listForUser(userId) {
+        // Owned projects plus those reached through a membership row. A left-ish
+        // union is overkill for the v1 volumes — two reads, de-duped in memory.
+        const owned = await orm.select().from(projects).where(eq(projects.ownerId, userId));
+        const shared = await orm
+          .select({ project: projects })
+          .from(projectMembers)
+          .innerJoin(projects, eq(projectMembers.projectId, projects.id))
+          .where(eq(projectMembers.userId, userId));
+        const byId = new Map(owned.map((p) => [p.id, p]));
+        for (const { project } of shared) byId.set(project.id, project);
+        return [...byId.values()];
+      },
+      async rename(id, name) {
+        const [row] = await orm
+          .update(projects)
+          .set({ name, updatedAt: new Date() })
+          .where(eq(projects.id, id))
+          .returning();
+        return row ?? null;
+      },
+      async delete(id) {
+        await orm.delete(projects).where(eq(projects.id, id));
       },
     },
 
@@ -211,6 +245,19 @@ export function createDrizzleRepository(db: AppDb): Repository {
       },
       async listForProject(projectId) {
         return orm.select().from(projectMembers).where(eq(projectMembers.projectId, projectId));
+      },
+      async updateRole(projectId, userId, role) {
+        const [row] = await orm
+          .update(projectMembers)
+          .set({ role })
+          .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)))
+          .returning();
+        return row ?? null;
+      },
+      async remove(projectId, userId) {
+        await orm
+          .delete(projectMembers)
+          .where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));
       },
     },
 
