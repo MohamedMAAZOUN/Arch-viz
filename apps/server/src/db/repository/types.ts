@@ -135,6 +135,20 @@ export interface SnapshotsRepo {
   list(projectId: string): Promise<readonly SnapshotRow[]>;
 }
 
+/**
+ * Append-only Yjs update log (ADR 0014, #65). `append` records one delta;
+ * `listForProject` returns them oldest-first to replay into the Y.Doc; `count`
+ * drives compaction; `compact` atomically replaces a project's whole log with
+ * a single full-state row. One "room" per project.
+ */
+export interface YjsUpdatesRepo {
+  append(projectId: string, update: Uint8Array): Promise<void>;
+  listForProject(projectId: string): Promise<readonly Uint8Array[]>;
+  count(projectId: string): Promise<number>;
+  /** Replace every row for a project with one merged update (compaction). */
+  compact(projectId: string, merged: Uint8Array): Promise<void>;
+}
+
 /** Input for the atomic lazy-provision path on first OIDC login. */
 export interface CreateUserWithIdentityInput {
   readonly email: string;
@@ -153,6 +167,7 @@ export interface Repository {
   readonly projects: ProjectsRepo;
   readonly projectMembers: ProjectMembersRepo;
   readonly snapshots: SnapshotsRepo;
+  readonly yjsUpdates: YjsUpdatesRepo;
   /**
    * Lazy-create a user and their federated identity in ONE transaction (OIDC
    * first login). Either both rows land or neither does.

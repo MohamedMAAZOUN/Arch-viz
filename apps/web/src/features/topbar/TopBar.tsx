@@ -22,6 +22,7 @@ import ArchitecturePicker from "@/features/architecture-picker/ArchitecturePicke
 import UserChip from "@/features/auth/UserChip";
 import { openFilePicker } from "@/features/file-loader/openFilePicker";
 import { saveToCurrentFile } from "@/features/file-loader/savePicker";
+import PresenceBar from "@/features/presence/PresenceBar";
 import SettingsMenu from "@/features/settings/SettingsMenu";
 import VersionHistoryDialog from "@/features/version-history/VersionHistoryDialog";
 
@@ -236,6 +237,7 @@ export default function TopBar() {
             <SettingsIcon />
             <span>settings</span>
           </button>
+          <PresenceBar />
           <UserChip />
         </div>
       </header>

@@ -35,6 +35,13 @@
   border-left-color: var(--color-accent-base);
 }
 
+/* A remote participant has this node selected (#66). A dimmed ring in their
+ * presence color, so it reads as "someone else is here" without competing with
+ * the local selection glow. */
+.element-node[data-remote-selected="true"] {
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--presence-color) 65%, transparent);
+}
+
 /* The left accent bar identifies the element TYPE (complements the type badge).
  * Semantic state (style.tone) is intentionally NOT shown here — it would read as
  * noise when almost every node is neutral. */

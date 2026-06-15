@@ -17,6 +17,7 @@
 
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -30,6 +31,13 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { ProjectDocument } from "@arch-vis/schema";
+
+/** Postgres `bytea` ↔ Uint8Array — the raw Yjs update bytes (ADR 0014, #65). */
+const bytea = customType<{ data: Uint8Array; driverData: Uint8Array }>({
+  dataType() {
+    return "bytea";
+  },
+});
 
 // --- shared column helpers --------------------------------------------------
 
@@ -171,6 +179,26 @@ export const snapshots = pgTable(
   (t) => [unique("snapshots_project_version_unique").on(t.projectId, t.version)],
 );
 
+/**
+ * Yjs update log — the multiplayer document store (ADR 0014, #65). One append-
+ * only row per persisted update (a `bytea` Yjs delta); `onLoadDocument` replays
+ * them in order to rebuild the `Y.Doc`, and periodic compaction collapses the
+ * log for a project into a single full-state row so it stays bounded under
+ * sustained editing. Keyed/indexed by project — one room per project document.
+ */
+export const yjsUpdates = pgTable(
+  "yjs_updates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    update: bytea("update").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("yjs_updates_project_id_idx").on(t.projectId)],
+);
+
 // --- instance metadata (scaffold marker, kept from #55) ---------------------
 
 export const appMeta = pgTable("app_meta", {
@@ -204,3 +232,6 @@ export type MemberRole = (typeof memberRole.enumValues)[number];
 
 export type SnapshotRow = typeof snapshots.$inferSelect;
 export type NewSnapshot = typeof snapshots.$inferInsert;
+
+export type YjsUpdateRow = typeof yjsUpdates.$inferSelect;
+export type NewYjsUpdate = typeof yjsUpdates.$inferInsert;

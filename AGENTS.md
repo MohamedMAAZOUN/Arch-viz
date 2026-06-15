@@ -40,8 +40,11 @@ Every rule below descends from one of these. When rules conflict, reason from th
 - **Wrapper rule** — these libraries enter through exactly one file each:
   - `@xyflow/react` → `apps/web/src/features/canvas/Canvas.tsx` (+ node components in `apps/web/src/features/canvas/nodes/`)
   - `elkjs` → `apps/web/src/core/layout/ElkLayoutEngine.ts` and `apps/web/src/core/layout/layout.worker.ts`
-  - `yjs` → `apps/web/src/core/doc/DocStore.ts`
+  - `yjs` → `apps/web/src/core/doc/DocStore.ts` (web); `apps/server/src/sync/**` (server)
   - `y-indexeddb` → `apps/web/src/core/doc/persistence.ts`
+  - `@hocuspocus/provider` → `apps/web/src/core/collab/syncProvider.ts`
+  - `@hocuspocus/server` → `apps/server/src/sync/**`
+  - the API (`fetch` for `/auth/*`, `/projects/*`) → `apps/web/src/core/api/http.ts`
   - ESLint enforces this via `no-restricted-imports`. Do not suppress.
 - **State tiers** — document data → Yjs (via `docStore`); view/UI state → Zustand stores in `apps/web/src/core/state/`; component-local → `useState`.
 - **Loading a project** — always call `loadProject(project)` from `@/core/doc/loadProject`. It loads the doc AND resets view state so the canvas is never blank.
@@ -89,12 +92,13 @@ These features are explicitly out of scope for v1 and must NOT be built speculat
 even though the schema already contains types for some of them:
 
 - Monaco YAML editor (plain textarea is sufficient for now)
-- Multiplayer (Yjs is wired; needs a sync server)
 - Video export of MVP transitions; PDF export (PNG/SVG already ship)
 - A live-data proxy/backend (the http client ships; the proxy is a deploy concern)
 
-> Note: guided **tour playback** (ADR 0004) and **live data** (ADR 0005/0008) are
-> already implemented — they are no longer deferred.
+> Note: guided **tour playback** (ADR 0004), **live data** (ADR 0005/0008),
+> **auth + server catalog/persistence** (ADR 0014, #63/#64), and **multiplayer
+> sync + presence** (ADR 0015, #65/#66) are already implemented — they are no
+> longer deferred.
 
 ## When uncertain
 

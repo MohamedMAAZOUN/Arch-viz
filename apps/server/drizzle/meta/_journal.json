@@ -8,6 +8,13 @@
       "when": 1781386891988,
       "tag": "0000_lying_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781564713970,
+      "tag": "0001_funny_starbolt",
+      "breakpoints": true
     }
   ]
 }

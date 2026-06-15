@@ -19,7 +19,7 @@ Tech: Vite 6 · React 19 · TypeScript 5.7 strict · Tailwind v4 (CSS-first @the
 ## The five non-negotiable principles
 
 1. **One source of truth** — `Y.Doc` for the draft, file for the committed.
-2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs`, and `y-indexeddb` each enter through exactly one file. ESLint enforces this via `no-restricted-imports`. Do not suppress.
+2. **Wrap external libraries** — `@xyflow/react`, `elkjs`, `yjs`, `y-indexeddb`, `@hocuspocus/provider` (web sync → `core/collab/syncProvider.ts`), `@hocuspocus/server`/`yjs` (server sync → `apps/server/src/sync/**`), and the backend API (`fetch` → `core/api/http.ts`) each enter through exactly one file. ESLint enforces this via `no-restricted-imports`. Do not suppress.
 3. **Render is a pure function** — `render(committedDoc, draftDoc, viewState) → DOM`. No `localStorage` reads, `Date.now()`, or globals inside render paths.
 4. **Boundaries validate** — Zod at every entrypoint. Trusted thereafter.
 5. **Schema is law** — UI shapes itself to the schema. Schema change first, UI second.
@@ -180,17 +180,21 @@ pnpm build        # production build
   captures the visible graph at the current layer + MVP). UI in
   `inspector/sections/ExportSection`. See `docs/adr/0006-export.md`.
 
-## Backend roadmap (planned — ADR 0014)
+## Backend (ADR 0014 / 0015)
 
-A backend is planned and designed: Node 20 + Fastify + Drizzle + Postgres +
-Hocuspocus, pnpm-workspace monorepo (`apps/web`, `apps/server`,
-`packages/schema`), dual auth (local + ForgeRock OIDC with lazy user
-creation), guest mode preserved, owner/viewer/editor sharing, append-only
-commit snapshots, multiplayer via Yjs sync. See `docs/adr/0014-backend.md`
-and GitHub issues #53–#69 (milestones 0–5, dependency-ordered). Formerly
-deferred items now live on that roadmap: multiplayer (#65), collaborative
-annotations (#67), Monaco YAML editor (#68), video export of MVP transitions
-(#69).
+The backend is built: Node 20 + Fastify + Drizzle + Postgres + Hocuspocus,
+pnpm-workspace monorepo (`apps/web`, `apps/server`, `packages/schema`), dual
+auth (local + ForgeRock OIDC with lazy user creation), guest mode preserved,
+owner/viewer/editor sharing, append-only commit snapshots. The web app reaches
+it through one API client (`core/api/http.ts`, Zod-parsed; auth UI in
+`features/auth`, server catalog/save/history in `core/project` + the ⌘K
+switcher). Multiplayer ships (ADR 0015): Hocuspocus sync on `GET /sync`
+(`apps/server/src/sync/**`, `yjs_updates` log), the client provider in
+`core/collab/syncProvider.ts` (attaches to the existing `Y.Doc`), and presence
+in `core/state/presenceStore.ts` (view-state tier). See `docs/adr/0014-backend.md`,
+`docs/adr/0015-multiplayer-presence.md`, and issues #53–#69. Still on the
+roadmap: collaborative annotations (#67), Monaco YAML editor (#68), video
+export of MVP transitions (#69).
 
 **Cancelled, not deferred**: the live-data proxy. `grafana`/`jira` data
 sources are link buttons permanently; only the existing opt-in client-side

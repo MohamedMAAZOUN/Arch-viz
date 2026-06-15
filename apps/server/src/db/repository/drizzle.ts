@@ -6,7 +6,7 @@
 // production. Snapshots get an `append` and reads — no update/delete exists.
 // ============================================================================
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import {
   auditLog,
@@ -17,6 +17,7 @@ import {
   sessions,
   snapshots,
   users,
+  yjsUpdates,
 } from "../schema";
 
 import type {
@@ -297,6 +298,34 @@ export function createDrizzleRepository(db: AppDb): Repository {
           .from(snapshots)
           .where(eq(snapshots.projectId, projectId))
           .orderBy(asc(snapshots.version));
+      },
+    },
+
+    yjsUpdates: {
+      async append(projectId, update) {
+        await orm.insert(yjsUpdates).values({ projectId, update });
+      },
+      async listForProject(projectId) {
+        const rows = await orm
+          .select({ update: yjsUpdates.update })
+          .from(yjsUpdates)
+          .where(eq(yjsUpdates.projectId, projectId))
+          .orderBy(asc(yjsUpdates.createdAt), asc(yjsUpdates.id));
+        return rows.map((r) => r.update);
+      },
+      async count(projectId) {
+        const [row] = await orm
+          .select({ n: sql<number>`count(*)::int` })
+          .from(yjsUpdates)
+          .where(eq(yjsUpdates.projectId, projectId));
+        return row?.n ?? 0;
+      },
+      async compact(projectId, merged) {
+        // Atomic swap: drop the log for this project and write one full-state row.
+        await orm.transaction(async (tx) => {
+          await tx.delete(yjsUpdates).where(eq(yjsUpdates.projectId, projectId));
+          await tx.insert(yjsUpdates).values({ projectId, update: merged });
+        });
       },
     },
 

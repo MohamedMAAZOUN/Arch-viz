@@ -19,6 +19,7 @@ import { resolveSessionUser } from "./guard";
 import { createLocalAuthProvider } from "./local/provider";
 import { createOidcAuthProvider } from "./oidc/provider";
 import { PublicUser, toPublicUser } from "./publicUser";
+import { signWsToken } from "./wsToken";
 import { addOriginGuard } from "../http/csrf";
 
 import type { AuthContext, AuthProvider } from "./types";
@@ -32,6 +33,7 @@ const PublicAuthModeSchema = z.discriminatedUnion("mode", [
 
 const ConfigResponse = z.object({ modes: z.array(PublicAuthModeSchema) });
 const ErrorResponse = z.object({ error: z.string() });
+const WsTokenResponse = z.object({ token: z.string(), expiresInMs: z.number() });
 
 export async function registerAuth(app: FastifyInstance, ctx: AuthContext): Promise<void> {
   const providers: AuthProvider[] = [];
@@ -65,6 +67,20 @@ export async function registerAuth(app: FastifyInstance, ctx: AuthContext): Prom
         reply.clearCookie(SESSION_COOKIE, { path: "/" });
         return reply.code(204).send();
       });
+
+      // Multiplayer handshake (#65): a short-lived signed JWT, guarded by the
+      // session cookie. Hocuspocus `onAuthenticate` verifies it and runs the
+      // role check — no IdP involvement, identity is internal by now.
+      r.get(
+        "/ws-token",
+        { schema: { response: { 200: WsTokenResponse, 401: ErrorResponse } } },
+        async (req, reply) => {
+          const user = await resolveSessionUser(ctx, req, reply);
+          if (!user) return reply.code(401).send({ error: "unauthorized" });
+          const signed = signWsToken(user.id, ctx.config.session.cookieSecret, undefined, ctx.clock().getTime());
+          return reply.code(200).send(signed);
+        },
+      );
 
       for (const provider of providers) await provider.registerRoutes(scope);
     },
