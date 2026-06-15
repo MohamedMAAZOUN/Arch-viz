@@ -16,12 +16,15 @@
 // Placements carry BOTH parent-relative coordinates (+ parentId + size, for
 // React Flow's sub-flow model) AND absolute coordinates (so the canvas can
 // fall back to top-level placement when an intermediate container is hidden by
-// MVP scrubbing). Manual overrides are stored parent-relative, exactly as
+// a collapsed ancestor). Manual overrides are stored parent-relative, exactly as
 // React Flow reports a dragged node's position.
 //
-// Critical design choice: positions are computed for the MAXIMAL set across
-// all MVPs (resolve at the latest MVP). MVP scrubbing reveals/hides elements
-// but never reshuffles the diagram.
+// Layout is computed for the element set visible at the CURRENT MVP, not the
+// maximal set across all MVPs. Laying out the maximal set kept positions stable
+// while scrubbing, but on large architectures it scattered the few elements
+// present at an early MVP across the gaps left by everything that doesn't exist
+// yet. Per-MVP layout instead packs each point in time tightly; switching MVP
+// re-runs ELK (cached per MVP, so revisiting is instant) and the move animates.
 // ============================================================================
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -94,6 +97,7 @@ const SPACING_OPTS: Record<LayoutSpacing, { nodeNodeSpacing: number; rankSpacing
 };
 
 export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): LayoutState {
+  const currentMvp = useViewStore((s) => s.currentMvp);
   const groupExpansion = useViewStore((s) => s.groupExpansion);
   const density = useCanvasPrefsStore((s) => s.density);
   const defaultCollapse = useCanvasPrefsStore((s) => s.defaultCollapse);
@@ -109,13 +113,23 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
   const layoutCache = useRef<Map<string, ReadonlyMap<string, LayoutResultNode>>>(new Map());
 
   // Hash the topology so we re-run ELK only when the graph shape actually
-  // changes (elements added/removed, connections added/removed, parent
-  // relationships moved, aggregation config changed, expand/collapse toggled,
-  // the default-collapse policy, the density that drives node footprints, or
-  // the spacing). Position overrides and property edits do NOT contribute.
+  // changes (the current MVP, elements added/removed, connections added/removed,
+  // parent relationships moved, aggregation config changed, expand/collapse
+  // toggled, the default-collapse policy, the density that drives node
+  // footprints, or the spacing). Position overrides and property edits do NOT
+  // contribute. The MVP is part of the key because layout is now per-MVP.
   const topologyKey = useMemo(
-    () => computeTopologyKey(doc, layer, groupExpansion, density, defaultCollapse, layoutSpacing),
-    [doc, layer, groupExpansion, density, defaultCollapse, layoutSpacing],
+    () =>
+      computeTopologyKey(
+        doc,
+        layer,
+        currentMvp,
+        groupExpansion,
+        density,
+        defaultCollapse,
+        layoutSpacing,
+      ),
+    [doc, layer, currentMvp, groupExpansion, density, defaultCollapse, layoutSpacing],
   );
   const lastTopologyKey = useRef<string | null>(null);
   // Monotonic id for the most recently *dispatched* layout. A resolved result
@@ -145,16 +159,20 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
       return;
     }
 
-    const latestMvp = [...doc.mvps].sort((a, b) => b.order - a.order)[0];
-    if (latestMvp === undefined) {
+    // Lay out exactly what's visible at the current MVP. Fall back to the latest
+    // MVP only when none is focused yet (the canvas shows nothing in that case,
+    // so the layout is never displayed — it just keeps ELK from running on an
+    // undefined mvp).
+    const layoutMvp = currentMvp ?? [...doc.mvps].sort((a, b) => b.order - a.order)[0]?.id;
+    if (layoutMvp === undefined) {
       setAutoNodes(new Map());
       setIsLaying(false);
       return;
     }
 
-    const maximal = resolve(doc, layer, latestMvp.id, groupExpansion, defaultCollapse);
-    const tree = buildLayoutTree(maximal.elements, maximal.containment, SIZING_BY_DENSITY[density]);
-    const layoutEdges = maximal.edges.map((e) => ({ id: e.id, source: e.from, target: e.to }));
+    const visible = resolve(doc, layer, layoutMvp, groupExpansion, defaultCollapse);
+    const tree = buildLayoutTree(visible.elements, visible.containment, SIZING_BY_DENSITY[density]);
+    const layoutEdges = visible.edges.map((e) => ({ id: e.id, source: e.from, target: e.to }));
 
     // Tag this dispatch. We deliberately do NOT cancel on cleanup: tying
     // cancellation to the effect's lifetime drops the *only* in-flight result
@@ -182,7 +200,16 @@ export function useLayoutedGraph(doc: ProjectDocument | null, layer: LayerId): L
         console.error("Layout failed:", err);
         setIsLaying(false);
       });
-  }, [doc, layer, topologyKey, groupExpansion, density, defaultCollapse, layoutSpacing]);
+  }, [
+    doc,
+    layer,
+    currentMvp,
+    topologyKey,
+    groupExpansion,
+    density,
+    defaultCollapse,
+    layoutSpacing,
+  ]);
 
   // Override merge + absolute-coordinate resolution — runs every render. Cheap.
   // Depends only on the per-layer overrides (not the whole doc) so renames and
@@ -273,6 +300,7 @@ function mergePlacements(
 function computeTopologyKey(
   doc: ProjectDocument | null,
   layer: LayerId,
+  mvp: string | null,
   expansion: GroupExpansion,
   density: NodeDensity,
   defaultCollapsed: boolean,
@@ -290,5 +318,5 @@ function computeTopologyKey(
     .sort()
     .map((id) => `${id}=${expansion[id] === true ? "1" : "0"}`)
     .join(",");
-  return `${density}\n${spacing}\n${defaultCollapsed ? "dc1" : "dc0"}\n${layer}\n${elementSig}\n${connSig}\n${expansionSig}`;
+  return `${density}\n${spacing}\n${defaultCollapsed ? "dc1" : "dc0"}\n${layer}\n${mvp ?? ""}\n${elementSig}\n${connSig}\n${expansionSig}`;
 }

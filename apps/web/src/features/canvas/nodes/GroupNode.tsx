@@ -12,6 +12,7 @@
 
 import { Handle, Position } from "@xyflow/react";
 
+import { selectDimmed, useFocusStore } from "@/core/state/focusStore";
 import {
   ElementTypeBadge,
   ExpandToggle,
@@ -29,16 +30,17 @@ export interface GroupNodeData extends Record<string, unknown>, ContainmentData 
   element: Element;
   introducedColor: string | null;
   introducedIn: string;
-  /** Faded during a tour step that highlights other nodes. */
-  dimmed: boolean;
   /** Overlay mode — tint the container by its introducing MVP color. */
   overlay: boolean;
 }
 export type GroupNodeType = Node<GroupNodeData, "group">;
 
 export function GroupNode({ data, selected }: NodeProps<GroupNodeType>) {
-  const { element, introducedColor, introducedIn, isExpanded, dimmed, overlay } = data;
+  const { element, introducedColor, introducedIn, isExpanded, overlay } = data;
   const tone = element.style?.tone ?? "neutral";
+  // Dimming comes from the focus store, not node data — keeps hover off the
+  // nodes array so group children never re-project. See focusStore.
+  const dimmed = useFocusStore(selectDimmed(element.id));
   const tinted = overlay && introducedColor !== null;
 
   return (

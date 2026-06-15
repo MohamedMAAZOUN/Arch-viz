@@ -218,17 +218,56 @@ describe("useLayoutedGraph — layout survives effect churn", () => {
     expect(screen.getByTestId("laying").textContent).toBe("no");
   });
 
-  it("does not re-run ELK when only the MVP focus changes (scrub)", () => {
-    loadFixture();
+  it("re-lays out per MVP so each point in time is packed tightly", async () => {
+    // Two MVPs, one element added in each. Layout is per-MVP now (it used to be
+    // computed once for the maximal set), so scrubbing to a different MVP must
+    // re-run ELK over only the elements visible then — that's what keeps an early
+    // MVP compact instead of scattered across the later elements' gaps.
+    const doc = parseProjectDocument({
+      $schemaVersion: "1.0.0",
+      project: { id: "p", name: "P" },
+      mvps: [
+        { id: "mvp1", name: "First", order: 1, color: "#111111" },
+        { id: "mvp2", name: "Second", order: 2, color: "#222222" },
+      ],
+      layers: [
+        { id: "business", order: 1, label: "Business" },
+        { id: "architecture", order: 2, label: "Architecture" },
+        { id: "engineering", order: 3, label: "Engineering" },
+      ],
+      elements: [
+        {
+          id: "a",
+          type: "service",
+          name: "A",
+          minLayer: "business",
+          properties: {},
+          lifecycle: { introducedIn: "mvp1" },
+        },
+        {
+          id: "b",
+          type: "service",
+          name: "B",
+          minLayer: "business",
+          properties: {},
+          lifecycle: { introducedIn: "mvp2" },
+        },
+      ],
+      connections: [],
+    });
+    loadProject(doc); // defaults to the latest MVP (mvp2) → both elements visible
     render(<Probe />);
-    expect(harness.layout).toHaveBeenCalledTimes(1);
 
-    // Scrubbing the MVP timeline is pure view state — the layout is computed for
-    // the maximal element set across all MVPs, so it must NOT trigger a re-run.
+    expect(harness.layout).toHaveBeenCalledTimes(1);
+    await resolveLayout(0);
+    expect(screen.getByTestId("count").textContent).toBe("2");
+
+    // Scrub back to mvp1 — only "a" exists then, so ELK re-runs over one element.
     act(() => {
       useViewStore.getState().setMvp("mvp1");
     });
-
-    expect(harness.layout).toHaveBeenCalledTimes(1);
+    expect(harness.layout).toHaveBeenCalledTimes(2);
+    await resolveLayout(1);
+    expect(screen.getByTestId("count").textContent).toBe("1");
   });
 });

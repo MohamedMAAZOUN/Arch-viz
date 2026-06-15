@@ -20,6 +20,7 @@
 import { Handle, Position } from "@xyflow/react";
 import { motion } from "motion/react";
 
+import { selectDimmed, useFocusStore } from "@/core/state/focusStore";
 import { durationSec, ease } from "@/design-system/tokens";
 import {
   ElementTypeBadge,
@@ -43,16 +44,17 @@ export interface ElementNodeData extends Record<string, unknown>, ContainmentDat
   introducedColor: string | null;
   /** Id of the introducing MVP — shown next to the color dot. */
   introducedIn: string;
-  /** Faded during a tour step that highlights other nodes. */
-  dimmed: boolean;
   /** Overlay mode — tint the node by its introducing MVP color. */
   overlay: boolean;
 }
 export type ElementNodeType = Node<ElementNodeData, "element">;
 
 export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
-  const { element, introducedColor, introducedIn, canExpand, isExpanded, dimmed, overlay } = data;
+  const { element, introducedColor, introducedIn, canExpand, isExpanded, overlay } = data;
   const tone = element.style?.tone ?? "neutral";
+  // Dimming is read from the focus store (NOT node data) so that hovering never
+  // rebuilds the nodes array — see focusStore for why that prevents the blink.
+  const dimmed = useFocusStore(selectDimmed(element.id));
   const tinted = overlay && introducedColor !== null;
 
   return (

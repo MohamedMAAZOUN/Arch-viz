@@ -45,6 +45,7 @@ import { useResolvedDoc } from "@/core/doc/useResolvedDoc";
 import { assertNever } from "@/core/errors";
 import { registerCanvasExporter } from "@/core/export/canvasExporter";
 import { useCanvasPrefsStore } from "@/core/state/canvasPrefsStore";
+import { useFocusStore } from "@/core/state/focusStore";
 import { useSelectionStore } from "@/core/state/selectionStore";
 import { useTourStore } from "@/core/state/tourStore";
 import { useViewStore } from "@/core/state/viewStore";
@@ -84,6 +85,21 @@ const edgeTypes = { routed: RoutedEdge };
 // rules. Computed off React Flow's transform, bucketed so it only flips state
 // when the threshold is actually crossed (no re-render per zoom tick).
 const LOD_FAR_ZOOM = 0.55;
+
+// Zoom bounds — shared by the React Flow props and our custom pinch handler so
+// both clamp to the same range.
+const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 2.5;
+
+// Touchpad pinch-zoom sensitivity (issue: pinch-to-zoom felt sluggish next to
+// two-finger scroll-zoom). React Flow's built-in wheel zoom multiplies the wheel
+// delta by 0.002, and ONLY boosts that by 10× for a trackpad pinch on macOS —
+// every other platform gets the slow 0.002, which is why spreading two fingers
+// crawled while a same-direction scroll zoomed fast. We take pinch over for all
+// platforms with the same 0.02 factor macOS already enjoys, so the gesture is
+// snappy and consistent everywhere. Two-finger scroll-zoom is left to React Flow
+// untouched. Tune here if it feels too fast/slow.
+const PINCH_ZOOM_SPEED = 0.02;
 
 export default function Canvas() {
   return (
@@ -182,6 +198,15 @@ function CanvasInner() {
   // otherwise the focus (hover/selection) set; otherwise null.
   const highlightIds = tourHighlight ?? focusIds;
 
+  // Publish the highlight set to the focus store rather than baking it into each
+  // node's data. Node components read their own dimmed state from there, so a
+  // hover never rebuilds the nodes array (the root cause of the old blink + the
+  // group children jumping to the upper-left). Edges still read highlightIds
+  // directly below — they don't re-project, so rebuilding them is harmless.
+  useEffect(() => {
+    useFocusStore.getState().setHighlightIds(highlightIds);
+  }, [highlightIds]);
+
   // Lookups for cross-group edge bundling.
   const elementById = useMemo(() => new Map((doc?.elements ?? []).map((e) => [e.id, e])), [doc]);
 
@@ -189,10 +214,13 @@ function CanvasInner() {
   const mvpColors = useMemo(() => buildMvpColorMap(doc), [doc]);
 
   // Derive the "next" set of nodes from the doc + layout + containment.
+  // Deliberately does NOT depend on highlightIds — dimming is applied per node
+  // via the focus store, so hovering never reruns this memo or replaces the
+  // nodes array (see the focus-store effect above).
   const derivedNodes = useMemo<CanvasNode[]>(() => {
     if (resolved === null) return [];
-    return buildNodes(resolved, placements, mvpColors, highlightIds, mvpMode === "overlay");
-  }, [resolved, placements, mvpColors, highlightIds, mvpMode]);
+    return buildNodes(resolved, placements, mvpColors, mvpMode === "overlay");
+  }, [resolved, placements, mvpColors, mvpMode]);
 
   const derivedEdges = useMemo<CanvasEdge[]>(() => {
     if (resolved === null) return [];
@@ -400,6 +428,46 @@ function CanvasInner() {
     };
   }, [clearSelection]);
 
+  // -- Touchpad pinch-zoom speed (issue 1) ---------------------------------
+  // React Flow exposes no zoom-speed prop and only fast-tracks a trackpad pinch
+  // on macOS, leaving the gesture sluggish elsewhere next to two-finger scroll-
+  // zoom. We own the pinch ourselves: a trackpad pinch arrives as wheel events
+  // with ctrlKey=true, so we intercept those (capture phase, non-passive, before
+  // React Flow's slower handler), zoom around the pointer at PINCH_ZOOM_SPEED,
+  // and let plain two-finger scroll-zoom (no ctrlKey) fall through untouched.
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (el === null) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return; // pinch only — scroll-zoom stays React Flow's job
+      const flow = flowRef.current;
+      if (flow === null) return;
+      // Leave wheel-opted-out overlays (minimap, scrollable panels) alone.
+      if (e.target instanceof Element && e.target.closest(".nowheel") !== null) return;
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const { x, y, zoom } = flow.getViewport();
+      const nextZoom = clamp(zoom * Math.pow(2, -e.deltaY * PINCH_ZOOM_SPEED), MIN_ZOOM, MAX_ZOOM);
+      if (nextZoom === zoom) return;
+
+      // Anchor the zoom on the pointer: the flow point under the cursor stays put.
+      const rect = el.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const fx = (px - x) / zoom;
+      const fy = (py - y) / zoom;
+      void flow.setViewport({ x: px - fx * nextZoom, y: py - fy * nextZoom, zoom: nextZoom });
+    };
+
+    el.addEventListener("wheel", onWheel, { capture: true, passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel, { capture: true });
+    };
+  }, []);
+
   // -- Save / restore view around a tour -----------------------------------
   // On entering a tour, snapshot the viewport + selection + layer + MVP and
   // clear the selection (so dimming reads cleanly). On exit, restore them.
@@ -561,8 +629,8 @@ function CanvasInner() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         proOptions={{ hideAttribution: true }}
-        minZoom={0.1}
-        maxZoom={2.5}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
         nodesDraggable={cursorMode !== "lock"}
         nodesConnectable={cursorMode !== "lock"}
         elementsSelectable
@@ -679,6 +747,11 @@ function isEditingTextField(target: EventTarget | null): boolean {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
 }
 
+/** Clamp a number into [min, max]. Used by the custom pinch-zoom handler. */
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 /** Order-insensitive equality for two id lists (selection sets). */
 function sameIdSet(a: readonly string[], b: readonly string[]): boolean {
   if (a.length !== b.length) return false;
@@ -694,7 +767,6 @@ function buildNodes(
   resolved: NonNullable<ReturnType<typeof useResolvedDoc>>,
   placements: PlacementMap,
   mvpColors: ReadonlyMap<string, string>,
-  highlightIds: ReadonlySet<string> | null,
   overlay: boolean,
 ): CanvasNode[] {
   const visibleIds = new Set(resolved.elements.map((e) => e.id));
@@ -722,8 +794,6 @@ function buildNodes(
       introducedIn: element.lifecycle.introducedIn,
       canExpand: containment?.canExpand ?? false,
       isExpanded: containment?.isExpanded ?? true,
-      // Dimmed when a tour step highlights a set this node isn't part of.
-      dimmed: highlightIds !== null && !highlightIds.has(element.id),
       // Overlay (diff) mode: tint the node by its introducing MVP color.
       overlay,
     };
