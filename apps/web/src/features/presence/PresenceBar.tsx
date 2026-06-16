@@ -29,7 +29,9 @@ export default function PresenceBar() {
           key={p.clientId}
           className="presence-avatar"
           // Color from the presence tokens — referenced, never authored, in JS.
-          style={{ "--presence-color": `var(--color-presence-${String(p.colorIndex)})` } as CSSProperties}
+          style={
+            { "--presence-color": `var(--color-presence-${String(p.colorIndex)})` } as CSSProperties
+          }
           title={`${p.name} · ${p.role}`}
           data-role={p.role}
         >

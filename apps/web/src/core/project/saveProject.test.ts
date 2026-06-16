@@ -39,8 +39,13 @@ describe("saveProject", () => {
   });
 
   it("commits a snapshot for a server-backed project and stamps the version", async () => {
-    useProjectContextStore.getState().setServerProject({ id: "srv1", name: "Acme", role: "editor", version: 3 });
-    commit.mockResolvedValue({ ok: true, value: { version: 4, createdBy: "u1", createdAt: "now" } });
+    useProjectContextStore
+      .getState()
+      .setServerProject({ id: "srv1", name: "Acme", role: "editor", version: 3 });
+    commit.mockResolvedValue({
+      ok: true,
+      value: { version: 4, createdBy: "u1", createdAt: "now" },
+    });
 
     const outcome = await saveProject();
 
@@ -50,7 +55,9 @@ describe("saveProject", () => {
   });
 
   it("refuses to commit as a viewer", async () => {
-    useProjectContextStore.getState().setServerProject({ id: "srv1", name: "Acme", role: "viewer", version: 1 });
+    useProjectContextStore
+      .getState()
+      .setServerProject({ id: "srv1", name: "Acme", role: "viewer", version: 1 });
     const outcome = await saveProject();
     expect(outcome).toEqual({ kind: "read-only" });
     expect(commit).not.toHaveBeenCalled();
@@ -68,7 +75,14 @@ describe("saveProject", () => {
     create.mockResolvedValue({
       ok: true,
       value: {
-        project: { id: "srv9", name: "Acme", ownerId: "u1", isPublic: false, createdAt: "now", updatedAt: "now" },
+        project: {
+          id: "srv9",
+          name: "Acme",
+          ownerId: "u1",
+          isPublic: false,
+          createdAt: "now",
+          updatedAt: "now",
+        },
         document: {},
         version: 1,
         role: "owner",
@@ -79,6 +93,10 @@ describe("saveProject", () => {
 
     expect(outcome).toEqual({ kind: "created", version: 1 });
     expect(create).toHaveBeenCalledOnce();
-    expect(useProjectContextStore.getState().server).toMatchObject({ id: "srv9", role: "owner", version: 1 });
+    expect(useProjectContextStore.getState().server).toMatchObject({
+      id: "srv9",
+      role: "owner",
+      version: 1,
+    });
   });
 });

@@ -53,7 +53,11 @@ export default function DraftImportOffer() {
     clearJustLoggedIn();
     void importDraftAsProject().then((outcome) => {
       if (outcome.kind === "created") {
-        notify({ level: "success", title: "Draft saved", detail: "Your local draft is now a server project." });
+        notify({
+          level: "success",
+          title: "Draft saved",
+          detail: "Your local draft is now a server project.",
+        });
       } else if (outcome.kind === "error") {
         notify({ level: "error", title: "Couldn't save draft", detail: outcome.message });
       }

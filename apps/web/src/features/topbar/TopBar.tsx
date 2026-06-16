@@ -31,13 +31,25 @@ import "@/features/topbar/TopBar.css";
 function reportSave(outcome: SaveOutcome): void {
   switch (outcome.kind) {
     case "committed":
-      notify({ level: "success", title: "Saved", detail: `Committed version ${String(outcome.version)}.` });
+      notify({
+        level: "success",
+        title: "Saved",
+        detail: `Committed version ${String(outcome.version)}.`,
+      });
       return;
     case "created":
-      notify({ level: "success", title: "Saved to server", detail: "Created a new server project from your draft." });
+      notify({
+        level: "success",
+        title: "Saved to server",
+        detail: "Created a new server project from your draft.",
+      });
       return;
     case "read-only":
-      notify({ level: "info", title: "Read-only", detail: "You have viewer access — ask the owner for edit rights." });
+      notify({
+        level: "info",
+        title: "Read-only",
+        detail: "You have viewer access — ask the owner for edit rights.",
+      });
       return;
     case "error":
       notify({ level: "error", title: "Save failed", detail: outcome.message });
@@ -78,7 +90,13 @@ export default function TopBar() {
     });
   };
 
-  const saveLabel = saving ? "saving…" : server !== null ? (dirty ? "save" : "saved") : "save to server";
+  const saveLabel = saving
+    ? "saving…"
+    : server !== null
+      ? dirty
+        ? "save"
+        : "saved"
+      : "save to server";
 
   // Ctrl/Cmd+S keyboard shortcut. Skip when typing in inputs/textareas.
   useEffect(() => {

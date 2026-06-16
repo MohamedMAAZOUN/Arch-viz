@@ -28,9 +28,9 @@ describe("ws token", () => {
     const parts = token.split(".");
     const header = parts[0] ?? "";
     const signature = parts[2] ?? "";
-    const forged = Buffer.from(JSON.stringify({ sub: "admin", iat: 1000, exp: 9_999_999 })).toString(
-      "base64url",
-    );
+    const forged = Buffer.from(
+      JSON.stringify({ sub: "admin", iat: 1000, exp: 9_999_999 }),
+    ).toString("base64url");
     const result = verifyWsToken(`${header}.${forged}.${signature}`, SECRET, 1_000_000);
     expect(result.ok).toBe(false);
   });

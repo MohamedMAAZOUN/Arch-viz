@@ -16,7 +16,11 @@ import { HocuspocusProvider, WebSocketStatus } from "@hocuspocus/provider";
 
 import { authApi } from "@/core/api/auth";
 import { docStore } from "@/core/doc/DocStore";
-import { usePresenceStore, type CollabRole, type RemoteParticipant } from "@/core/state/presenceStore";
+import {
+  usePresenceStore,
+  type CollabRole,
+  type RemoteParticipant,
+} from "@/core/state/presenceStore";
 
 export interface LocalParticipant {
   readonly name: string;

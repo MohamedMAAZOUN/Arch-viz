@@ -17,7 +17,6 @@ import { loadProject } from "@/core/doc/loadProject";
 import { err, ok, type Result } from "@/core/errors";
 import { useProjectContextStore } from "@/core/state/projectContextStore";
 
-
 /** Load a bundled architecture (offline seed/fallback) — local-only document. */
 export async function openBundledArchitecture(id: string): Promise<Result<true>> {
   const result = await loadArchitectureById(id);

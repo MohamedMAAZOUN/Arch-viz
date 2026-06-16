@@ -107,8 +107,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       method,
       // Always carry the httpOnly session cookie (cross-origin in dev).
       credentials: "include",
-      headers:
-        config.body === undefined ? {} : { "content-type": "application/json" },
+      headers: config.body === undefined ? {} : { "content-type": "application/json" },
       ...(config.body === undefined ? {} : { body: JSON.stringify(config.body) }),
       ...(config.signal ? { signal: config.signal } : {}),
     };

@@ -6,7 +6,11 @@ import { createHttpClient, type FetchLike } from "@/core/api/http";
 const Schema = z.object({ value: z.string() });
 
 function clientWith(fetchImpl: FetchLike, onUnauthorized?: () => void) {
-  return createHttpClient({ baseUrl: "http://api.test", fetchImpl, ...(onUnauthorized ? { onUnauthorized } : {}) });
+  return createHttpClient({
+    baseUrl: "http://api.test",
+    fetchImpl,
+    ...(onUnauthorized ? { onUnauthorized } : {}),
+  });
 }
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -25,16 +29,27 @@ describe("http client", () => {
 
   it("prefixes the base url and forwards the method/body", async () => {
     const fetchImpl = vi.fn(() => Promise.resolve(jsonResponse({ value: "ok" })));
-    await clientWith(fetchImpl).request("/projects/", { method: "POST", body: { a: 1 }, schema: Schema });
+    await clientWith(fetchImpl).request("/projects/", {
+      method: "POST",
+      body: { a: 1 },
+      schema: Schema,
+    });
     expect(fetchImpl).toHaveBeenCalledWith(
       "http://api.test/projects/",
-      expect.objectContaining({ method: "POST", credentials: "include", body: JSON.stringify({ a: 1 }) }),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify({ a: 1 }),
+      }),
     );
   });
 
   it("maps a 401 to an unauthorized error and fires the handler", async () => {
     const onUnauthorized = vi.fn();
-    const client = clientWith(() => Promise.resolve(jsonResponse({ error: "unauthorized" }, 401)), onUnauthorized);
+    const client = clientWith(
+      () => Promise.resolve(jsonResponse({ error: "unauthorized" }, 401)),
+      onUnauthorized,
+    );
     const result = await client.request("/auth/me", { schema: Schema });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error.kind).toBe("unauthorized");
@@ -49,7 +64,9 @@ describe("http client", () => {
       [422, "unprocessable"],
     ];
     for (const [status, kind] of cases) {
-      const client = clientWith(() => Promise.resolve(jsonResponse({ error: "account_blocked" }, status)));
+      const client = clientWith(() =>
+        Promise.resolve(jsonResponse({ error: "account_blocked" }, status)),
+      );
       const result = await client.request("/x", { schema: Schema });
       expect(result.ok).toBe(false);
       if (!result.ok) {

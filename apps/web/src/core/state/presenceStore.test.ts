@@ -1,9 +1,25 @@
 import { describe, expect, it } from "vitest";
 
-import { selectRemoteColorIndex, usePresenceStore, type RemoteParticipant } from "@/core/state/presenceStore";
+import {
+  selectRemoteColorIndex,
+  usePresenceStore,
+  type RemoteParticipant,
+} from "@/core/state/presenceStore";
 
-const ada: RemoteParticipant = { clientId: 1, name: "Ada", role: "editor", colorIndex: 3, selection: ["svc-a"] };
-const max: RemoteParticipant = { clientId: 2, name: "Max", role: "viewer", colorIndex: 5, selection: ["svc-b", "svc-c"] };
+const ada: RemoteParticipant = {
+  clientId: 1,
+  name: "Ada",
+  role: "editor",
+  colorIndex: 3,
+  selection: ["svc-a"],
+};
+const max: RemoteParticipant = {
+  clientId: 2,
+  name: "Max",
+  role: "viewer",
+  colorIndex: 5,
+  selection: ["svc-b", "svc-c"],
+};
 
 describe("presenceStore", () => {
   it("returns the color index of a remote participant selecting the element", () => {

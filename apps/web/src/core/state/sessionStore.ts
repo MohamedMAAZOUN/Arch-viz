@@ -14,7 +14,13 @@
 
 import { create } from "zustand";
 
-import { authApi, type AuthConfig, type LoginInput, type PublicUser, type RegisterInput } from "@/core/api/auth";
+import {
+  authApi,
+  type AuthConfig,
+  type LoginInput,
+  type PublicUser,
+  type RegisterInput,
+} from "@/core/api/auth";
 import { setUnauthorizedHandler, type ApiError } from "@/core/api/http";
 
 /** Why the login dialog is open — drives its copy and post-login behaviour. */

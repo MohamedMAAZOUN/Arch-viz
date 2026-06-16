@@ -14,7 +14,6 @@ import { loadProject } from "@/core/doc/loadProject";
 import { err, ok, type Result } from "@/core/errors";
 import { useProjectContextStore } from "@/core/state/projectContextStore";
 
-
 export type RestoreOutcome =
   | { readonly kind: "restored-head"; readonly version: number }
   | { readonly kind: "loaded"; readonly version: number };

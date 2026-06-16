@@ -44,7 +44,9 @@ function loadFixture() {
 
 /** loadProject clears the server context; make the open document server-backed. */
 function asServerProject() {
-  useProjectContextStore.getState().setServerProject({ id: "p", name: "Acme", role: "owner", version: 1 });
+  useProjectContextStore
+    .getState()
+    .setServerProject({ id: "p", name: "Acme", role: "owner", version: 1 });
 }
 
 afterEach(() => {
@@ -86,6 +88,9 @@ describe("TopBar — Save button state", () => {
 
     const save = screen.getByRole("button", { name: "Save" });
     expect(save).toHaveTextContent("save to server");
-    expect(save).toHaveAttribute("title", expect.stringContaining("Save this project to the server"));
+    expect(save).toHaveAttribute(
+      "title",
+      expect.stringContaining("Save this project to the server"),
+    );
   });
 });

@@ -35,7 +35,11 @@ interface ArchitecturePickerProps {
 /** A flat, keyboard-navigable item from either source. */
 type PickerItem =
   | { readonly kind: "server"; readonly project: ServerProject }
-  | { readonly kind: "bundled"; readonly entry: ArchitectureEntry; readonly matchedNodes: string[] };
+  | {
+      readonly kind: "bundled";
+      readonly entry: ArchitectureEntry;
+      readonly matchedNodes: string[];
+    };
 
 const itemId = (item: PickerItem): string =>
   item.kind === "server" ? `server-${item.project.id}` : `bundled-${item.entry.id}`;
@@ -106,7 +110,9 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
 
   const select = (item: PickerItem) => {
     const action =
-      item.kind === "server" ? openServerProject(item.project.id) : openBundledArchitecture(item.entry.id);
+      item.kind === "server"
+        ? openServerProject(item.project.id)
+        : openBundledArchitecture(item.entry.id);
     const name = item.kind === "server" ? item.project.name : item.entry.name;
     void action.then((result) => {
       if (!result.ok) {
@@ -159,7 +165,9 @@ export default function ArchitecturePicker({ onClose }: ArchitecturePickerProps)
             role="combobox"
             aria-expanded
             aria-controls="archpicker-list"
-            aria-activedescendant={activeItem !== undefined ? `archpicker-opt-${itemId(activeItem)}` : undefined}
+            aria-activedescendant={
+              activeItem !== undefined ? `archpicker-opt-${itemId(activeItem)}` : undefined
+            }
             autoComplete="off"
             spellCheck={false}
           />
@@ -280,7 +288,9 @@ function PickerRow({ item, active, current, onActivate, onSelect }: PickerRowPro
             </span>
           ))}
           {item.matchedNodes.length > 6 ? (
-            <span className="archpicker-chip archpicker-chip--more">+{item.matchedNodes.length - 6}</span>
+            <span className="archpicker-chip archpicker-chip--more">
+              +{item.matchedNodes.length - 6}
+            </span>
           ) : null}
         </span>
       ) : null}

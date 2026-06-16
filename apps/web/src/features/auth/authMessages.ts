@@ -5,7 +5,8 @@
 import type { ApiError } from "@/core/api/http";
 
 export function describeAuthError(error: ApiError): string {
-  if (error.kind === "network") return "Can't reach the server. Check your connection and try again.";
+  if (error.kind === "network")
+    return "Can't reach the server. Check your connection and try again.";
   switch (error.message) {
     case "account_blocked":
       return "This account has been blocked. Contact an administrator to restore access.";

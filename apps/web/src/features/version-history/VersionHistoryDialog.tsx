@@ -81,7 +81,13 @@ export default function VersionHistoryDialog({ onClose }: VersionHistoryDialogPr
   return (
     <>
       <div className="vhistory-scrim" onClick={onClose} aria-hidden />
-      <div ref={panelRef} className="vhistory" role="dialog" aria-modal="true" aria-labelledby="vhistory-title">
+      <div
+        ref={panelRef}
+        className="vhistory"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vhistory-title"
+      >
         <header className="vhistory-head">
           <h2 id="vhistory-title" className="vhistory-title">
             Version history

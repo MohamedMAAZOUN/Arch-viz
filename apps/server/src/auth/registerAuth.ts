@@ -77,7 +77,12 @@ export async function registerAuth(app: FastifyInstance, ctx: AuthContext): Prom
         async (req, reply) => {
           const user = await resolveSessionUser(ctx, req, reply);
           if (!user) return reply.code(401).send({ error: "unauthorized" });
-          const signed = signWsToken(user.id, ctx.config.session.cookieSecret, undefined, ctx.clock().getTime());
+          const signed = signWsToken(
+            user.id,
+            ctx.config.session.cookieSecret,
+            undefined,
+            ctx.clock().getTime(),
+          );
           return reply.code(200).send(signed);
         },
       );

@@ -84,7 +84,9 @@ export function verifyWsToken(
 function isClaims(value: unknown): value is WsTokenClaims {
   if (typeof value !== "object" || value === null) return false;
   const c = value as Record<string, unknown>;
-  return typeof c["sub"] === "string" && typeof c["exp"] === "number" && typeof c["iat"] === "number";
+  return (
+    typeof c["sub"] === "string" && typeof c["exp"] === "number" && typeof c["iat"] === "number"
+  );
 }
 
 /** Length-safe constant-time string compare (avoids leaking via timing). */

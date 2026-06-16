@@ -35,13 +35,22 @@ const config: AuthConfig = { modes: [{ mode: "local", registrationEnabled: true 
 
 describe("sessionStore", () => {
   beforeEach(() => {
-    useSessionStore.setState({ status: "loading", user: null, config: null, loginPrompt: null, justLoggedIn: false });
+    useSessionStore.setState({
+      status: "loading",
+      user: null,
+      config: null,
+      loginPrompt: null,
+      justLoggedIn: false,
+    });
     vi.clearAllMocks();
   });
 
   it("boots to guest when there is no session", async () => {
     authApi.getConfig.mockResolvedValue({ ok: true, value: config });
-    authApi.getMe.mockResolvedValue({ ok: false, error: { kind: "unauthorized", message: "unauthorized" } });
+    authApi.getMe.mockResolvedValue({
+      ok: false,
+      error: { kind: "unauthorized", message: "unauthorized" },
+    });
     await useSessionStore.getState().init();
     expect(useSessionStore.getState().status).toBe("guest");
     expect(useSessionStore.getState().config).toEqual(config);
@@ -57,14 +66,19 @@ describe("sessionStore", () => {
 
   it("marks justLoggedIn and clears the prompt on a successful login", async () => {
     authApi.login.mockResolvedValue({ ok: true, value: user });
-    const result = await useSessionStore.getState().login({ email: user.email, password: "password123" });
+    const result = await useSessionStore
+      .getState()
+      .login({ email: user.email, password: "password123" });
     expect(result.ok).toBe(true);
     expect(useSessionStore.getState().status).toBe("authenticated");
     expect(useSessionStore.getState().justLoggedIn).toBe(true);
   });
 
   it("surfaces a blocked-account error without changing state", async () => {
-    authApi.login.mockResolvedValue({ ok: false, error: { kind: "forbidden", message: "account_blocked" } });
+    authApi.login.mockResolvedValue({
+      ok: false,
+      error: { kind: "forbidden", message: "account_blocked" },
+    });
     const result = await useSessionStore.getState().login({ email: user.email, password: "x" });
     expect(result.ok).toBe(false);
     expect(useSessionStore.getState().status).toBe("loading");

@@ -85,10 +85,9 @@ export function createProjectsApi(client: HttpClient = http): ProjectsApi {
       return res.ok ? { ok: true, value: res.value.snapshots } : res;
     },
     getSnapshot: (id, version) =>
-      client.request(
-        `/projects/${encodeURIComponent(id)}/snapshots/${String(version)}`,
-        { schema: SnapshotDetail },
-      ),
+      client.request(`/projects/${encodeURIComponent(id)}/snapshots/${String(version)}`, {
+        schema: SnapshotDetail,
+      }),
   };
 }
 

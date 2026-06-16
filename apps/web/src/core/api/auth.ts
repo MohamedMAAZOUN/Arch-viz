@@ -60,7 +60,9 @@ export function createAuthApi(client: HttpClient = http): AuthApi {
     getConfig: () => client.request("/auth/config", { schema: AuthConfig }),
     getMe: async () => unwrapUser(await client.request("/auth/me", { schema: MeResponse })),
     login: async (input) =>
-      unwrapUser(await client.request("/auth/login", { method: "POST", body: input, schema: UserResponse })),
+      unwrapUser(
+        await client.request("/auth/login", { method: "POST", body: input, schema: UserResponse }),
+      ),
     register: async ({ email, password, displayName }) =>
       unwrapUser(
         await client.request("/auth/register", {

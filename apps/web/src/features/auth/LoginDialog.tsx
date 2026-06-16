@@ -18,9 +18,15 @@ import "@/features/auth/LoginDialog.css";
 
 const REASON_COPY: Record<LoginReason, { title: string; blurb: string }> = {
   manual: { title: "Sign in", blurb: "Sign in to save and share projects on the server." },
-  save: { title: "Sign in to save", blurb: "Saving to the server needs an account. Your local draft is safe either way." },
+  save: {
+    title: "Sign in to save",
+    blurb: "Saving to the server needs an account. Your local draft is safe either way.",
+  },
   share: { title: "Sign in to share", blurb: "Sharing a project with others needs an account." },
-  expired: { title: "Session expired", blurb: "Your session timed out. Sign in again — your unsaved work is still here." },
+  expired: {
+    title: "Session expired",
+    blurb: "Your session timed out. Sign in again — your unsaved work is still here.",
+  },
 };
 
 interface LoginDialogProps {
@@ -58,7 +64,11 @@ export default function LoginDialog({ reason, onClose }: LoginDialogProps) {
     setError(null);
     const action =
       mode === "register"
-        ? register({ email, password, ...(displayName.trim() ? { displayName: displayName.trim() } : {}) })
+        ? register({
+            email,
+            password,
+            ...(displayName.trim() ? { displayName: displayName.trim() } : {}),
+          })
         : login({ email, password });
     void action
       .then((result) => {
