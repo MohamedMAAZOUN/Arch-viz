@@ -26,6 +26,7 @@ import { registerAdmin } from "./admin/registerAdmin";
 import { createAuthContext } from "./auth/context";
 import { registerAuth } from "./auth/registerAuth";
 import { registerProjects } from "./projects/registerProjects";
+import { registerSync } from "./sync/registerSync";
 
 import type { Clock } from "./auth/clock";
 import type { AppConfig } from "./config";
@@ -73,6 +74,7 @@ export async function buildApp(config: AppConfig, deps: BuildAppDeps): Promise<F
   await registerAuth(app, authContext);
   await registerProjects(app, authContext);
   await registerAdmin(app, authContext);
+  await registerSync(app, authContext);
 
   return app;
 }

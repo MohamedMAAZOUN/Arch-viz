@@ -1,0 +1,53 @@
+/* PresenceBar — overlapping participant avatars in the topbar. */
+
+.presence-bar {
+  display: flex;
+  align-items: center;
+  padding-left: var(--space-2);
+}
+
+.presence-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  margin-left: calc(-1 * var(--space-2));
+  font-size: var(--text-nano);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent-fg-on);
+  background: var(--presence-color);
+  border: 2px solid var(--color-bg-1);
+  border-radius: var(--radius-pill);
+}
+
+.presence-role {
+  position: absolute;
+  right: calc(-1 * var(--space-1));
+  bottom: calc(-1 * var(--space-1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control-xs);
+  height: var(--size-control-xs);
+  font-size: var(--text-nano);
+  background: var(--color-bg-3);
+  border-radius: var(--radius-pill);
+}
+
+.presence-overflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  margin-left: calc(-1 * var(--space-2));
+  padding: 0 var(--space-2);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-medium);
+  color: var(--color-fg-muted);
+  background: var(--color-bg-3);
+  border: 2px solid var(--color-bg-1);
+  border-radius: var(--radius-pill);
+}

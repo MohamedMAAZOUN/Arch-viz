@@ -32,6 +32,8 @@ export function createMemoryRepository(): Repository {
   const projectRows = new Map<string, ProjectRow>();
   const memberRows: ProjectMemberRow[] = [];
   const snapshotRows: SnapshotRow[] = [];
+  const yjsUpdateRows: { projectId: string; update: Uint8Array; seq: number }[] = [];
+  let yjsSeq = 0;
 
   const findUserByEmail = (email: string): UserRow | null =>
     [...users.values()].find((u) => u.email === email) ?? null;
@@ -292,6 +294,31 @@ export function createMemoryRepository(): Repository {
             .filter((s) => s.projectId === projectId)
             .sort((a, b) => a.version - b.version),
         ),
+    },
+
+    yjsUpdates: {
+      append: (projectId, update) => {
+        yjsSeq += 1;
+        yjsUpdateRows.push({ projectId, update, seq: yjsSeq });
+        return Promise.resolve();
+      },
+      listForProject: (projectId) =>
+        Promise.resolve(
+          yjsUpdateRows
+            .filter((r) => r.projectId === projectId)
+            .sort((a, b) => a.seq - b.seq)
+            .map((r) => r.update),
+        ),
+      count: (projectId) =>
+        Promise.resolve(yjsUpdateRows.filter((r) => r.projectId === projectId).length),
+      compact: (projectId, merged) => {
+        for (let i = yjsUpdateRows.length - 1; i >= 0; i -= 1) {
+          if (yjsUpdateRows[i]?.projectId === projectId) yjsUpdateRows.splice(i, 1);
+        }
+        yjsSeq += 1;
+        yjsUpdateRows.push({ projectId, update: merged, seq: yjsSeq });
+        return Promise.resolve();
+      },
     },
 
     createUserWithIdentity: (input) =>

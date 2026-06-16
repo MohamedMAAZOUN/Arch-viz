@@ -69,7 +69,7 @@ function referencedTokens(css: string): string[] {
 }
 
 // Tokens injected at runtime via inline style (not declared in any CSS file).
-const RUNTIME_INJECTED = new Set(["--overlay-tint", "--mvp-color"]);
+const RUNTIME_INJECTED = new Set(["--overlay-tint", "--mvp-color", "--presence-color"]);
 // Third-party custom-property namespaces we don't own.
 const EXTERNAL_PREFIXES = ["--xy-", "--tw-"];
 

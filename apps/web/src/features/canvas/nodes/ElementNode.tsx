@@ -21,6 +21,7 @@ import { Handle, Position } from "@xyflow/react";
 import { motion } from "motion/react";
 
 import { selectDimmed, useFocusStore } from "@/core/state/focusStore";
+import { selectRemoteColorIndex, usePresenceStore } from "@/core/state/presenceStore";
 import { durationSec, ease } from "@/design-system/tokens";
 import {
   ElementTypeBadge,
@@ -55,7 +56,18 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
   // Dimming is read from the focus store (NOT node data) so that hovering never
   // rebuilds the nodes array — see focusStore for why that prevents the blink.
   const dimmed = useFocusStore(selectDimmed(element.id));
+  // A remote participant's selection highlights this node in their color (#66).
+  const remoteColorIndex = usePresenceStore(selectRemoteColorIndex(element.id));
   const tinted = overlay && introducedColor !== null;
+
+  // Both `--overlay-tint` and `--presence-color` are CSS custom properties,
+  // which MotionStyle's keyed type doesn't model; the values are plain strings.
+  const customStyle = {
+    ...(tinted ? { ["--overlay-tint"]: introducedColor } : {}),
+    ...(remoteColorIndex !== null
+      ? { ["--presence-color"]: `var(--color-presence-${String(remoteColorIndex)})` }
+      : {}),
+  } as MotionStyle;
 
   return (
     <>
@@ -69,9 +81,8 @@ export function ElementNode({ data, selected }: NodeProps<ElementNodeType>) {
         data-collapsed={canExpand ? true : undefined}
         data-dimmed={dimmed ? true : undefined}
         data-overlay={tinted ? true : undefined}
-        // Cast: `--overlay-tint` is a CSS custom property, which MotionStyle's
-        // keyed type doesn't model. The value is a plain color string.
-        style={(tinted ? { ["--overlay-tint"]: introducedColor } : {}) as MotionStyle}
+        data-remote-selected={remoteColorIndex !== null ? true : undefined}
+        style={customStyle}
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: durationSec.slow, ease: ease.out }}

@@ -15,7 +15,9 @@ import { createRoot } from "react-dom/client";
 
 import App from "@/App";
 import { bootstrapInitialProject } from "@/bootstrap";
+import { initCollab } from "@/core/collab/collabController";
 import { initDraftPersistence } from "@/core/doc/persistence";
+import { useSessionStore } from "@/core/state/sessionStore";
 import { init as initTheme } from "@/design-system/theme";
 
 import "@/design-system/tokens.css";
@@ -38,6 +40,14 @@ async function start(): Promise<void> {
   }
 
   bootstrapInitialProject();
+
+  // Resolve the session in the background (guest by default). The canvas never
+  // waits on it — guest mode is the resting state (ADR 0014).
+  void useSessionStore.getState().init();
+
+  // Wire multiplayer: connect a sync room whenever a signed-in user opens a
+  // server project, and mirror selection into awareness.
+  initCollab();
 
   root.render(
     <StrictMode>

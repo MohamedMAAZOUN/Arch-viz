@@ -177,6 +177,25 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // The multiplayer provider enters through exactly one wrapper file (#65).
+    files: ["apps/web/src/**/*.{ts,tsx}"],
+    ignores: ["apps/web/src/core/collab/syncProvider.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@hocuspocus/provider",
+              message:
+                "Import @hocuspocus/provider only from apps/web/src/core/collab/syncProvider.ts (the sync wrapper). It attaches to the existing Y.Doc; the rest of the app is unchanged.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 
   // Server: the database driver enters through exactly one module
   // (apps/server/src/db/ — the server-side analogue of the web wrapper rules).
@@ -192,6 +211,30 @@ export default tseslint.config(
               group: ["drizzle-orm", "drizzle-orm/*", "postgres"],
               message:
                 "Import the database only via apps/server/src/db (the AppDb boundary). Route handlers never touch the driver.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // Server: Yjs + Hocuspocus enter through the sync boundary only (#65), the
+  // server-side analogue of the web app's DocStore wrapper rule.
+  {
+    files: ["apps/server/src/**/*.ts"],
+    ignores: ["apps/server/src/sync/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "yjs",
+              message: "Import yjs only from apps/server/src/sync (the server-side Yjs boundary).",
+            },
+            {
+              name: "@hocuspocus/server",
+              message: "Mount Hocuspocus only from apps/server/src/sync.",
             },
           ],
         },

@@ -180,6 +180,19 @@
   --color-mvp-7: oklch(74% 0.18 115); /* lime        */
   --color-mvp-8: oklch(70% 0.18 295); /* purple      */
 
+  /* Presence palette — per-participant colors for multiplayer awareness (#66):
+   * the "who's here" avatars and the dimmed remote-selection ring on the canvas.
+   * 8 perceptually distinct hues; a participant maps to one by client id. This
+   * is the ONLY place these colors are authored — JS references the var only. */
+  --color-presence-1: oklch(72% 0.17 250); /* blue    */
+  --color-presence-2: oklch(76% 0.16 70); /* amber   */
+  --color-presence-3: oklch(72% 0.19 145); /* green   */
+  --color-presence-4: oklch(70% 0.21 350); /* magenta */
+  --color-presence-5: oklch(76% 0.17 195); /* teal    */
+  --color-presence-6: oklch(70% 0.21 30); /* coral   */
+  --color-presence-7: oklch(74% 0.18 115); /* lime    */
+  --color-presence-8: oklch(70% 0.18 295); /* purple  */
+
   /* Element-type palette — drives the node's left-accent bar so the type reads
    * at a glance alongside the type badge. Distinct hues at consistent L/C in
    * OKLCH; saturated enough to stay legible on both the dark and light surface. */

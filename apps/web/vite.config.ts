@@ -82,6 +82,7 @@ export default defineConfig({
           "react-vendor": ["react", "react-dom"],
           xyflow: ["@xyflow/react"],
           yjs: ["yjs", "y-indexeddb"],
+          collab: ["@hocuspocus/provider"],
           motion: ["motion"],
         },
       },
